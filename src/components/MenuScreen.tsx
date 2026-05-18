@@ -1,8 +1,8 @@
 "use client";
 
-import Image from "next/image";
 import Link from "next/link";
 import { useMemo, useState } from "react";
+import { assetPath } from "@/lib/asset";
 import { MENU, TOTAL_ACTIVITIES, type MenuCategory } from "@/lib/menu";
 import { logout } from "@/lib/auth";
 import { normalizeSearch } from "@/lib/utils";
@@ -36,13 +36,12 @@ export function MenuScreen({ onLogout }: Props) {
       <header className="menu-header">
         <div className="menu-header-top">
           <div className="menu-hero">
-            <Image
-              src="/dogukan.jpg"
+            <img
+              src={assetPath("/dogukan.jpg")}
               alt="Doğukan"
               width={96}
               height={96}
               className="menu-hero-photo"
-              priority
             />
             <div>
               <h1>Doğukan&apos;ın Dünyası</h1>
