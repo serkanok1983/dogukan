@@ -7,8 +7,6 @@ import { IntroModal } from "./IntroModal";
 import { findActivity } from "@/lib/menu";
 import { getGuide } from "@/lib/guides";
 
-const basePath = process.env.NEXT_PUBLIC_BASE_PATH ?? "";
-
 type Props = {
   slug: string;
   title: string;
@@ -35,7 +33,7 @@ export function ActivityShell({ slug, title, children }: Props) {
       <BubbleBg />
       <div className="sky-gradient" aria-hidden />
       <header className="activity-topbar">
-        <Link href={`${basePath}/`} className="back-btn">
+        <Link href="/" className="back-btn">
           ← Ana sayfa
         </Link>
         <span className="activity-title">{title}</span>

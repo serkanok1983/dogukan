@@ -7,8 +7,6 @@ import { logout } from "@/lib/auth";
 import { normalizeSearch } from "@/lib/utils";
 import { sounds } from "@/lib/sounds";
 
-const basePath = process.env.NEXT_PUBLIC_BASE_PATH ?? "";
-
 type Props = { onLogout: () => void };
 
 export function MenuScreen({ onLogout }: Props) {
@@ -110,7 +108,7 @@ function MenuSection({ cat }: { cat: MenuCategory & { items: MenuCategory["items
         {cat.items.map((it) => (
           <Link
             key={it.slug}
-            href={`${basePath}/aktivite/${it.slug}/`}
+            href={`/aktivite/${it.slug}/`}
             className="menu-card"
             style={{ "--card-accent": cat.accent } as React.CSSProperties}
             onClick={() => sounds.tap()}
