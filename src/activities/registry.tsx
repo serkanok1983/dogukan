@@ -17,6 +17,9 @@ const MazeGame = dynamic(() => import("./games/MazeGame").then((m) => m.MazeGame
 const BalloonPop = dynamic(() => import("./games/BalloonPop").then((m) => m.BalloonPop), { ssr: false });
 const SlidingPuzzle = dynamic(() => import("./games/SlidingPuzzle").then((m) => m.SlidingPuzzle), { ssr: false });
 const ColorRace = dynamic(() => import("./games/ColorRace").then((m) => m.ColorRace), { ssr: false });
+const SpaceDefense = dynamic(() => import("./games/SpaceDefense").then((m) => m.SpaceDefense), { ssr: false });
+const PlatformJump = dynamic(() => import("./games/PlatformJump").then((m) => m.PlatformJump), { ssr: false });
+const LaneRacer = dynamic(() => import("./games/LaneRacer").then((m) => m.LaneRacer), { ssr: false });
 
 const GEZEGENLER: ExploreItem[] = [
   { id: "sun", emoji: "☀️", title: "Güneş", fact: "Güneş sistemimizin merkezi. Dünya ve diğer gezegenler onun etrafında döner." },
@@ -36,6 +39,9 @@ const HAYVANLAR: ExploreItem[] = [
 ];
 
 export const ACTIVITY_MAP: Record<string, () => React.ReactNode> = {
+  "uzay-savunma": () => <SpaceDefense />,
+  "ziplama-adasi": () => <PlatformJump />,
+  "serit-yarisi": () => <LaneRacer />,
   "hafiza-kartlari": () => <MemoryGame />,
   "yilan-oyunu": () => <SnakeGame />,
   "top-yakala": () => <StarCatch />,

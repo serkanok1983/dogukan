@@ -18,6 +18,24 @@ export const GUIDES: Record<string, Guide> = {
     controls: ["Ok tuşları veya kaydırma", "Elma = +10 puan"],
     learn: "Planlama: bir sonraki hamleyi düşün.",
   },
+  "uzay-savunma": {
+    type: "Uzay Oyunu",
+    intro: "Roketini kaydır, meteorlara ateş et! Üç canın var.",
+    controls: ["Parmakla kaydır — roket", "Dokun — lazer ateşi"],
+    learn: "El-göz koordinasyonu ve refleks gelişir.",
+  },
+  "ziplama-adasi": {
+    type: "Platform Oyunu",
+    intro: "Yeşil adalara zıplayarak yüksel. Yıldızları topla, düşme!",
+    controls: ["◀ ▶ veya ekranın sol/sağı — hareket", "Otomatik zıplama"],
+    learn: "Zamanlama ve dikkat: doğru platforma iniş önemli.",
+  },
+  "serit-yarisi": {
+    type: "Yarış Oyunu",
+    intro: "Arabanı şerit değiştirerek sür. Yıldızları topla, kayalardan kaç!",
+    controls: ["Sol / Sağ düğmeler veya kaydırma", "⭐ = bonus puan"],
+    learn: "Hızlı karar verme ve odaklanma.",
+  },
   "sayma-oyunu": {
     type: "Sayılar",
     intro: "Ekrandaki nesneleri say ve doğru sayıyı seç.",

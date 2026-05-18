@@ -13,6 +13,9 @@ export const MENU: MenuCategory[] = [
     title: "Oyunlar",
     accent: "#ff6b9d",
     items: [
+      { slug: "uzay-savunma", label: "Uzay Savunması", emoji: "🚀" },
+      { slug: "ziplama-adasi", label: "Zıplama Adası", emoji: "🏝️" },
+      { slug: "serit-yarisi", label: "Şerit Yarışı", emoji: "🏎️" },
       { slug: "hafiza-kartlari", label: "Hafıza Kartları", emoji: "🃏" },
       { slug: "yilan-oyunu", label: "Sevimli Yılan", emoji: "🐍" },
       { slug: "top-yakala", label: "Yıldız Yakala", emoji: "⭐" },

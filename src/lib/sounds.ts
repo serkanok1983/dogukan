@@ -46,4 +46,9 @@ export const sounds = {
     tone(988, 0.07);
     setTimeout(() => tone(1319, 0.12), 60);
   },
+  shoot: () => tone(720, 0.06, "square", 0.08),
+  jump: () => {
+    tone(400, 0.06, "triangle", 0.1);
+    setTimeout(() => tone(600, 0.08, "triangle", 0.1), 50);
+  },
 };

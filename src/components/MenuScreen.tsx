@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { useMemo, useState } from "react";
 import { MENU, TOTAL_ACTIVITIES, type MenuCategory } from "@/lib/menu";
@@ -34,16 +35,26 @@ export function MenuScreen({ onLogout }: Props) {
     <div className="menu-shell">
       <header className="menu-header">
         <div className="menu-header-top">
-          <div>
-            <h1>Doğukan&apos;ın Dünyası</h1>
-            <p className="tagline">İlkokul için eğlenceli öğrenme oyunları</p>
-            <div className="stats">
-              <span className="stat">
-                <strong>{TOTAL_ACTIVITIES}</strong> aktivite
-              </span>
-              <span className="stat">
-                <strong>{MENU.length}</strong> kategori
-              </span>
+          <div className="menu-hero">
+            <Image
+              src="/dogukan.jpg"
+              alt="Doğukan"
+              width={96}
+              height={96}
+              className="menu-hero-photo"
+              priority
+            />
+            <div>
+              <h1>Doğukan&apos;ın Dünyası</h1>
+              <p className="tagline">İlkokul için eğlenceli öğrenme oyunları</p>
+              <div className="stats">
+                <span className="stat">
+                  <strong>{TOTAL_ACTIVITIES}</strong> aktivite
+                </span>
+                <span className="stat">
+                  <strong>{MENU.length}</strong> kategori
+                </span>
+              </div>
             </div>
           </div>
           <button type="button" className="btn-ghost" onClick={handleLogout}>
