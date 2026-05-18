@@ -1,36 +1,27 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Doğukan'ın Dünyası
 
-## Getting Started
+İlkokula başlayan çocuklar için oyunlaştırılmış öğrenme sitesi. Okuma-yazma, sayılar, şekiller, bilim ve mantık aktiviteleri içerir.
 
-First, run the development server:
+## Geliştirme
 
 ```bash
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Yerel adres: http://localhost:3000
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## GitHub Pages
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+1. GitHub’da `dogukan-icin` adında bir repo oluşturun (veya `serkanok1983.github.io` altında bu klasör).
+2. Bu projeyi `main` dalına push edin.
+3. Repo **Settings → Pages → Build and deployment → Source: GitHub Actions** seçin.
+4. İlk push sonrası site: `https://serkanok1983.github.io/dogukan-icin/`
 
-## Learn More
+Giriş: kullanıcı adı `dogukan`, şifre `ilovemyfather`.
 
-To learn more about Next.js, take a look at the following resources:
+## Yapı
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- Next.js (App Router) + statik export
+- `src/activities/` — oyun ve quiz bileşenleri
+- `src/lib/menu.ts` — menü ve aktivite listesi
