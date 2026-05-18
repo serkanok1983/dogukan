@@ -31,7 +31,7 @@ jobs:
 
       - run: npm run build
         env:
-          NEXT_PUBLIC_BASE_PATH: /dogukan-icin
+          NEXT_PUBLIC_BASE_PATH: /dogukan
 
       - uses: actions/upload-pages-artifact@v3
         with:
