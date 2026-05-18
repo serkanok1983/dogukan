@@ -21,7 +21,7 @@ export default function HomePage() {
     <>
       <BubbleBg />
       <div className="sky-gradient" aria-hidden />
-      <div className="shell">
+      <div className={authed ? "shell shell-menu" : "shell"}>
         {!authed ? (
           <LoginScreen onSuccess={() => setAuthed(true)} />
         ) : (
