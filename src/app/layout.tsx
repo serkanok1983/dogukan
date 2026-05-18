@@ -1,16 +1,16 @@
 import type { Metadata, Viewport } from "next";
-import { Fredoka, Nunito } from "next/font/google";
+import { Baloo_2, Nunito } from "next/font/google";
 import "./globals.css";
 
-const fredoka = Fredoka({
-  variable: "--font-fredoka",
-  subsets: ["latin"],
+const baloo = Baloo_2({
+  variable: "--font-baloo",
+  subsets: ["latin", "latin-ext"],
   weight: ["500", "600", "700"],
 });
 
 const nunito = Nunito({
   variable: "--font-nunito",
-  subsets: ["latin"],
+  subsets: ["latin", "latin-ext"],
   weight: ["400", "600", "700"],
 });
 
@@ -33,7 +33,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="tr" className={`${fredoka.variable} ${nunito.variable}`}>
+    <html lang="tr" className={`${baloo.variable} ${nunito.variable}`}>
       <body>{children}</body>
     </html>
   );
