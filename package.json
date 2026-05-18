@@ -5,7 +5,7 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "build:pages": "NEXT_PUBLIC_BASE_PATH=/dogukan-icin next build",
+    "build:pages": "NEXT_PUBLIC_BASE_PATH=/dogukan next build",
     "start": "next start",
     "lint": "eslint"
   },
