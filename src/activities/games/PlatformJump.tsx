@@ -5,6 +5,10 @@ import { drawParticles, spawnBurst, updateParticles, type Particle } from "@/lib
 import { useGameActive, useGameBoot } from "@/lib/gameSession";
 import { sounds } from "@/lib/sounds";
 import { randInt } from "@/lib/utils";
+import { useGameScore } from "@/hooks/useGameScore";
+import { ScoreHud } from "@/components/ScoreHud";
+
+const GAME_SLUG = "ziplama-adasi";
 
 type Plat = {
   x: number;
@@ -32,9 +36,10 @@ export function PlatformJump() {
   const active = useGameActive();
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [score, setScore] = useState(0);
-  const [best, setBest] = useState(0);
   const [over, setOver] = useState(false);
   const [combo, setCombo] = useState(0);
+  const scoreGame = useGameScore(GAME_SLUG);
+  const submitted = useRef(false);
 
   const px = useRef(W / 2);
   const py = useRef(0);
@@ -99,18 +104,18 @@ export function PlatformJump() {
     setScore(0);
     setCombo(0);
     setOver(false);
-  }, [addPlatformsAbove]);
+    submitted.current = false;
+    scoreGame.resetMilestones();
+  }, [addPlatformsAbove, scoreGame]);
 
   useGameBoot(reset);
 
   useEffect(() => {
-    try {
-      const saved = localStorage.getItem("dogukan-jump-best");
-      if (saved) setBest(Number(saved));
-    } catch {
-      /* ignore */
+    if (over && !submitted.current) {
+      submitted.current = true;
+      scoreGame.submitFinal(score);
     }
-  }, []);
+  }, [over, score, scoreGame]);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -216,6 +221,7 @@ export function PlatformJump() {
         });
         scoreRef.current += Math.floor(shift);
         setScore(scoreRef.current);
+        if (frame.current % 25 === 0) scoreGame.checkMilestone(scoreRef.current);
 
         let topY = plats.current.reduce((m, p) => Math.min(m, p.y), H);
         while (topY > 55) {
@@ -238,14 +244,6 @@ export function PlatformJump() {
         setOver(true);
         clearInput(leftHeld, rightHeld);
         sounds.gameOver();
-        if (scoreRef.current > best) {
-          setBest(scoreRef.current);
-          try {
-            localStorage.setItem("dogukan-jump-best", String(scoreRef.current));
-          } catch {
-            /* ignore */
-          }
-        }
       }
 
       updateParticles(particles.current);
@@ -298,7 +296,7 @@ export function PlatformJump() {
       ctx.font = "bold 13px sans-serif";
       ctx.textAlign = "left";
       ctx.fillText(`⬆️ ${scoreRef.current}`, 10, 22);
-      ctx.fillText(`🏆 ${Math.max(best, scoreRef.current)}`, 10, 40);
+      ctx.fillText(`🏆 ${Math.max(scoreGame.selfHigh, scoreRef.current)}`, 10, 40);
       if (comboRef.current >= 5) {
         ctx.textAlign = "right";
         ctx.fillStyle = "#fbbf24";
@@ -318,7 +316,7 @@ export function PlatformJump() {
       canvas.removeEventListener("touchend", clearTouch);
       canvas.removeEventListener("touchcancel", clearTouch);
     };
-  }, [active, over, reset, best]);
+  }, [active, over, reset, scoreGame]);
 
   const restart = () => {
     clearInput(leftHeld, rightHeld);
@@ -327,6 +325,12 @@ export function PlatformJump() {
 
   return (
     <div className="game-panel canvas-game">
+      <ScoreHud
+        score={score}
+        selfHigh={scoreGame.selfHigh}
+        rivalHigh={scoreGame.rivalHigh}
+        rivalName={scoreGame.rivalName}
+      />
       <p className="round-label">
         Adalara zıpla · 🚀 yaylı ada süper zıplar · Düşme!
       </p>
@@ -357,7 +361,9 @@ export function PlatformJump() {
       {over && (
         <div className="game-over">
           <p>🏝️ Skor: {score}</p>
-          {score >= best && score > 0 && <p className="hint-text success">🎉 Yeni rekor!</p>}
+          {score > scoreGame.selfHigh && score > 0 && (
+            <p className="hint-text success">🎉 Yeni rekor!</p>
+          )}
           <button type="button" className="btn-primary" onClick={restart}>
             Tekrar oyna
           </button>

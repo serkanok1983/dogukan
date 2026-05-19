@@ -5,6 +5,10 @@ import { drawParticles, spawnBurst, updateParticles, type Particle } from "@/lib
 import { useGameActive, useGameBoot } from "@/lib/gameSession";
 import { sounds } from "@/lib/sounds";
 import { randInt } from "@/lib/utils";
+import { useGameScore } from "@/hooks/useGameScore";
+import { ScoreHud } from "@/components/ScoreHud";
+
+const GAME_SLUG = "baloncuk-patlat";
 
 type Bubble = {
   x: number;
@@ -27,6 +31,8 @@ export function BubbleBurst() {
   const [timeLeft, setTimeLeft] = useState(ROUND);
   const [done, setDone] = useState(false);
   const [combo, setCombo] = useState(0);
+  const scoreGame = useGameScore(GAME_SLUG);
+  const submitted = useRef(false);
 
   const bubbles = useRef<Bubble[]>([]);
   const particles = useRef<Particle[]>([]);
@@ -46,9 +52,18 @@ export function BubbleBurst() {
     timeLeftRef.current = ROUND;
     setTimeLeft(ROUND);
     setDone(false);
-  }, []);
+    submitted.current = false;
+    scoreGame.resetMilestones();
+  }, [scoreGame]);
 
   useGameBoot(reset);
+
+  useEffect(() => {
+    if (done && !submitted.current) {
+      submitted.current = true;
+      scoreGame.submitFinal(score);
+    }
+  }, [done, score, scoreGame]);
 
   useEffect(() => {
     if (!active || done) return;
@@ -85,6 +100,7 @@ export function BubbleBurst() {
           const bonus = comboRef.current * 3;
           scoreRef.current += 10 + bonus;
           setScore(scoreRef.current);
+          scoreGame.checkMilestone(scoreRef.current);
           setCombo(comboRef.current);
           sounds.pop();
           if (comboRef.current % 5 === 0) sounds.combo(comboRef.current);
@@ -166,10 +182,16 @@ export function BubbleBurst() {
       canvas.removeEventListener("mousedown", onPointer);
       canvas.removeEventListener("touchstart", onPointer);
     };
-  }, [active, done, reset]);
+  }, [active, done, reset, scoreGame]);
 
   return (
     <div className="game-panel canvas-game">
+      <ScoreHud
+        score={score}
+        selfHigh={scoreGame.selfHigh}
+        rivalHigh={scoreGame.rivalHigh}
+        rivalName={scoreGame.rivalName}
+      />
       <p className="round-label">Baloncuklara dokun, patlat! Seri yap, bonus kazan.</p>
       {!active && <p className="game-waiting">ℹ️ Başla&apos;ya basınca baloncuklar gelir</p>}
       <canvas ref={canvasRef} width={W} height={H} className="game-canvas touch-canvas" />

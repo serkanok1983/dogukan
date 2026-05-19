@@ -18,6 +18,36 @@ export const GUIDES: Record<string, Guide> = {
     controls: ["Ok tuşları veya kaydırma", "Elma = +10 puan"],
     learn: "Planlama: bir sonraki hamleyi düşün.",
   },
+  tetris: {
+    type: "Oyun",
+    intro: "Düşen blokları döndür ve satır doldur. Tam satır silinir; seviye arttıkça hız artar.",
+    controls: ["← → — hareket", "↑ — döndür", "↓ — hızlı düşür", "Space — anında düşür"],
+    learn: "Uzamsal örüntü ve planlama becerisi.",
+  },
+  pong: {
+    type: "Oyun",
+    intro: "Klasik Pong: Sol raketi sen kontrol edersin. Önce 20 sayıya ulaşan kazanır.",
+    controls: ["↑ ↓ veya parmakla kaydır", "Space — topu hızlandır"],
+    learn: "Açılı çarpışmada top yön değiştirir.",
+  },
+  asteroids: {
+    type: "Oyun",
+    intro: "Uzay gemini döndür, it ve kayaları lazerle parçala. Büyük kayalar küçüğe bölünür.",
+    controls: ["← → — dönüş", "↑ — itiş", "Space — lazer"],
+    learn: "Momentum korunur; sürtünme yoksa gemi kaymaya devam eder.",
+  },
+  "tugla-kir": {
+    type: "Oyun",
+    intro: "Topu raketle sektir, renkli tuğlaları kır. Top aşağı düşerse kaybedersin.",
+    controls: ["← → veya yatay kaydırma"],
+    learn: "Çarpışma açısı topun yansıma yönünü belirler.",
+  },
+  "tank-savasi": {
+    type: "Tank Oyunu",
+    intro: "Yeşil tankını hareket ettir, tuğlaları kır, kırmızı düşmanları vur! Patlamalar ve puan yağmuru.",
+    controls: ["◀ ▶ tuşları veya alt pad", "🔥 veya ekrana dokun — ateş"],
+    learn: "Strateji ve nişan alma; engelleri kalkan gibi kullan.",
+  },
   "uzay-savunma": {
     type: "Uzay Oyunu",
     intro: "Roketini kaydır, meteorlara ateş et! Üç canın var.",

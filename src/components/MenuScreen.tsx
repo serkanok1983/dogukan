@@ -4,13 +4,15 @@ import Link from "next/link";
 import { useMemo, useState } from "react";
 import { assetPath } from "@/lib/asset";
 import { MENU, TOTAL_ACTIVITIES, type MenuCategory } from "@/lib/menu";
-import { logout } from "@/lib/auth";
+import { getPlayerDisplayName, getPlayerId, logout } from "@/lib/auth";
+import { RivalryBoard } from "@/components/RivalryBoard";
 import { normalizeSearch } from "@/lib/utils";
 import { sounds } from "@/lib/sounds";
 
 type Props = { onLogout: () => void };
 
 export function MenuScreen({ onLogout }: Props) {
+  const player = getPlayerId();
   const [search, setSearch] = useState("");
   const [activeCat, setActiveCat] = useState("all");
 
@@ -45,7 +47,11 @@ export function MenuScreen({ onLogout }: Props) {
             />
             <div>
               <h1>Doğukan&apos;ın Yeri</h1>
-              <p className="tagline">Doğukan için eğlenceli oyunlar</p>
+              <p className="tagline">
+                {player
+                  ? `Hoş geldin ${getPlayerDisplayName(player)}! Eğlenceli oyunlar seni bekliyor.`
+                  : "Doğukan için eğlenceli oyunlar"}
+              </p>
               <div className="stats">
                 <span className="stat">
                   <strong>{TOTAL_ACTIVITIES}</strong> aktivite
@@ -92,6 +98,8 @@ export function MenuScreen({ onLogout }: Props) {
           ))}
         </div>
       </header>
+
+      <RivalryBoard />
 
       <main className="menu-body">
         {filtered.length === 0 ? (

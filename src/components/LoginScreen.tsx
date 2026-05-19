@@ -15,9 +15,10 @@ export function LoginScreen({ onSuccess }: Props) {
   const [shake, setShake] = useState(false);
 
   const login = () => {
-    if (checkCredentials(username, password)) {
+    const playerId = checkCredentials(username, password);
+    if (playerId) {
       setError("");
-      setLoggedIn(remember);
+      setLoggedIn(playerId, remember);
       sounds.success();
       onSuccess();
     } else {

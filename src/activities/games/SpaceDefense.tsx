@@ -5,6 +5,10 @@ import { drawParticles, spawnBurst, updateParticles, type Particle } from "@/lib
 import { useGameActive, useGameBoot } from "@/lib/gameSession";
 import { sounds } from "@/lib/sounds";
 import { randInt } from "@/lib/utils";
+import { useGameScore } from "@/hooks/useGameScore";
+import { ScoreHud } from "@/components/ScoreHud";
+
+const GAME_SLUG = "uzay-savunma";
 
 type Bullet = { x: number; y: number };
 type Rock = { x: number; y: number; r: number; vy: number; hp: number; kind: "normal" | "fast" | "big" };
@@ -20,6 +24,8 @@ export function SpaceDefense() {
   const [lives, setLives] = useState(3);
   const [wave, setWave] = useState(1);
   const [over, setOver] = useState(false);
+  const scoreGame = useGameScore(GAME_SLUG);
+  const submitted = useRef(false);
 
   const shipX = useRef(0.5);
   const bullets = useRef<Bullet[]>([]);
@@ -56,9 +62,18 @@ export function SpaceDefense() {
     setLives(3);
     setWave(1);
     setOver(false);
-  }, []);
+    submitted.current = false;
+    scoreGame.resetMilestones();
+  }, [scoreGame]);
 
   useGameBoot(reset);
+
+  useEffect(() => {
+    if (over && !submitted.current) {
+      submitted.current = true;
+      scoreGame.submitFinal(score);
+    }
+  }, [over, score, scoreGame]);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -161,6 +176,7 @@ export function SpaceDefense() {
           scoreRef.current += pts;
           killsRef.current += 1;
           setScore(scoreRef.current);
+          scoreGame.checkMilestone(scoreRef.current);
           if (killsRef.current % 12 === 0) {
             powerUps.current.push({
               x: rock.x,
@@ -279,10 +295,16 @@ export function SpaceDefense() {
       canvas.removeEventListener("touchstart", onTap);
       window.removeEventListener("keydown", onKey);
     };
-  }, [active, over, reset]);
+  }, [active, over, reset, scoreGame]);
 
   return (
     <div className="game-panel canvas-game">
+      <ScoreHud
+        score={score}
+        selfHigh={scoreGame.selfHigh}
+        rivalHigh={scoreGame.rivalHigh}
+        rivalName={scoreGame.rivalName}
+      />
       <p className="round-label">Kaydır + dokun · Dalga dalga meteor · ⚡💗 güç topla!</p>
       {!active && <p className="game-waiting">ℹ️ Başla&apos;ya basınca savaş başlar</p>}
       <canvas ref={canvasRef} width={W} height={H} className="game-canvas touch-canvas space-canvas" />

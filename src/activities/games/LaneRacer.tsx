@@ -5,6 +5,10 @@ import { drawParticles, spawnBurst, updateParticles, type Particle } from "@/lib
 import { useGameActive, useGameBoot } from "@/lib/gameSession";
 import { sounds } from "@/lib/sounds";
 import { randInt } from "@/lib/utils";
+import { useGameScore } from "@/hooks/useGameScore";
+import { ScoreHud } from "@/components/ScoreHud";
+
+const GAME_SLUG = "serit-yarisi";
 
 type Obstacle = { lane: number; y: number; kind: "rock" | "star" | "nitro" | "shield" };
 type LaneParticle = Particle;
@@ -21,6 +25,8 @@ export function LaneRacer() {
   const [timeLeft, setTimeLeft] = useState(DURATION);
   const [done, setDone] = useState(false);
   const [shield, setShield] = useState(false);
+  const scoreGame = useGameScore(GAME_SLUG);
+  const submitted = useRef(false);
 
   const lane = useRef(1);
   const speed = useRef(0.012);
@@ -48,9 +54,18 @@ export function LaneRacer() {
     timeLeftRef.current = DURATION;
     setTimeLeft(DURATION);
     setDone(false);
-  }, []);
+    submitted.current = false;
+    scoreGame.resetMilestones();
+  }, [scoreGame]);
 
   useGameBoot(reset);
+
+  useEffect(() => {
+    if (done && !submitted.current) {
+      submitted.current = true;
+      scoreGame.submitFinal(score);
+    }
+  }, [done, score, scoreGame]);
 
   useEffect(() => {
     if (!active || done) return;
@@ -159,7 +174,10 @@ export function LaneRacer() {
       });
 
       scoreRef.current += nitro ? 2 : 1;
-      if (frame.current % 15 === 0) setScore(scoreRef.current);
+      if (frame.current % 15 === 0) {
+        setScore(scoreRef.current);
+        scoreGame.checkMilestone(scoreRef.current);
+      }
 
       updateParticles(particles.current);
 
@@ -218,10 +236,16 @@ export function LaneRacer() {
       canvas.removeEventListener("touchstart", onTouchStart);
       canvas.removeEventListener("touchend", onTouchEnd);
     };
-  }, [active, done, reset, shield]);
+  }, [active, done, reset, shield, scoreGame]);
 
   return (
     <div className="game-panel canvas-game">
+      <ScoreHud
+        score={score}
+        selfHigh={scoreGame.selfHigh}
+        rivalHigh={scoreGame.rivalHigh}
+        rivalName={scoreGame.rivalName}
+      />
       <p className="round-label">75 sn yarış · ⭐⚡🛡️ topla · Kayalardan kaç!</p>
       {!active && <p className="game-waiting">ℹ️ Başla&apos;ya basınca yarış başlar</p>}
       <canvas ref={canvasRef} width={W} height={H} className="game-canvas touch-canvas racer-canvas" />

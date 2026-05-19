@@ -5,6 +5,10 @@ import { drawParticles, spawnBurst, updateParticles, type Particle } from "@/lib
 import { useGameActive, useGameBoot } from "@/lib/gameSession";
 import { sounds } from "@/lib/sounds";
 import { randInt } from "@/lib/utils";
+import { useGameScore } from "@/hooks/useGameScore";
+import { ScoreHud } from "@/components/ScoreHud";
+
+const GAME_SLUG = "kosu-macera";
 
 type Obs = { x: number; w: number; h: number; kind: "cactus" | "coin" | "bird"; yOffset: number };
 
@@ -19,6 +23,8 @@ export function RunnerDash() {
   const [score, setScore] = useState(0);
   const [timeLeft, setTimeLeft] = useState(DURATION);
   const [done, setDone] = useState(false);
+  const scoreGame = useGameScore(GAME_SLUG);
+  const submitted = useRef(false);
 
   const py = useRef(GROUND);
   const vy = useRef(0);
@@ -45,9 +51,18 @@ export function RunnerDash() {
     setScore(0);
     setTimeLeft(DURATION);
     setDone(false);
-  }, []);
+    submitted.current = false;
+    scoreGame.resetMilestones();
+  }, [scoreGame]);
 
   useGameBoot(reset);
+
+  useEffect(() => {
+    if (done && !submitted.current) {
+      submitted.current = true;
+      scoreGame.submitFinal(score);
+    }
+  }, [done, score, scoreGame]);
 
   useEffect(() => {
     if (!active || done) return;
@@ -149,7 +164,10 @@ export function RunnerDash() {
       });
 
       scoreRef.current += 1;
-      if (frame.current % 12 === 0) setScore(scoreRef.current);
+      if (frame.current % 12 === 0) {
+        setScore(scoreRef.current);
+        scoreGame.checkMilestone(scoreRef.current);
+      }
 
       updateParticles(particles.current);
 
@@ -211,10 +229,16 @@ export function RunnerDash() {
       window.removeEventListener("keydown", onKey);
       canvas.removeEventListener("pointerdown", onTap);
     };
-  }, [active, done, jump]);
+  }, [active, done, jump, scoreGame]);
 
   return (
     <div className="game-panel canvas-game">
+      <ScoreHud
+        score={score}
+        selfHigh={scoreGame.selfHigh}
+        rivalHigh={scoreGame.rivalHigh}
+        rivalName={scoreGame.rivalName}
+      />
       <p className="round-label">Dokun = zıpla · 🪙 topla · 🌵🦅 kaç · 60 saniye!</p>
       {!active && <p className="game-waiting">ℹ️ Başla&apos;ya basınca koşu başlar</p>}
       <canvas ref={canvasRef} width={W} height={H} className="game-canvas touch-canvas" />

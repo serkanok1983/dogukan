@@ -13,6 +13,11 @@ export const MENU: MenuCategory[] = [
     title: "Oyunlar",
     accent: "#ff6b9d",
     items: [
+      { slug: "tetris", label: "Tetris", emoji: "🧱" },
+      { slug: "pong", label: "Masa Tenisi", emoji: "🏓" },
+      { slug: "asteroids", label: "Asteroids", emoji: "☄️" },
+      { slug: "tugla-kir", label: "Tuğla Kırmaca", emoji: "🧱" },
+      { slug: "tank-savasi", label: "Tank Savaşı", emoji: "💥" },
       { slug: "uzay-savunma", label: "Uzay Savunması", emoji: "🚀" },
       { slug: "ziplama-adasi", label: "Zıplama Adası", emoji: "🏝️" },
       { slug: "serit-yarisi", label: "Şerit Yarışı", emoji: "🏎️" },

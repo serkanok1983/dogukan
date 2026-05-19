@@ -1,9 +1,13 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useGameActive, useGameBoot } from "@/lib/gameSession";
 import { sounds } from "@/lib/sounds";
 import { randInt } from "@/lib/utils";
+import { useGameScore } from "@/hooks/useGameScore";
+import { ScoreHud } from "@/components/ScoreHud";
+
+const GAME_SLUG = "renk-yaris";
 
 const COLORS = [
   { name: "Kırmızı", hex: "#ef4444", emoji: "🔴" },
@@ -23,6 +27,8 @@ export function ColorRace() {
   const [streak, setStreak] = useState(0);
   const [time, setTime] = useState(DURATION);
   const [done, setDone] = useState(false);
+  const scoreGame = useGameScore(GAME_SLUG);
+  const submitted = useRef(false);
 
   const nextTarget = useCallback((avoid?: string) => {
     let next = COLORS[randInt(0, COLORS.length - 1)];
@@ -37,10 +43,19 @@ export function ColorRace() {
     setStreak(0);
     setTime(DURATION);
     setDone(false);
+    submitted.current = false;
     nextTarget();
-  }, [nextTarget]);
+    scoreGame.resetMilestones();
+  }, [nextTarget, scoreGame]);
 
   useGameBoot(reset);
+
+  useEffect(() => {
+    if (done && !submitted.current) {
+      submitted.current = true;
+      scoreGame.submitFinal(score);
+    }
+  }, [done, score, scoreGame]);
 
   useEffect(() => {
     if (!active || done) return;
@@ -61,7 +76,11 @@ export function ColorRace() {
     if (!active || done) return;
     if (c.name === target.name) {
       const bonus = Math.min(streak, 8) * 2;
-      setScore((s) => s + 1 + bonus);
+      setScore((s) => {
+        const ns = s + 1 + bonus;
+        scoreGame.checkMilestone(ns);
+        return ns;
+      });
       setStreak((st) => {
         const ns = st + 1;
         if (ns % 5 === 0) sounds.combo(ns);
@@ -77,8 +96,14 @@ export function ColorRace() {
 
   return (
     <div className="game-panel">
+      <ScoreHud
+        score={score}
+        selfHigh={scoreGame.selfHigh}
+        rivalHigh={scoreGame.rivalHigh}
+        rivalName={scoreGame.rivalName}
+      />
       <p className="round-label">
-        Süre: {time}s · Puan: {score} {streak >= 3 ? `· 🔥${streak}` : ""}
+        Süre: {time}s {streak >= 3 ? `· 🔥${streak}` : ""}
       </p>
       {!active && <p className="game-waiting">ℹ️ Başla&apos;ya basınca süre işler</p>}
       {done ? (

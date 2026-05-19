@@ -7,6 +7,7 @@ import { IntroModal } from "./IntroModal";
 import { findActivity } from "@/lib/menu";
 import { getGuide } from "@/lib/guides";
 import { GameSessionProvider } from "@/lib/gameSession";
+import { CelebrationProvider } from "@/components/CelebrationProvider";
 
 type Props = {
   slug: string;
@@ -43,7 +44,9 @@ export function ActivityShell({ slug, title, children }: Props) {
         </button>
       </header>
       <main className="activity-main">
-        <GameSessionProvider active={!showHelp}>{children}</GameSessionProvider>
+        <CelebrationProvider>
+          <GameSessionProvider active={!showHelp}>{children}</GameSessionProvider>
+        </CelebrationProvider>
       </main>
       {showHelp && (
         <IntroModal

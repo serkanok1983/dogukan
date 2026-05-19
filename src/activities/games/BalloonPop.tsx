@@ -1,9 +1,13 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useGameActive } from "@/lib/gameSession";
+import { useGameScore } from "@/hooks/useGameScore";
+import { ScoreHud } from "@/components/ScoreHud";
 import { sounds } from "@/lib/sounds";
 import { randInt } from "@/lib/utils";
+
+const GAME_SLUG = "balon-patlat";
 
 type Balloon = { id: number; answer: number; x: number; color: string };
 
@@ -19,6 +23,8 @@ export function BalloonPop() {
     [round]
   );
   const [score, setScore] = useState(0);
+  const scoreGame = useGameScore(GAME_SLUG);
+  const submitted = useRef(false);
 
   const balloons: Balloon[] = [
     { id: 1, answer: correct, x: 15, color: "#ff6b9d" },
@@ -41,14 +47,28 @@ export function BalloonPop() {
 
   const done = round >= 6;
 
+  useEffect(() => {
+    if (done && !submitted.current) {
+      submitted.current = true;
+      scoreGame.submitFinal(score);
+    }
+  }, [done, score, scoreGame]);
+
+  const restart = () => {
+    setRound(0);
+    setScore(0);
+    submitted.current = false;
+    scoreGame.resetMilestones();
+  };
+
   if (done) {
     return (
       <div className="game-panel result-panel">
         <div className="result-emoji">🎈</div>
         <h2>Harika!</h2>
         <p className="result-score">{score} doğru balon</p>
-        <button type="button" className="btn-primary" onClick={() => window.location.reload()}>
-          Tekrar
+        <button type="button" className="btn-primary" onClick={restart}>
+          Tekrar oyna
         </button>
       </div>
     );
@@ -56,8 +76,14 @@ export function BalloonPop() {
 
   return (
     <div className="game-panel">
+      <ScoreHud
+        score={score}
+        selfHigh={scoreGame.selfHigh}
+        rivalHigh={scoreGame.rivalHigh}
+        rivalName={scoreGame.rivalName}
+      />
       <p className="round-label">
-        Tur {round + 1}/6 · {a} + {b} = ? · ⭐ {score}
+        Tur {round + 1}/6 · {a} + {b} = ?
       </p>
       {!active && <p className="game-waiting">ℹ️ Başla&apos;ya basınca balonlar gelir</p>}
       <h2 className="count-prompt">Doğru cevabın balonunu patlat!</h2>

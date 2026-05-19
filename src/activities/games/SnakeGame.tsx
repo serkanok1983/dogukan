@@ -4,6 +4,10 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { spawnBurst, type Particle } from "@/lib/particles";
 import { useGameActive, useGameBoot } from "@/lib/gameSession";
 import { sounds } from "@/lib/sounds";
+import { useGameScore } from "@/hooks/useGameScore";
+import { ScoreHud } from "@/components/ScoreHud";
+
+const GAME_SLUG = "yilan-oyunu";
 
 const GRID = 14;
 const CELL = 22;
@@ -15,6 +19,8 @@ export function SnakeGame() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [score, setScore] = useState(0);
   const [over, setOver] = useState(false);
+  const scoreGame = useGameScore(GAME_SLUG);
+  const submitted = useRef(false);
   const particles = useRef<Particle[]>([]);
   const state = useRef({
     snake: [{ x: 7, y: 7 }] as Pt[],
@@ -35,9 +41,18 @@ export function SnakeGame() {
     particles.current = [];
     setScore(0);
     setOver(false);
-  }, []);
+    submitted.current = false;
+    scoreGame.resetMilestones();
+  }, [scoreGame]);
 
   useGameBoot(reset);
+
+  useEffect(() => {
+    if (over && !submitted.current) {
+      submitted.current = true;
+      scoreGame.submitFinal(score);
+    }
+  }, [over, score, scoreGame]);
 
   const spawnFood = useCallback((snake: Pt[]) => {
     let f: Pt;
@@ -100,13 +115,17 @@ export function SnakeGame() {
         "#4ade80",
         "#fde047",
       ]);
-      setScore((s) => s + 10);
+      setScore((s) => {
+        const ns = s + 10;
+        scoreGame.checkMilestone(ns);
+        return ns;
+      });
       st.food = spawnFood(st.snake);
     } else {
       st.snake.pop();
     }
     draw();
-  }, [active, draw, over, spawnFood]);
+  }, [active, draw, over, spawnFood, scoreGame]);
 
   useEffect(() => {
     if (!active) return;
@@ -145,7 +164,12 @@ export function SnakeGame() {
 
   return (
     <div className="game-panel canvas-game">
-      <p className="round-label">Puan: {score}</p>
+      <ScoreHud
+        score={score}
+        selfHigh={scoreGame.selfHigh}
+        rivalHigh={scoreGame.rivalHigh}
+        rivalName={scoreGame.rivalName}
+      />
       {!active && <p className="game-waiting">ℹ️ Başla&apos;ya basınca yılan hareket eder</p>}
       <canvas ref={canvasRef} width={size} height={size} className="game-canvas" />
       {over && (

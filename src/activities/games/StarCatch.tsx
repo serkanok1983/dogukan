@@ -5,6 +5,10 @@ import { drawParticles, spawnBurst, updateParticles, type Particle } from "@/lib
 import { useGameActive, useGameBoot } from "@/lib/gameSession";
 import { sounds } from "@/lib/sounds";
 import { randInt, pickRandom } from "@/lib/utils";
+import { useGameScore } from "@/hooks/useGameScore";
+import { ScoreHud } from "@/components/ScoreHud";
+
+const GAME_SLUG = "top-yakala";
 
 type Item = { x: number; y: number; emoji: string; vy: number; pts: number; bad?: boolean };
 
@@ -31,6 +35,8 @@ export function StarCatch() {
   const [timeLeft, setTimeLeft] = useState(DURATION);
   const [done, setDone] = useState(false);
   const [combo, setCombo] = useState(0);
+  const scoreGame = useGameScore(GAME_SLUG);
+  const submitted = useRef(false);
 
   const basket = useRef(0.5);
   const items = useRef<Item[]>([]);
@@ -54,9 +60,18 @@ export function StarCatch() {
     timeLeftRef.current = DURATION;
     setTimeLeft(DURATION);
     setDone(false);
-  }, []);
+    submitted.current = false;
+    scoreGame.resetMilestones();
+  }, [scoreGame]);
 
   useGameBoot(reset);
+
+  useEffect(() => {
+    if (done && !submitted.current) {
+      submitted.current = true;
+      scoreGame.submitFinal(score);
+    }
+  }, [done, score, scoreGame]);
 
   useEffect(() => {
     if (!active || done) return;
@@ -140,6 +155,7 @@ export function StarCatch() {
             setCombo(0);
             scoreRef.current = Math.max(0, scoreRef.current - 20);
             setScore(scoreRef.current);
+            scoreGame.checkMilestone(scoreRef.current);
             sounds.wrong();
             spawnBurst(particles.current, sx, sy, 10, ["#ef4444", "#000"]);
           } else {
@@ -147,6 +163,7 @@ export function StarCatch() {
             const bonus = Math.min(comboRef.current, 10) * 2;
             scoreRef.current += s.pts + bonus;
             setScore(scoreRef.current);
+            scoreGame.checkMilestone(scoreRef.current);
             setCombo(comboRef.current);
             sounds.coin();
             if (comboRef.current % 5 === 0) sounds.combo(comboRef.current);
@@ -178,10 +195,16 @@ export function StarCatch() {
       canvas.removeEventListener("mousemove", onMove);
       canvas.removeEventListener("touchmove", onMove);
     };
-  }, [active, done, reset]);
+  }, [active, done, reset, scoreGame]);
 
   return (
     <div className="game-panel canvas-game">
+      <ScoreHud
+        score={score}
+        selfHigh={scoreGame.selfHigh}
+        rivalHigh={scoreGame.rivalHigh}
+        rivalName={scoreGame.rivalName}
+      />
       <p className="round-label">60 saniye · Yıldız ve meyveleri yakala · 💣 kaçın!</p>
       {!active && <p className="game-waiting">ℹ️ Başla&apos;ya basınca oyun başlar</p>}
       <canvas ref={canvasRef} width={W} height={H} className="game-canvas touch-canvas" />
