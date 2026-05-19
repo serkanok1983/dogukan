@@ -1,17 +1,52 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
-import { mountClassicAsteroids } from "./asteroids/mountClassicAsteroids";
-import { useGameActive, useGameBoot } from "@/lib/gameSession";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { mountClassicAsteroids, type AsteroidsHooks } from "./asteroids/mountClassicAsteroids";
+import { useGameActive } from "@/lib/gameSession";
 import { useGameRunning } from "@/hooks/useGameRunning";
 import { useGameScore } from "@/hooks/useGameScore";
-import { useCanvasFit } from "@/hooks/useCanvasFit";
-import { ScoreHud } from "@/components/ScoreHud";
 import { GameTouchBar } from "@/components/GameTouchBar";
 
 const GAME_SLUG = "asteroids";
 const GAME_W = 760;
 const GAME_H = 570;
+
+/** Açelya asteroids.html ile aynı canvas yerleşimi */
+function useAsteroidsCanvasFit(
+  canvasRef: React.RefObject<HTMLCanvasElement | null>,
+  hudRef: React.RefObject<HTMLElement | null>,
+) {
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+
+    const fit = () => {
+      const hudBottom = hudRef.current?.getBoundingClientRect().bottom ?? 0;
+      const touchBar = canvas
+        .closest(".asteroids-game")
+        ?.querySelector(".game-touch-bar") as HTMLElement | null;
+      const touchH = touchBar?.offsetHeight ?? 0;
+      const padX = 20;
+      const padY = 16;
+      const availW = window.innerWidth - padX;
+      const availH = window.innerHeight - hudBottom - touchH - padY;
+      const scale = Math.min(availW / GAME_W, availH / GAME_H) * 0.98;
+      const w = Math.max(280, GAME_W * scale);
+      const h = w * (GAME_H / GAME_W);
+      canvas.style.width = `${w}px`;
+      canvas.style.height = `${h}px`;
+    };
+
+    fit();
+    window.addEventListener("resize", fit);
+    const vv = window.visualViewport;
+    vv?.addEventListener("resize", fit);
+    return () => {
+      window.removeEventListener("resize", fit);
+      vv?.removeEventListener("resize", fit);
+    };
+  }, [canvasRef, hudRef]);
+}
 
 export function Asteroids() {
   const active = useGameActive();
@@ -19,102 +54,100 @@ export function Asteroids() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const hudRef = useRef<HTMLDivElement>(null);
   const [score, setScore] = useState(0);
-  const [best, setBest] = useState(0);
-  const [over, setOver] = useState(false);
-  const [gameKey, setGameKey] = useState(0);
   const scoreGame = useGameScore(GAME_SLUG);
   const scoreRef = useRef(0);
   const bestRef = useRef(0);
   const submitted = useRef(false);
 
-  useCanvasFit(canvasRef, GAME_W, GAME_H, { hudRef, minWidth: 280 });
+  const runningRef = useRef(running);
+  const activeRef = useRef(active);
+  runningRef.current = running;
+  activeRef.current = active;
+
+  useAsteroidsCanvasFit(canvasRef, hudRef);
 
   useEffect(() => {
     bestRef.current = scoreGame.selfHigh;
-    setBest(scoreGame.selfHigh);
   }, [scoreGame.selfHigh]);
 
-  const reset = () => {
-    scoreRef.current = 0;
-    submitted.current = false;
-    setScore(0);
-    setOver(false);
-    setGameKey((k) => k + 1);
-    scoreGame.resetMilestones();
+  const hooksRef = useRef<AsteroidsHooks>({
+    onScore: () => {},
+    onGameOver: () => {},
+    onNewGame: () => {},
+    getHighScore: () => 0,
+    setHighScore: () => {},
+  });
+
+  hooksRef.current = {
+    onScore: (s) => {
+      scoreRef.current = s;
+      setScore(s);
+      if (s > 0 && s % 200 < 50) void scoreGame.checkMilestone(s);
+    },
+    onGameOver: (s) => {
+      scoreRef.current = s;
+      setScore(s);
+      if (!submitted.current) {
+        submitted.current = true;
+        void scoreGame.submitFinal(s);
+      }
+    },
+    onNewGame: () => {
+      submitted.current = false;
+      scoreRef.current = 0;
+      setScore(0);
+      scoreGame.resetMilestones();
+    },
+    getHighScore: () => bestRef.current,
+    setHighScore: (n) => {
+      bestRef.current = n;
+    },
   };
 
-  useGameBoot(reset);
+  const bridgeRef = useRef<AsteroidsHooks>({
+    onScore: (s) => hooksRef.current.onScore(s),
+    onGameOver: (s) => hooksRef.current.onGameOver(s),
+    onNewGame: () => hooksRef.current.onNewGame?.(),
+    getHighScore: () => hooksRef.current.getHighScore(),
+    setHighScore: (n) => hooksRef.current.setHighScore(n),
+  });
 
-  useEffect(() => {
-    if (over && !submitted.current) {
-      submitted.current = true;
-      void scoreGame.submitFinal(score);
-    }
-  }, [over, score, scoreGame]);
+  const isActive = useCallback(() => activeRef.current && runningRef.current, []);
 
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
-
-    const cleanup = mountClassicAsteroids(
-      canvas,
-      {
-        onScore: (s) => {
-          scoreRef.current = s;
-          setScore(s);
-        },
-        onGameOver: (s) => {
-          scoreRef.current = s;
-          setScore(s);
-          setOver(true);
-          if (!submitted.current) {
-            submitted.current = true;
-            void scoreGame.submitFinal(s);
-          }
-        },
-        getHighScore: () => bestRef.current,
-        setHighScore: (n) => {
-          bestRef.current = n;
-          setBest(n);
-        },
-      },
-      () => running && !over,
-    );
-
-    return cleanup;
-  }, [running, over, gameKey, scoreGame]);
+    return mountClassicAsteroids(canvas, bridgeRef.current, isActive);
+  }, [isActive]);
 
   return (
-    <div className="game-panel canvas-game acelya-game asteroids-game fullscreen-game">
-      <div ref={hudRef} className="acelya-hud">
-        <ScoreHud
-          score={score}
-          selfHigh={scoreGame.selfHigh}
-          rivalHigh={scoreGame.rivalHigh}
-          rivalName={scoreGame.rivalName}
-        />
-        <p className="round-label">
-          En iyi: {Math.max(best, score)} · ← → dön · ↑ itiş · Space ateş
+    <div className="asteroids-game">
+      <header ref={hudRef} className="asteroids-hud">
+        <h1 className="asteroids-title">Asteroids 🚀</h1>
+        <p className="asteroids-hint">← → dön · ↑ itiş · Space ateş</p>
+        <p className="asteroids-rival">
+          Puan: {score} · Rekor: {scoreGame.selfHigh} · {scoreGame.rivalName}:{" "}
+          {scoreGame.rivalHigh}
         </p>
-        {!active && <p className="game-waiting">ℹ️ Başla&apos;ya basınca uzay savaşı başlar</p>}
-      </div>
-      <div className="acelya-game-stage">
+        {!active && (
+          <p className="game-waiting asteroids-waiting">
+            ℹ️ Başla&apos;ya basınca uzay savaşı başlar
+          </p>
+        )}
+      </header>
+
+      <div className="asteroids-stage">
         <canvas
           ref={canvasRef}
           width={GAME_W}
           height={GAME_H}
-          className="game-canvas touch-canvas asteroids-canvas"
+          className="asteroids-canvas"
+          role="img"
+          aria-label="Asteroids oyun alanı"
         />
       </div>
+
       <GameTouchBar gameId="asteroids" />
-      {over && (
-        <div className="game-over">
-          <p>☄️ Oyun bitti! Skor: {score}</p>
-          <button type="button" className="btn-primary" onClick={reset}>
-            Tekrar oyna
-          </button>
-        </div>
-      )}
     </div>
   );
 }

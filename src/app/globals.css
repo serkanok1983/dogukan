@@ -1719,9 +1719,85 @@ body.game-celebrating {
   min-height: min(72dvh, calc(100dvh - 120px));
 }
 
-.tetris-canvas,
-.asteroids-canvas {
+.tetris-canvas {
   background: #0a0a14;
+}
+
+/* Asteroids — Açelya asteroids.html ile aynı tam ekran düzen */
+.activity-main:has(.asteroids-game) {
+  max-width: none;
+  margin: 0;
+  padding: 0;
+  width: 100%;
+}
+
+.asteroids-game {
+  display: flex;
+  flex-direction: column;
+  min-height: calc(100dvh - 52px);
+  width: 100%;
+  background: #000;
+  color: #fff;
+  touch-action: none;
+}
+
+.asteroids-hud {
+  flex-shrink: 0;
+  padding: max(8px, env(safe-area-inset-top)) 12px 8px;
+  text-align: center;
+}
+
+.asteroids-title {
+  margin: 0 0 4px;
+  font-size: clamp(1rem, 4vw, 1.5rem);
+  font-weight: 600;
+  color: #fff;
+}
+
+.asteroids-hint {
+  margin: 0;
+  font-size: clamp(0.7rem, 2.8vw, 0.8rem);
+  opacity: 0.65;
+  color: #e2e8f0;
+}
+
+.asteroids-rival {
+  margin: 6px 0 0;
+  font-size: 0.75rem;
+  opacity: 0.85;
+  color: #cbd5e1;
+}
+
+.asteroids-waiting {
+  color: #fbbf24 !important;
+  margin: 6px 0 0;
+}
+
+.asteroids-stage {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 10px 10px;
+}
+
+.asteroids-canvas {
+  display: block;
+  flex-shrink: 0;
+  width: auto;
+  height: auto;
+  max-width: 100%;
+  background: #000;
+  border-radius: 4px;
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.12);
+  touch-action: none;
+}
+
+.asteroids-game .game-touch-bar {
+  flex-shrink: 0;
+  background: rgba(10, 10, 20, 0.95);
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .pong-game .game-canvas {
