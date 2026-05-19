@@ -18,6 +18,12 @@ export const GUIDES: Record<string, Guide> = {
     controls: ["Ok tuşları veya kaydırma", "Elma = +10 puan"],
     learn: "Planlama: bir sonraki hamleyi düşün.",
   },
+  "flappy-bird": {
+    type: "Arcade Oyunu",
+    intro: "Klasik Flappy Bird! Küçük kuşu boruların arasından geçir. Her boru +1 puan. Çarpınca oyun biter.",
+    controls: ["Ekrana dokun veya Space — zıpla", "Boruların ortasından geç"],
+    learn: "Zamanlama ve sabır: çok hızlı veya yavaş zıplama boruya çarptırır.",
+  },
   "super-ayi": {
     type: "Macera Oyunu",
     intro:

@@ -24,6 +24,7 @@ const BubbleBurst = dynamic(() => import("./games/BubbleBurst").then((m) => m.Bu
 const RunnerDash = dynamic(() => import("./games/RunnerDash").then((m) => m.RunnerDash), { ssr: false });
 const TankBattle = dynamic(() => import("./games/TankBattle").then((m) => m.TankBattle), { ssr: false });
 const SuperBear = dynamic(() => import("./games/SuperBear").then((m) => m.SuperBear), { ssr: false });
+const FlappyBird = dynamic(() => import("./games/FlappyBird").then((m) => m.FlappyBird), { ssr: false });
 const Tetris = dynamic(() => import("./games/Tetris").then((m) => m.Tetris), { ssr: false });
 const Pong = dynamic(() => import("./games/Pong").then((m) => m.Pong), { ssr: false });
 const Asteroids = dynamic(() => import("./games/Asteroids").then((m) => m.Asteroids), { ssr: false });
@@ -48,6 +49,7 @@ const HAYVANLAR: ExploreItem[] = [
 
 export const ACTIVITY_MAP: Record<string, () => React.ReactNode> = {
   "super-ayi": () => <SuperBear />,
+  "flappy-bird": () => <FlappyBird />,
   tetris: () => <Tetris />,
   pong: () => <Pong />,
   asteroids: () => <Asteroids />,

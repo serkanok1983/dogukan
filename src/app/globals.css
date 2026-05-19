@@ -1719,6 +1719,15 @@ body.game-celebrating {
   min-height: min(72dvh, calc(100dvh - 120px));
 }
 
+.flappy-canvas {
+  background: linear-gradient(180deg, #7dd3fc, #bae6fd);
+  cursor: pointer;
+}
+
+.flappy-game .game-touch-bar {
+  grid-template-columns: 1fr;
+}
+
 .super-bear-game {
   background: linear-gradient(180deg, #ecfdf5, #f0fdf4);
 }

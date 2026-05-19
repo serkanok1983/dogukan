@@ -20,6 +20,9 @@ const LAYOUTS: Record<string, { className?: string; buttons: Btn[] }> = {
       { id: "punch", label: "👊", code: "Shift", fire: true },
     ],
   },
+  "flappy-bird": {
+    buttons: [{ id: "flap", label: "🐤 UÇ!", code: "Space", fire: true, span: 4 }],
+  },
   tetris: {
     className: "layout-tetris",
     buttons: [
