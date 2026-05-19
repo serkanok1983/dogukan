@@ -18,6 +18,18 @@ export const GUIDES: Record<string, Guide> = {
     controls: ["Ok tuşları veya kaydırma", "Elma = +10 puan"],
     learn: "Planlama: bir sonraki hamleyi düşün.",
   },
+  "super-ayi": {
+    type: "Macera Oyunu",
+    intro:
+      "Cesur ayıyı kontrol et! Ormanı keşfet, bal topla, düşmanlara yumruk at veya üstlerine zıpla. Bayrağa ulaşınca kazanırsın!",
+    controls: [
+      "← → — koş",
+      "↑ veya Space — zıpla (havada bir kez daha!)",
+      "Shift — yumruk",
+      "Düşmana üstten zıpla veya yumrukla vur",
+    ],
+    learn: "Keşif, zamanlama ve cesaret — Super Bear Adventure gibi macera!",
+  },
   tetris: {
     type: "Oyun",
     intro: "Düşen blokları döndür ve satır doldur. Tam satır silinir; seviye arttıkça hız artar.",

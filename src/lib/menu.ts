@@ -13,6 +13,7 @@ export const MENU: MenuCategory[] = [
     title: "Oyunlar",
     accent: "#ff6b9d",
     items: [
+      { slug: "super-ayi", label: "Süper Ayı", emoji: "🐻" },
       { slug: "tetris", label: "Tetris", emoji: "🧱" },
       { slug: "pong", label: "Masa Tenisi", emoji: "🏓" },
       { slug: "asteroids", label: "Asteroids", emoji: "☄️" },

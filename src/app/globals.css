@@ -1719,6 +1719,19 @@ body.game-celebrating {
   min-height: min(72dvh, calc(100dvh - 120px));
 }
 
+.super-bear-game {
+  background: linear-gradient(180deg, #ecfdf5, #f0fdf4);
+}
+
+.super-bear-hud {
+  flex-shrink: 0;
+}
+
+.super-bear-canvas {
+  background: #87ceeb;
+  border-color: #65a30d;
+}
+
 .tetris-canvas {
   background: #0a0a14;
 }

@@ -8,9 +8,18 @@ const KEY_CODES: Record<string, number> = {
   ArrowRight: 39,
   ArrowDown: 40,
   Space: 32,
+  Shift: 16,
 };
 
 const LAYOUTS: Record<string, { className?: string; buttons: Btn[] }> = {
+  "super-ayi": {
+    buttons: [
+      { id: "left", label: "◀", code: "ArrowLeft" },
+      { id: "jump", label: "↑", code: "ArrowUp" },
+      { id: "right", label: "▶", code: "ArrowRight" },
+      { id: "punch", label: "👊", code: "Shift", fire: true },
+    ],
+  },
   tetris: {
     className: "layout-tetris",
     buttons: [
@@ -48,7 +57,8 @@ function dispatchKey(code: string, type: "keydown" | "keyup") {
   document.dispatchEvent(
     new KeyboardEvent(type, {
       code,
-      key: code === "Space" ? " " : code.replace("Arrow", ""),
+      key:
+        code === "Space" ? " " : code === "Shift" ? "Shift" : code.replace("Arrow", ""),
       keyCode,
       which: keyCode,
       bubbles: true,
