@@ -9,6 +9,11 @@ const KEY_CODES: Record<string, number> = {
   ArrowDown: 40,
   Space: 32,
   Shift: 16,
+  KeyZ: 90,
+  KeyX: 88,
+  KeyC: 67,
+  KeyV: 86,
+  KeyB: 66,
 };
 
 const LAYOUTS: Record<string, { className?: string; buttons: Btn[] }> = {
@@ -22,6 +27,20 @@ const LAYOUTS: Record<string, { className?: string; buttons: Btn[] }> = {
   },
   "flappy-bird": {
     buttons: [{ id: "flap", label: "🐤 UÇ!", code: "Space", fire: true, span: 4 }],
+  },
+  "dovus-arenasi": {
+    className: "layout-fighting",
+    buttons: [
+      { id: "left", label: "◀", code: "ArrowLeft" },
+      { id: "down", label: "↓", code: "ArrowDown" },
+      { id: "right", label: "▶", code: "ArrowRight" },
+      { id: "up", label: "↑", code: "ArrowUp" },
+      { id: "lp", label: "Z", code: "KeyZ" },
+      { id: "hp", label: "X", code: "KeyX" },
+      { id: "lk", label: "C", code: "KeyC" },
+      { id: "vk", label: "V", code: "KeyV" },
+      { id: "throw", label: "B", code: "KeyB", fire: true },
+    ],
   },
   tetris: {
     className: "layout-tetris",
@@ -61,7 +80,13 @@ function dispatchKey(code: string, type: "keydown" | "keyup") {
     new KeyboardEvent(type, {
       code,
       key:
-        code === "Space" ? " " : code === "Shift" ? "Shift" : code.replace("Arrow", ""),
+        code === "Space"
+          ? " "
+          : code === "Shift"
+            ? "Shift"
+            : code.startsWith("Key")
+              ? code.slice(3).toLowerCase()
+              : code.replace("Arrow", ""),
       keyCode,
       which: keyCode,
       bubbles: true,

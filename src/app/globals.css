@@ -1728,6 +1728,56 @@ body.game-celebrating {
   grid-template-columns: 1fr;
 }
 
+.fighting-game {
+  background: linear-gradient(180deg, #1e1b4b, #312e81);
+}
+
+.fighting-canvas {
+  background: #1e1b4b;
+  border-color: #fde047;
+  max-width: 100%;
+}
+
+.fighting-game .game-touch-bar.layout-fighting {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 6px;
+}
+
+.fight-char-select {
+  text-align: center;
+  padding: 0.75rem;
+  margin-bottom: 0.5rem;
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: var(--radius-sm);
+}
+
+.fight-char-select p {
+  margin: 0 0 0.6rem;
+  color: #fde047;
+  font-weight: 700;
+}
+
+.fight-char-btns {
+  display: flex;
+  gap: 0.5rem;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.fight-char-btn {
+  min-width: 120px;
+}
+
+.fight-char-serkan {
+  background: linear-gradient(180deg, #fb923c, #ea580c);
+  border-color: #c2410c;
+}
+
+.fighting-game .game-touch-bar.layout-fighting .touch-fire {
+  grid-column: span 1;
+}
+
 .super-bear-game {
   background: linear-gradient(180deg, #ecfdf5, #f0fdf4);
 }

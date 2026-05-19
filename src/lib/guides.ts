@@ -18,6 +18,18 @@ export const GUIDES: Record<string, Guide> = {
     controls: ["Ok tuşları veya kaydırma", "Elma = +10 puan"],
     learn: "Planlama: bir sonraki hamleyi düşün.",
   },
+  "dovus-arenasi": {
+    type: "Dövüş Oyunu",
+    intro:
+      "Street Fighter tarzı 2D dövüş! Tek karakterle 3 arcade rauntunu kazan. Yumruk, tekme, blok ve ateş topu!",
+    controls: [
+      "Önce karakterini seç: Doğukan veya Serkan",
+      "← → — yürü · ↑ — zıpla · geri yön — blok",
+      "Z/X/C/V — yumruk ve tekme · B — yakalama (throw)",
+      "↓ basılı + Z — ateş topu · Serkan güçlü, Doğukan hızlı",
+    ],
+    learn: "Mesafe, blok ve zamanlama — gerçek dövüş oyunlarının temeli.",
+  },
   "flappy-bird": {
     type: "Arcade Oyunu",
     intro: "Klasik Flappy Bird! Küçük kuşu boruların arasından geçir. Her boru +1 puan. Çarpınca oyun biter.",

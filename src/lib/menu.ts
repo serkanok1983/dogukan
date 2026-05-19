@@ -15,6 +15,7 @@ export const MENU: MenuCategory[] = [
     items: [
       { slug: "super-ayi", label: "Süper Ayı", emoji: "🐻" },
       { slug: "flappy-bird", label: "Flappy Bird", emoji: "🐤" },
+      { slug: "dovus-arenasi", label: "Dövüş Arenası", emoji: "🥋" },
       { slug: "tetris", label: "Tetris", emoji: "🧱" },
       { slug: "pong", label: "Masa Tenisi", emoji: "🏓" },
       { slug: "asteroids", label: "Asteroids", emoji: "☄️" },
