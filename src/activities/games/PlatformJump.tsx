@@ -1,68 +1,99 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import { drawParticles, spawnBurst, updateParticles, type Particle } from "@/lib/particles";
 import { sounds } from "@/lib/sounds";
 import { randInt } from "@/lib/utils";
 
-type Plat = { x: number; y: number; w: number };
-type Coin = { x: number; y: number; taken: boolean };
+type Plat = {
+  x: number;
+  y: number;
+  w: number;
+  kind: "normal" | "spring" | "moving";
+  movePhase?: number;
+};
 
 const W = 320;
-const H = 440;
-const PW = 0.22;
+const H = 480;
+const PW = 72;
+const GRAVITY = 0.42;
+const JUMP = -12.5;
+const SPRING_JUMP = -17;
+const PLAYER_R = 16;
 
 export function PlatformJump() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [score, setScore] = useState(0);
+  const [best, setBest] = useState(0);
   const [over, setOver] = useState(false);
+  const [combo, setCombo] = useState(0);
 
-  const px = useRef(0.5);
-  const py = useRef(0.7);
+  const px = useRef(W / 2);
+  const py = useRef(0);
   const vy = useRef(0);
   const vx = useRef(0);
-  const camY = useRef(0);
   const plats = useRef<Plat[]>([]);
-  const coins = useRef<Coin[]>([]);
+  const particles = useRef<Particle[]>([]);
+  const clouds = useRef<{ x: number; y: number; s: number }[]>([]);
   const scoreRef = useRef(0);
+  const comboRef = useRef(0);
   const overRef = useRef(false);
   const leftHeld = useRef(false);
   const rightHeld = useRef(false);
-  const wasFalling = useRef(true);
+  const frame = useRef(0);
+  const highestY = useRef(0);
 
-  const initWorld = useCallback(() => {
-    plats.current = [{ x: 0.39, y: 0.75, w: PW }];
-    for (let i = 1; i < 12; i++) {
-      plats.current.push({
-        x: 0.08 + Math.random() * (1 - PW - 0.16),
-        y: 0.75 - i * 0.09,
+  const makePlatforms = useCallback((startY: number, count: number) => {
+    const list: Plat[] = [];
+    let y = startY;
+    for (let i = 0; i < count; i++) {
+      const kindRoll = Math.random();
+      const kind: Plat["kind"] =
+        kindRoll > 0.88 ? "spring" : kindRoll > 0.78 ? "moving" : "normal";
+      list.push({
+        x: randInt(20, W - PW - 20),
+        y,
         w: PW,
+        kind,
+        movePhase: Math.random() * Math.PI * 2,
       });
-      if (Math.random() > 0.35) {
-        coins.current.push({
-          x: plats.current[i].x + PW / 2 - 0.03,
-          y: plats.current[i].y - 0.06,
-          taken: false,
-        });
-      }
+      y -= randInt(58, 78);
     }
+    return list;
   }, []);
 
   const reset = useCallback(() => {
-    px.current = 0.5;
-    py.current = 0.7;
-    vy.current = -0.018;
+    const groundY = H - 80;
+    plats.current = makePlatforms(groundY, 14);
+    const startPlat = plats.current[0];
+    px.current = startPlat.x + startPlat.w / 2;
+    py.current = startPlat.y - PLAYER_R - 2;
+    vy.current = JUMP;
     vx.current = 0;
-    camY.current = 0;
-    coins.current = [];
+    particles.current = [];
+    clouds.current = Array.from({ length: 6 }, () => ({
+      x: Math.random() * W,
+      y: Math.random() * H * 0.6,
+      s: 0.3 + Math.random() * 0.5,
+    }));
     scoreRef.current = 0;
+    comboRef.current = 0;
+    highestY.current = py.current;
     overRef.current = false;
-    initWorld();
+    frame.current = 0;
     setScore(0);
+    setCombo(0);
     setOver(false);
-  }, [initWorld]);
+  }, [makePlatforms]);
 
   useEffect(() => {
     reset();
+    try {
+      const saved = localStorage.getItem("dogukan-jump-best");
+      if (saved) setBest(Number(saved));
+    } catch {
+      /* ignore */
+    }
   }, [reset]);
 
   useEffect(() => {
@@ -99,113 +130,160 @@ export function PlatformJump() {
     let raf = 0;
     const loop = () => {
       if (overRef.current) return;
+      frame.current++;
 
-      if (leftHeld.current) vx.current = Math.max(vx.current - 0.0008, -0.012);
-      else if (rightHeld.current) vx.current = Math.min(vx.current + 0.0008, 0.012);
-      else vx.current *= 0.92;
+      if (leftHeld.current) vx.current = Math.max(vx.current - 0.55, -5);
+      else if (rightHeld.current) vx.current = Math.min(vx.current + 0.55, 5);
+      else vx.current *= 0.88;
 
       px.current += vx.current;
-      if (px.current < 0.05) px.current = 0.05;
-      if (px.current > 0.95) px.current = 0.95;
+      if (px.current < PLAYER_R) {
+        px.current = PLAYER_R;
+        vx.current *= -0.5;
+      }
+      if (px.current > W - PLAYER_R) {
+        px.current = W - PLAYER_R;
+        vx.current *= -0.5;
+      }
 
-      vy.current += 0.00055;
+      vy.current += GRAVITY;
       py.current += vy.current;
 
-      const highest = plats.current.reduce((m, p) => Math.min(m, p.y), 1);
-      if (py.current < highest - 0.5) {
-        overRef.current = true;
-        setOver(true);
-        sounds.wrong();
-      }
-
       plats.current.forEach((p) => {
-        const platTop = p.y;
-        const inX = px.current > p.x - 0.04 && px.current < p.x + p.w + 0.04;
-        if (inX && vy.current > 0 && py.current >= platTop - 0.02 && py.current <= platTop + 0.04) {
-          py.current = platTop;
-          vy.current = -0.019;
-          if (wasFalling.current) sounds.jump();
-          wasFalling.current = false;
+        if (p.kind === "moving") {
+          p.movePhase = (p.movePhase ?? 0) + 0.04;
+          p.x = (W - p.w) / 2 + Math.sin(p.movePhase) * (W / 2 - p.w - 24);
         }
       });
-      if (vy.current < 0) wasFalling.current = true;
 
-      if (py.current < 0.35 + camY.current) {
-        const shift = 0.35 + camY.current - py.current;
-        camY.current -= shift;
-        py.current += shift;
-        plats.current.forEach((p) => (p.y += shift));
-        coins.current.forEach((c) => (c.y += shift));
-        scoreRef.current += Math.floor(shift * 200);
-        setScore(scoreRef.current);
-
-        while (plats.current[plats.current.length - 1].y > -0.1) {
-          const top = plats.current[plats.current.length - 1].y;
-          const np: Plat = {
-            x: 0.08 + Math.random() * (1 - PW - 0.16),
-            y: top - (0.07 + Math.random() * 0.04),
-            w: PW,
-          };
-          plats.current.push(np);
-          if (Math.random() > 0.3) {
-            coins.current.push({ x: np.x + PW / 2 - 0.03, y: np.y - 0.06, taken: false });
+      if (vy.current > 0) {
+        for (const p of plats.current) {
+          const feet = py.current + PLAYER_R;
+          if (
+            feet >= p.y - 4 &&
+            feet <= p.y + 12 &&
+            px.current > p.x + 8 &&
+            px.current < p.x + p.w - 8
+          ) {
+            py.current = p.y - PLAYER_R;
+            vy.current = p.kind === "spring" ? SPRING_JUMP : JUMP;
+            if (p.kind === "spring") {
+              sounds.spring();
+              spawnBurst(particles.current, px.current, py.current + PLAYER_R, 14, [
+                "#fde047",
+                "#fbbf24",
+                "#fff",
+              ]);
+            } else {
+              sounds.jump();
+              spawnBurst(particles.current, px.current, py.current + PLAYER_R, 6, [
+                "#86efac",
+                "#4ade80",
+              ]);
+            }
+            comboRef.current += 1;
+            if (comboRef.current % 5 === 0) {
+              sounds.combo(comboRef.current);
+              setCombo(comboRef.current);
+            }
+            break;
           }
         }
-        plats.current = plats.current.filter((p) => p.y < 1.2);
-        coins.current = coins.current.filter((c) => c.y < 1.2);
       }
 
-      coins.current.forEach((c) => {
-        if (c.taken) return;
-        if (Math.hypot(px.current - c.x, py.current - c.y) < 0.06) {
-          c.taken = true;
-          scoreRef.current += 25;
-          setScore(scoreRef.current);
-          sounds.star();
-        }
-      });
+      const scrollLine = H * 0.42;
+      if (py.current < scrollLine) {
+        const shift = scrollLine - py.current;
+        py.current = scrollLine;
+        plats.current.forEach((p) => (p.y += shift));
+        clouds.current.forEach((c) => {
+          c.y += shift * 0.3;
+          if (c.y > H + 40) c.y = -20;
+        });
+        scoreRef.current += Math.floor(shift);
+        setScore(scoreRef.current);
 
+        let topY = plats.current.reduce((m, p) => Math.min(m, p.y), H);
+        while (topY > 50) {
+          topY -= randInt(58, 78);
+          plats.current.push(...makePlatforms(topY, 1));
+        }
+        plats.current = plats.current.filter((p) => p.y < H + 60);
+      }
+
+      if (py.current < highestY.current) highestY.current = py.current;
+
+      const lowest = plats.current.reduce((m, p) => Math.max(m, p.y), 0);
+      if (py.current - PLAYER_R > lowest + 120) {
+        overRef.current = true;
+        setOver(true);
+        sounds.gameOver();
+        if (scoreRef.current > best) {
+          setBest(scoreRef.current);
+          try {
+            localStorage.setItem("dogukan-jump-best", String(scoreRef.current));
+          } catch {
+            /* ignore */
+          }
+        }
+      }
+
+      updateParticles(particles.current);
+
+      const hue = (scoreRef.current / 8) % 360;
       const sky = ctx.createLinearGradient(0, 0, 0, H);
-      sky.addColorStop(0, "#38bdf8");
-      sky.addColorStop(0.6, "#a5f3fc");
-      sky.addColorStop(1, "#86efac");
+      sky.addColorStop(0, `hsl(${220 + hue * 0.1}, 80%, 55%)`);
+      sky.addColorStop(0.55, `hsl(${200 + hue * 0.08}, 75%, 70%)`);
+      sky.addColorStop(1, `hsl(${140 + hue * 0.05}, 70%, 75%)`);
       ctx.fillStyle = sky;
       ctx.fillRect(0, 0, W, H);
 
-      ctx.font = "28px serif";
-      ctx.textAlign = "center";
-      ctx.fillText("☁️", 50, 60);
-      ctx.fillText("☁️", W - 60, 100);
+      clouds.current.forEach((c) => {
+        c.x += c.s * 0.3;
+        if (c.x > W + 50) c.x = -50;
+        ctx.font = `${28 + c.s * 20}px serif`;
+        ctx.textAlign = "center";
+        ctx.fillText("☁️", c.x, c.y);
+      });
 
       plats.current.forEach((p) => {
-        const sx = p.x * W;
-        const sy = p.y * H;
-        const sw = p.w * W;
-        const grd = ctx.createLinearGradient(sx, sy, sx, sy + 14);
-        grd.addColorStop(0, "#4ade80");
-        grd.addColorStop(1, "#16a34a");
+        const colors =
+          p.kind === "spring"
+            ? ["#fde047", "#f59e0b"]
+            : p.kind === "moving"
+              ? ["#a78bfa", "#7c3aed"]
+              : ["#4ade80", "#16a34a"];
+        const grd = ctx.createLinearGradient(p.x, p.y, p.x, p.y + 16);
+        grd.addColorStop(0, colors[0]);
+        grd.addColorStop(1, colors[1]);
         ctx.fillStyle = grd;
         ctx.beginPath();
-        if (typeof ctx.roundRect === "function") ctx.roundRect(sx, sy, sw, 14, 6);
-        else ctx.rect(sx, sy, sw, 14);
+        if (typeof ctx.roundRect === "function") ctx.roundRect(p.x, p.y, p.w, 16, 8);
+        else ctx.rect(p.x, p.y, p.w, 16);
         ctx.fill();
-        ctx.fillStyle = "#14532d";
-        ctx.fillRect(sx + 4, sy + 10, sw - 8, 3);
+        if (p.kind === "spring") {
+          ctx.font = "14px serif";
+          ctx.textAlign = "center";
+          ctx.fillText("🚀", p.x + p.w / 2, p.y - 4);
+        }
       });
 
-      coins.current.forEach((c) => {
-        if (c.taken) return;
-        ctx.font = "22px serif";
-        ctx.fillText("⭐", c.x * W, c.y * H);
-      });
+      drawParticles(ctx, particles.current);
 
-      ctx.font = "30px serif";
-      ctx.fillText("🦸", px.current * W, py.current * H);
+      ctx.font = "32px serif";
+      ctx.textAlign = "center";
+      ctx.fillText("🦸", px.current, py.current + 4);
 
-      ctx.fillStyle = "#1e3a5f";
-      ctx.font = "bold 14px sans-serif";
+      ctx.fillStyle = "rgba(255,255,255,0.92)";
+      ctx.font = "bold 13px sans-serif";
       ctx.textAlign = "left";
-      ctx.fillText(`Yükseklik: ${scoreRef.current}`, 10, 22);
+      ctx.fillText(`⬆️ ${scoreRef.current}`, 10, 22);
+      ctx.fillText(`🏆 ${Math.max(best, scoreRef.current)}`, 10, 40);
+      if (comboRef.current >= 5) {
+        ctx.textAlign = "right";
+        ctx.fillStyle = "#fbbf24";
+        ctx.fillText(`🔥 x${comboRef.current}`, W - 10, 22);
+      }
 
       raf = requestAnimationFrame(loop);
     };
@@ -219,11 +297,13 @@ export function PlatformJump() {
       canvas.removeEventListener("touchmove", onTouchSide);
       canvas.removeEventListener("touchend", onTouchEnd);
     };
-  }, [over, reset]);
+  }, [over, reset, makePlatforms, best]);
 
   return (
     <div className="game-panel canvas-game">
-      <p className="round-label">Ada platformlarında zıpla, yıldızları topla!</p>
+      <p className="round-label">
+        Adalara zıpla · 🚀 yaylı ada süper zıplar · Düşme!
+      </p>
       <canvas ref={canvasRef} width={W} height={H} className="game-canvas touch-canvas" />
       <div className="dpad">
         <div className="dpad-mid">
@@ -253,7 +333,8 @@ export function PlatformJump() {
       </div>
       {over && (
         <div className="game-over">
-          <p>🏝️ Düştün! Skor: {score}</p>
+          <p>🏝️ Skor: {score}</p>
+          {score >= best && score > 0 && <p className="hint-text success">🎉 Yeni rekor!</p>}
           <button type="button" className="btn-primary" onClick={reset}>
             Tekrar oyna
           </button>

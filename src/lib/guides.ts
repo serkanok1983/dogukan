@@ -32,9 +32,15 @@ export const GUIDES: Record<string, Guide> = {
   },
   "serit-yarisi": {
     type: "Yarış Oyunu",
-    intro: "Arabanı şerit değiştirerek sür. Yıldızları topla, kayalardan kaç!",
-    controls: ["Sol / Sağ düğmeler veya kaydırma", "⭐ = bonus puan"],
+    intro: "75 saniye boyunca sür! Yıldız, nitro ve kalkan topla.",
+    controls: ["Sol / Sağ veya kaydır", "🛡️ bir çarpışmayı engeller"],
     learn: "Hızlı karar verme ve odaklanma.",
+  },
+  "baloncuk-patlat": {
+    type: "Baloncuk Oyunu",
+    intro: "Renkli baloncuklara dokun, patlat! Seri yapınca bonus puan.",
+    controls: ["Baloncuğa dokun — patlat", "45 saniye süren var"],
+    learn: "El-göz koordinasyonu ve hız.",
   },
   "sayma-oyunu": {
     type: "Sayılar",

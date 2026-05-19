@@ -24,6 +24,11 @@ export const kelimeOkuma: QuizQuestion[] = [
   { prompt: "Bu kelime ne?", emoji: "🍎", answer: "ELMA", options: ["ELMA", "EKMEK", "EV", "DENİZ"], hint: "Kırmızı meyve" },
   { prompt: "Bu kelime ne?", emoji: "📚", answer: "KİTAP", options: ["KİTAP", "KALEM", "KUM", "KUZU"], hint: "Okumak için" },
   { prompt: "Bu kelime ne?", emoji: "🏠", answer: "EV", options: ["EV", "ARABA", "AĞAÇ", "SU"], hint: "İçinde yaşarız" },
+  { prompt: "Bu kelime ne?", emoji: "🐕", answer: "KÖPEK", options: ["KÖPEK", "KEDİ", "KUŞ", "BALIK"], hint: "Hav hav der" },
+  { prompt: "Bu kelime ne?", emoji: "🌳", answer: "AĞAÇ", options: ["AĞAÇ", "ÇİÇEK", "OT", "YAPRAK"], hint: "Parkta büyük bitki" },
+  { prompt: "Bu kelime ne?", emoji: "🚌", answer: "OTOBÜS", options: ["OTOBÜS", "UÇAK", "GEMİ", "TREN"], hint: "Yolcu taşır" },
+  { prompt: "Bu kelime ne?", emoji: "🎂", answer: "PASTA", options: ["PASTA", "EKMEK", "PEYNİR", "ÇORBA"], hint: "Doğum gününde" },
+  { prompt: "Bu kelime ne?", emoji: "⚽", answer: "TOP", options: ["TOP", "RAKET", "KALEM", "SANDALYE"], hint: "Oyunlarda atılır" },
 ];
 
 export const heceBirlestir: QuizQuestion[] = [
@@ -54,7 +59,7 @@ export const boslukDoldur: QuizQuestion[] = [
   { prompt: "Balıklar suda ___", emoji: "📝", answer: "yüzer", options: ["yüzer", "uçar", "yürür", "konuşur"] },
 ];
 
-export const toplama: QuizQuestion[] = Array.from({ length: 8 }, (_, i) => {
+export const toplama: QuizQuestion[] = Array.from({ length: 12 }, (_, i) => {
   const a = (i % 5) + 1;
   const b = (i % 4) + 1;
   const s = a + b;
@@ -68,7 +73,7 @@ export const toplama: QuizQuestion[] = Array.from({ length: 8 }, (_, i) => {
   };
 });
 
-export const cikarma: QuizQuestion[] = Array.from({ length: 8 }, (_, i) => {
+export const cikarma: QuizQuestion[] = Array.from({ length: 12 }, (_, i) => {
   const a = (i % 5) + 5;
   const b = (i % 4) + 1;
   const s = a - b;
