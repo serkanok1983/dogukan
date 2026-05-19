@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useGameActive } from "@/lib/gameSession";
+import { useGameRunning } from "@/hooks/useGameRunning";
 import { sounds } from "@/lib/sounds";
 
 const MAZE = [
@@ -20,6 +21,7 @@ type Pos = { r: number; c: number };
 
 export function MazeGame() {
   const active = useGameActive();
+  const running = useGameRunning();
   const [pos, setPos] = useState<Pos>(() => {
     for (let r = 0; r < MAZE.length; r++)
       for (let c = 0; c < MAZE[r].length; c++) if (MAZE[r][c] === "S") return { r, c };
@@ -29,7 +31,7 @@ export function MazeGame() {
   const [steps, setSteps] = useState(0);
 
   const move = (dr: number, dc: number) => {
-    if (!active || won) return;
+    if (!running || won) return;
     const nr = pos.r + dr;
     const nc = pos.c + dc;
     if (MAZE[nr]?.[nc] === "#") {

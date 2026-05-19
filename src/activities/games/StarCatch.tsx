@@ -2,7 +2,9 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { drawParticles, spawnBurst, updateParticles, type Particle } from "@/lib/particles";
+import { createGameJuice } from "@/lib/gameJuice";
 import { useGameActive, useGameBoot } from "@/lib/gameSession";
+import { useGameRunning } from "@/hooks/useGameRunning";
 import { sounds } from "@/lib/sounds";
 import { randInt, pickRandom } from "@/lib/utils";
 import { useGameScore } from "@/hooks/useGameScore";
@@ -30,6 +32,7 @@ const DURATION = 60;
 
 export function StarCatch() {
   const active = useGameActive();
+  const running = useGameRunning();
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [score, setScore] = useState(0);
   const [timeLeft, setTimeLeft] = useState(DURATION);
@@ -41,6 +44,7 @@ export function StarCatch() {
   const basket = useRef(0.5);
   const items = useRef<Item[]>([]);
   const particles = useRef<Particle[]>([]);
+  const juiceRef = useRef(createGameJuice());
   const scoreRef = useRef(0);
   const comboRef = useRef(0);
   const frame = useRef(0);
@@ -74,7 +78,7 @@ export function StarCatch() {
   }, [done, score, scoreGame]);
 
   useEffect(() => {
-    if (!active || done) return;
+    if (!running || done) return;
     const t = setInterval(() => {
       setTimeLeft((tm) => {
         const next = tm <= 1 ? 0 : tm - 1;
@@ -87,11 +91,11 @@ export function StarCatch() {
       });
     }, 1000);
     return () => clearInterval(t);
-  }, [active, done]);
+  }, [running, done]);
 
   useEffect(() => {
     const canvas = canvasRef.current;
-    if (!active || !canvas || done) return;
+    if (!running || !canvas || done) return;
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
@@ -105,7 +109,7 @@ export function StarCatch() {
 
     let raf = 0;
     const loop = () => {
-      if (!active || overRef.current || done) return;
+      if (!running || overRef.current || done) return;
       frame.current++;
       const speed = 0.006 + Math.min(0.008, scoreRef.current * 0.00002);
 
@@ -161,13 +165,16 @@ export function StarCatch() {
           } else {
             comboRef.current += 1;
             const bonus = Math.min(comboRef.current, 10) * 2;
-            scoreRef.current += s.pts + bonus;
+            const gained = s.pts + bonus;
+            scoreRef.current += gained;
             setScore(scoreRef.current);
-            scoreGame.checkMilestone(scoreRef.current);
+            if (scoreRef.current % 80 < gained) void scoreGame.checkMilestone(scoreRef.current);
             setCombo(comboRef.current);
             sounds.coin();
             if (comboRef.current % 5 === 0) sounds.combo(comboRef.current);
-            spawnBurst(particles.current, sx, sy, 8, ["#fde047", "#fbbf24", "#fff"]);
+            spawnBurst(particles.current, sx, sy, 10, ["#fde047", "#fbbf24", "#fff"]);
+            juiceRef.current.burst(sx, sy, "#fde047", 12);
+            juiceRef.current.popScore(sx, sy, `+${gained}`);
           }
           return false;
         }
@@ -176,6 +183,9 @@ export function StarCatch() {
 
       updateParticles(particles.current);
       drawParticles(ctx, particles.current);
+      const fx = juiceRef.current;
+      fx.update();
+      fx.draw(ctx, W, H);
 
       ctx.fillStyle = "#fff";
       ctx.font = "bold 14px sans-serif";
@@ -195,7 +205,7 @@ export function StarCatch() {
       canvas.removeEventListener("mousemove", onMove);
       canvas.removeEventListener("touchmove", onMove);
     };
-  }, [active, done, reset, scoreGame]);
+  }, [running, done, reset, scoreGame]);
 
   return (
     <div className="game-panel canvas-game">

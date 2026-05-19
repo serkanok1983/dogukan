@@ -258,6 +258,28 @@ export function mountClassicAsteroids(
       ship.thrust.x += (SHIP_THRUST * Math.cos(ship.a)) / FPS;
       ship.thrust.y -= (SHIP_THRUST * Math.sin(ship.a)) / FPS;
       acelyaSounds.thrustStart();
+
+      if (!exploding && blinkOn) {
+        ctx.fillStyle = "red";
+        ctx.strokeStyle = "yellow";
+        ctx.lineWidth = SHIP_SIZE / 10;
+        ctx.beginPath();
+        ctx.moveTo(
+          ship.x - ship.r * ((2 / 3) * Math.cos(ship.a) + 0.5 * Math.sin(ship.a)),
+          ship.y + ship.r * ((2 / 3) * Math.sin(ship.a) - 0.5 * Math.cos(ship.a)),
+        );
+        ctx.lineTo(
+          ship.x - ship.r * (5 / 3) * Math.cos(ship.a),
+          ship.y + ship.r * (5 / 3) * Math.sin(ship.a),
+        );
+        ctx.lineTo(
+          ship.x - ship.r * ((2 / 3) * Math.cos(ship.a) - 0.5 * Math.sin(ship.a)),
+          ship.y + ship.r * ((2 / 3) * Math.sin(ship.a) + 0.5 * Math.cos(ship.a)),
+        );
+        ctx.closePath();
+        ctx.fill();
+        ctx.stroke();
+      }
     } else {
       ship.thrust.x -= (FRICTION * ship.thrust.x) / FPS;
       ship.thrust.y -= (FRICTION * ship.thrust.y) / FPS;
@@ -299,8 +321,6 @@ export function mountClassicAsteroids(
       ctx.font = `small-caps ${TEXT_SIZE}px var(--font-nunito), sans-serif`;
       ctx.fillText(text, W / 2, H * 0.75);
       textAlpha -= 1 / TEXT_FADE_TIME / FPS;
-    } else if (ship.dead) {
-      newGame();
     }
 
     for (let i = 0; i < lives; i++) {

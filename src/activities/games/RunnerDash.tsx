@@ -2,7 +2,9 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { drawParticles, spawnBurst, updateParticles, type Particle } from "@/lib/particles";
+import { createGameJuice } from "@/lib/gameJuice";
 import { useGameActive, useGameBoot } from "@/lib/gameSession";
+import { useGameRunning } from "@/hooks/useGameRunning";
 import { sounds } from "@/lib/sounds";
 import { randInt } from "@/lib/utils";
 import { useGameScore } from "@/hooks/useGameScore";
@@ -19,6 +21,7 @@ const DURATION = 60;
 
 export function RunnerDash() {
   const active = useGameActive();
+  const running = useGameRunning();
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [score, setScore] = useState(0);
   const [timeLeft, setTimeLeft] = useState(DURATION);
@@ -31,6 +34,7 @@ export function RunnerDash() {
   const grounded = useRef(true);
   const obs = useRef<Obs[]>([]);
   const particles = useRef<Particle[]>([]);
+  const juiceRef = useRef(createGameJuice());
   const speed = useRef(5);
   const frame = useRef(0);
   const scoreRef = useRef(0);
@@ -65,7 +69,7 @@ export function RunnerDash() {
   }, [done, score, scoreGame]);
 
   useEffect(() => {
-    if (!active || done) return;
+    if (!running || done) return;
     const t = setInterval(() => {
       setTimeLeft((tm) => {
         const next = tm <= 1 ? 0 : tm - 1;
@@ -78,19 +82,19 @@ export function RunnerDash() {
       });
     }, 1000);
     return () => clearInterval(t);
-  }, [active, done]);
+  }, [running, done]);
 
   const jump = useCallback(() => {
-    if (!active || overRef.current || done || !grounded.current) return;
+    if (!running || overRef.current || done || !grounded.current) return;
     vy.current = -13;
     grounded.current = false;
     sounds.jump();
     spawnBurst(particles.current, 70, py.current, 6, ["#fff", "#fde047"]);
-  }, [active, done]);
+  }, [running, done]);
 
   useEffect(() => {
     const canvas = canvasRef.current;
-    if (!active || !canvas || done) return;
+    if (!running || !canvas || done) return;
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
@@ -106,7 +110,7 @@ export function RunnerDash() {
 
     let raf = 0;
     const loop = () => {
-      if (!active || overRef.current || done) return;
+      if (!running || overRef.current || done) return;
       frame.current++;
       speed.current = Math.min(11, 5 + scoreRef.current * 0.008);
 
@@ -145,7 +149,11 @@ export function RunnerDash() {
             scoreRef.current += 25;
             setScore(scoreRef.current);
             sounds.coin();
-            spawnBurst(particles.current, o.x, oy + o.h / 2, 10, ["#fde047", "#fff"]);
+            const cx = o.x + o.w / 2;
+            const cy = oy + o.h / 2;
+            spawnBurst(particles.current, cx, cy, 10, ["#fde047", "#fff"]);
+            juiceRef.current.burst(cx, cy, "#fde047", 12);
+            juiceRef.current.popScore(cx, cy - 14, "+25");
             return false;
           }
         } else if (
@@ -209,6 +217,9 @@ export function RunnerDash() {
       });
 
       drawParticles(ctx, particles.current);
+      const fx = juiceRef.current;
+      fx.update();
+      fx.draw(ctx, W, H);
 
       ctx.font = "34px serif";
       ctx.textAlign = "center";
@@ -229,7 +240,7 @@ export function RunnerDash() {
       window.removeEventListener("keydown", onKey);
       canvas.removeEventListener("pointerdown", onTap);
     };
-  }, [active, done, jump, scoreGame]);
+  }, [running, done, jump, scoreGame]);
 
   return (
     <div className="game-panel canvas-game">

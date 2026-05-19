@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { spawnBurst, type Particle } from "@/lib/particles";
 import { useGameActive, useGameBoot } from "@/lib/gameSession";
+import { useGameRunning } from "@/hooks/useGameRunning";
 import { sounds } from "@/lib/sounds";
 import { useGameScore } from "@/hooks/useGameScore";
 import { ScoreHud } from "@/components/ScoreHud";
@@ -16,6 +17,7 @@ type Pt = { x: number; y: number };
 
 export function SnakeGame() {
   const active = useGameActive();
+  const running = useGameRunning();
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [score, setScore] = useState(0);
   const [over, setOver] = useState(false);
@@ -94,7 +96,7 @@ export function SnakeGame() {
   }, []);
 
   const step = useCallback(() => {
-    if (!active || over) return;
+    if (!running || over) return;
     const st = state.current;
     st.dir = st.nextDir;
     const head = { x: st.snake[0].x + st.dir.x, y: st.snake[0].y + st.dir.y };
@@ -125,13 +127,13 @@ export function SnakeGame() {
       st.snake.pop();
     }
     draw();
-  }, [active, draw, over, spawnFood, scoreGame]);
+  }, [running, draw, over, spawnFood, scoreGame]);
 
   useEffect(() => {
-    if (!active) return;
+    if (!running) return;
     const id = setInterval(step, 180);
     return () => clearInterval(id);
-  }, [active, step]);
+  }, [running, step]);
 
   useEffect(() => {
     draw();

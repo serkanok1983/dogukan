@@ -2,7 +2,9 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { drawParticles, spawnBurst, updateParticles, type Particle } from "@/lib/particles";
+import { createGameJuice } from "@/lib/gameJuice";
 import { useGameActive, useGameBoot } from "@/lib/gameSession";
+import { useGameRunning } from "@/hooks/useGameRunning";
 import { sounds } from "@/lib/sounds";
 import { randInt } from "@/lib/utils";
 import { useGameScore } from "@/hooks/useGameScore";
@@ -26,6 +28,7 @@ const ROUND = 45;
 
 export function BubbleBurst() {
   const active = useGameActive();
+  const running = useGameRunning();
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [score, setScore] = useState(0);
   const [timeLeft, setTimeLeft] = useState(ROUND);
@@ -36,6 +39,7 @@ export function BubbleBurst() {
 
   const bubbles = useRef<Bubble[]>([]);
   const particles = useRef<Particle[]>([]);
+  const juiceRef = useRef(createGameJuice());
   const scoreRef = useRef(0);
   const comboRef = useRef(0);
   const frame = useRef(0);
@@ -66,7 +70,7 @@ export function BubbleBurst() {
   }, [done, score, scoreGame]);
 
   useEffect(() => {
-    if (!active || done) return;
+    if (!running || done) return;
     const t = setInterval(() => {
       setTimeLeft((tm) => {
         const next = tm <= 1 ? 0 : tm - 1;
@@ -79,11 +83,11 @@ export function BubbleBurst() {
       });
     }, 1000);
     return () => clearInterval(t);
-  }, [active, done]);
+  }, [running, done]);
 
   useEffect(() => {
     const canvas = canvasRef.current;
-    if (!active || !canvas || done) return;
+    if (!running || !canvas || done) return;
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
@@ -98,7 +102,11 @@ export function BubbleBurst() {
           bubbles.current.splice(i, 1);
           comboRef.current += 1;
           const bonus = comboRef.current * 3;
-          scoreRef.current += 10 + bonus;
+          const pts = 10 + bonus;
+          juiceRef.current.burst(b.x, b.y, b.color, 16);
+          juiceRef.current.popScore(b.x, b.y - 12, `+${pts}`);
+          if (comboRef.current >= 4) juiceRef.current.shakeScreen(3);
+          scoreRef.current += pts;
           setScore(scoreRef.current);
           scoreGame.checkMilestone(scoreRef.current);
           setCombo(comboRef.current);
@@ -118,7 +126,7 @@ export function BubbleBurst() {
 
     let raf = 0;
     const loop = () => {
-      if (!active || done) return;
+      if (!running || done) return;
       frame.current++;
       if (frame.current % 28 === 0) {
         bubbles.current.push({
@@ -161,6 +169,9 @@ export function BubbleBurst() {
       });
 
       drawParticles(ctx, particles.current);
+      const fx = juiceRef.current;
+      fx.update();
+      fx.draw(ctx, W, H);
 
       ctx.fillStyle = "#0c4a6e";
       ctx.font = "bold 14px sans-serif";
@@ -182,7 +193,7 @@ export function BubbleBurst() {
       canvas.removeEventListener("mousedown", onPointer);
       canvas.removeEventListener("touchstart", onPointer);
     };
-  }, [active, done, reset, scoreGame]);
+  }, [running, done, reset, scoreGame]);
 
   return (
     <div className="game-panel canvas-game">

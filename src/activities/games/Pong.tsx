@@ -4,9 +4,11 @@ import { useEffect, useRef, useState } from "react";
 import { acelyaSounds } from "@/lib/acelyaSounds";
 import { createGameJuice } from "@/lib/gameJuice";
 import { useGameActive, useGameBoot } from "@/lib/gameSession";
+import { useGameRunning } from "@/hooks/useGameRunning";
 import { useGameScore } from "@/hooks/useGameScore";
 import { ScoreHud } from "@/components/ScoreHud";
 import { GameTouchBar } from "@/components/GameTouchBar";
+import { useCanvasFit } from "@/hooks/useCanvasFit";
 
 const GAME_SLUG = "pong";
 const GAME_W = 800;
@@ -15,8 +17,12 @@ const MAX_SCORE = 20;
 
 export function Pong() {
   const active = useGameActive();
+  const running = useGameRunning();
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const starsRef = useRef<HTMLCanvasElement>(null);
+  const hudRef = useRef<HTMLDivElement>(null);
   const juiceRef = useRef(createGameJuice());
+  useCanvasFit(canvasRef, GAME_W, GAME_H, { hudRef, minWidth: 280 });
   const [playerScore, setPlayerScore] = useState(0);
   const [computerScore, setComputerScore] = useState(0);
   const [ballSpeed, setBallSpeed] = useState(3);
@@ -69,6 +75,43 @@ export function Pong() {
   };
 
   useGameBoot(reset);
+
+  useEffect(() => {
+    const stars = starsRef.current;
+    if (!stars) return;
+    const ctx = stars.getContext("2d");
+    if (!ctx) return;
+    const sync = () => {
+      stars.width = window.innerWidth;
+      stars.height = window.innerHeight;
+    };
+    sync();
+    const dots = Array.from({ length: 100 }, () => ({
+      x: Math.random() * stars.width,
+      y: Math.random() * stars.height,
+      s: Math.random() * 1.5 + 0.3,
+      sp: Math.random() + 0.4,
+    }));
+    let raf = 0;
+    const anim = () => {
+      ctx.clearRect(0, 0, stars.width, stars.height);
+      ctx.fillStyle = "#fff";
+      for (const d of dots) {
+        ctx.beginPath();
+        ctx.arc(d.x, d.y, d.s, 0, Math.PI * 2);
+        ctx.fill();
+        d.y += d.sp;
+        if (d.y > stars.height) d.y = 0;
+      }
+      raf = requestAnimationFrame(anim);
+    };
+    anim();
+    window.addEventListener("resize", sync);
+    return () => {
+      cancelAnimationFrame(raf);
+      window.removeEventListener("resize", sync);
+    };
+  }, []);
 
   useEffect(() => {
     if (ended && !submitted.current) {
@@ -133,7 +176,7 @@ export function Pong() {
     let raf = 0;
     const loop = () => {
       const s = state.current;
-      if (active && !s.ended) {
+      if (running && !s.ended) {
         if (s.up && s.playerY > 0) s.playerY -= 8;
         if (s.down && s.playerY < GAME_H - paddleH) s.playerY += 8;
         if (s.computerY + paddleH / 2 < s.ballY - 20) s.computerY += 8 * 0.7;
@@ -215,21 +258,26 @@ export function Pong() {
       canvas.removeEventListener("touchstart", onTouch);
       canvas.removeEventListener("touchmove", onTouch);
     };
-  }, [active, scoreGame]);
+  }, [running, scoreGame]);
 
   return (
-    <div className="game-panel canvas-game acelya-game pong-game">
-      <ScoreHud
-        score={playerScore}
-        selfHigh={scoreGame.selfHigh}
-        rivalHigh={scoreGame.rivalHigh}
-        rivalName={scoreGame.rivalName}
-      />
-      <p className="round-label">
-        Sen: {playerScore} | Bilgisayar: {computerScore} · Hız: {ballSpeed.toFixed(2)}x
-      </p>
-      {!active && <p className="game-waiting">ℹ️ Başla&apos;ya basınca maç başlar</p>}
-      <canvas ref={canvasRef} width={GAME_W} height={GAME_H} className="game-canvas touch-canvas" />
+    <div className="game-panel canvas-game acelya-game pong-game fullscreen-game">
+      <canvas ref={starsRef} className="pong-stars" aria-hidden />
+      <div ref={hudRef} className="acelya-hud">
+        <ScoreHud
+          score={playerScore}
+          selfHigh={scoreGame.selfHigh}
+          rivalHigh={scoreGame.rivalHigh}
+          rivalName={scoreGame.rivalName}
+        />
+        <p className="round-label">
+          Sen: {playerScore} | Bilgisayar: {computerScore} · Hız: {ballSpeed.toFixed(2)}x
+        </p>
+        {!active && <p className="game-waiting">ℹ️ Başla&apos;ya basınca maç başlar</p>}
+      </div>
+      <div className="acelya-game-stage pong-stage">
+        <canvas ref={canvasRef} width={GAME_W} height={GAME_H} className="game-canvas touch-canvas pong-canvas" />
+      </div>
       <GameTouchBar gameId="pong" />
       {ended && (
         <div className="game-over">

@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useGameActive, useGameBoot } from "@/lib/gameSession";
+import { useGameRunning } from "@/hooks/useGameRunning";
 import { sounds } from "@/lib/sounds";
 import { randInt } from "@/lib/utils";
 import { useGameScore } from "@/hooks/useGameScore";
@@ -22,6 +23,7 @@ const DURATION = 40;
 
 export function ColorRace() {
   const active = useGameActive();
+  const running = useGameRunning();
   const [target, setTarget] = useState(COLORS[0]);
   const [score, setScore] = useState(0);
   const [streak, setStreak] = useState(0);
@@ -58,7 +60,7 @@ export function ColorRace() {
   }, [done, score, scoreGame]);
 
   useEffect(() => {
-    if (!active || done) return;
+    if (!running || done) return;
     const t = setInterval(() => {
       setTime((tm) => {
         if (tm <= 1) {
@@ -70,10 +72,10 @@ export function ColorRace() {
       });
     }, 1000);
     return () => clearInterval(t);
-  }, [active, done]);
+  }, [running, done]);
 
   const pick = (c: (typeof COLORS)[0]) => {
-    if (!active || done) return;
+    if (!running || done) return;
     if (c.name === target.name) {
       const bonus = Math.min(streak, 8) * 2;
       setScore((s) => {

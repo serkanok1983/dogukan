@@ -62,9 +62,16 @@ export function MenuScreen({ onLogout }: Props) {
               </div>
             </div>
           </div>
-          <button type="button" className="btn-ghost" onClick={handleLogout}>
-            Çıkış yap
-          </button>
+          <div className="menu-header-actions">
+            {player === "serkan" && (
+              <Link href="/bilgi/" className="btn-ghost btn-info" onClick={() => sounds.tap()}>
+                📊 Bilgi
+              </Link>
+            )}
+            <button type="button" className="btn-ghost" onClick={handleLogout}>
+              Çıkış yap
+            </button>
+          </div>
         </div>
         <div className="search-wrap">
           <span className="search-icon" aria-hidden>

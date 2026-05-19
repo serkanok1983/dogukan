@@ -4,9 +4,11 @@ import { useEffect, useRef, useState } from "react";
 import { acelyaSounds } from "@/lib/acelyaSounds";
 import { createGameJuice } from "@/lib/gameJuice";
 import { useGameActive, useGameBoot } from "@/lib/gameSession";
+import { useGameRunning } from "@/hooks/useGameRunning";
 import { useGameScore } from "@/hooks/useGameScore";
 import { ScoreHud } from "@/components/ScoreHud";
 import { GameTouchBar } from "@/components/GameTouchBar";
+import { useCanvasFit } from "@/hooks/useCanvasFit";
 
 const GAME_SLUG = "tugla-kir";
 const GAME_W = 800;
@@ -16,8 +18,12 @@ type Brick = { x: number; y: number; w: number; h: number; color: string; status
 
 export function Breakout() {
   const active = useGameActive();
+  const running = useGameRunning();
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const hudRef = useRef<HTMLDivElement>(null);
   const juiceRef = useRef(createGameJuice());
+  const keysRef = useRef({ left: false, right: false });
+  useCanvasFit(canvasRef, GAME_W, GAME_H, { hudRef, minWidth: 280 });
   const [score, setScore] = useState(0);
   const [over, setOver] = useState(false);
   const [won, setWon] = useState(false);
@@ -78,10 +84,13 @@ export function Breakout() {
     if (!ctx) return;
     const fx = juiceRef.current;
 
-    const onKey = (e: KeyboardEvent) => {
-      const p = paddleRef.current;
-      if (e.key === "ArrowLeft" && p.x > 0) p.x -= p.speed;
-      if (e.key === "ArrowRight" && p.x < GAME_W - p.w) p.x += p.speed;
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "ArrowLeft") keysRef.current.left = true;
+      if (e.key === "ArrowRight") keysRef.current.right = true;
+    };
+    const onKeyUp = (e: KeyboardEvent) => {
+      if (e.key === "ArrowLeft") keysRef.current.left = false;
+      if (e.key === "ArrowRight") keysRef.current.right = false;
     };
 
     const cssToX = (clientX: number) => {
@@ -96,15 +105,19 @@ export function Breakout() {
       p.x = Math.max(0, Math.min(GAME_W - p.w, x - p.w / 2));
     };
 
-    document.addEventListener("keydown", onKey);
+    document.addEventListener("keydown", onKeyDown);
+    document.addEventListener("keyup", onKeyUp);
     canvas.addEventListener("touchstart", onTouch, { passive: false });
     canvas.addEventListener("touchmove", onTouch, { passive: false });
 
     let raf = 0;
     const loop = () => {
-      if (active && !overRef.current) {
+      if (running && !overRef.current) {
         const ball = ballRef.current;
         const paddle = paddleRef.current;
+        const keys = keysRef.current;
+        if (keys.left) paddle.x = Math.max(0, paddle.x - paddle.speed);
+        if (keys.right) paddle.x = Math.min(GAME_W - paddle.w, paddle.x + paddle.speed);
         ball.x += ball.dx;
         ball.y += ball.dy;
 
@@ -143,7 +156,7 @@ export function Breakout() {
             fx.popScore(b.x + b.w / 2, b.y, "+10");
             scoreRef.current += 10;
             setScore(scoreRef.current);
-            void scoreGame.checkMilestone(scoreRef.current);
+            if (scoreRef.current % 100 === 0) void scoreGame.checkMilestone(scoreRef.current);
             if (destroyedRef.current % 10 === 0) {
               ball.dx *= 1.1;
               ball.dy *= 1.1;
@@ -187,18 +200,23 @@ export function Breakout() {
 
     return () => {
       cancelAnimationFrame(raf);
-      document.removeEventListener("keydown", onKey);
+      document.removeEventListener("keydown", onKeyDown);
+      document.removeEventListener("keyup", onKeyUp);
       canvas.removeEventListener("touchstart", onTouch);
       canvas.removeEventListener("touchmove", onTouch);
     };
-  }, [active, scoreGame]);
+  }, [running, scoreGame]);
 
   return (
-    <div className="game-panel canvas-game acelya-game">
-      <ScoreHud score={score} selfHigh={scoreGame.selfHigh} rivalHigh={scoreGame.rivalHigh} rivalName={scoreGame.rivalName} />
-      <p className="round-label">Tuğlaları kır, topu düşürme!</p>
-      {!active && <p className="game-waiting">ℹ️ Başla&apos;ya basınca oyun başlar</p>}
-      <canvas ref={canvasRef} width={GAME_W} height={GAME_H} className="game-canvas touch-canvas" />
+    <div className="game-panel canvas-game acelya-game fullscreen-game">
+      <div ref={hudRef} className="acelya-hud">
+        <ScoreHud score={score} selfHigh={scoreGame.selfHigh} rivalHigh={scoreGame.rivalHigh} rivalName={scoreGame.rivalName} />
+        <p className="round-label">Tuğlaları kır, topu düşürme!</p>
+        {!active && <p className="game-waiting">ℹ️ Başla&apos;ya basınca oyun başlar</p>}
+      </div>
+      <div className="acelya-game-stage">
+        <canvas ref={canvasRef} width={GAME_W} height={GAME_H} className="game-canvas touch-canvas breakout-canvas" />
+      </div>
       <GameTouchBar gameId="breakout" />
       {over && (
         <div className="game-over">

@@ -1,7 +1,9 @@
 "use client";
 
+import { useEffect } from "react";
 import { ActivityShell } from "@/components/ActivityShell";
 import { getActivity } from "@/activities/registry";
+import { logDogukanVisit } from "@/lib/activityLog";
 
 type Props = {
   slug: string;
@@ -9,6 +11,10 @@ type Props = {
 };
 
 export function ActivityClient({ slug, title }: Props) {
+  useEffect(() => {
+    logDogukanVisit(slug, title);
+  }, [slug, title]);
+
   const Activity = getActivity(slug);
 
   if (!Activity) {

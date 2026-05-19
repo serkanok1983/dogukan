@@ -2,6 +2,7 @@
 
 import { useCallback, useMemo, useState } from "react";
 import { useGameActive } from "@/lib/gameSession";
+import { useGameRunning } from "@/hooks/useGameRunning";
 import { sounds } from "@/lib/sounds";
 
 const GOAL = [1, 2, 3, 4, 5, 6, 7, 8, 0];
@@ -33,6 +34,7 @@ function canMove(board: number[], index: number): boolean {
 
 export function SlidingPuzzle() {
   const active = useGameActive();
+  const running = useGameRunning();
   const [board, setBoard] = useState(shuffleBoard);
   const [moves, setMoves] = useState(0);
 
@@ -44,7 +46,7 @@ export function SlidingPuzzle() {
   }, []);
 
   const tap = (i: number) => {
-    if (!active || board[i] === 0) return;
+    if (!running || board[i] === 0) return;
     if (!canMove(board, i)) {
       sounds.wrong();
       return;

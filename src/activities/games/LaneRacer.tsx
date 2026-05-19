@@ -2,7 +2,9 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { drawParticles, spawnBurst, updateParticles, type Particle } from "@/lib/particles";
+import { createGameJuice } from "@/lib/gameJuice";
 import { useGameActive, useGameBoot } from "@/lib/gameSession";
+import { useGameRunning } from "@/hooks/useGameRunning";
 import { sounds } from "@/lib/sounds";
 import { randInt } from "@/lib/utils";
 import { useGameScore } from "@/hooks/useGameScore";
@@ -20,6 +22,7 @@ const DURATION = 75;
 
 export function LaneRacer() {
   const active = useGameActive();
+  const running = useGameRunning();
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [score, setScore] = useState(0);
   const [timeLeft, setTimeLeft] = useState(DURATION);
@@ -32,6 +35,7 @@ export function LaneRacer() {
   const speed = useRef(0.012);
   const obs = useRef<Obstacle[]>([]);
   const particles = useRef<LaneParticle[]>([]);
+  const juiceRef = useRef(createGameJuice());
   const frame = useRef(0);
   const scoreRef = useRef(0);
   const shieldRef = useRef(false);
@@ -68,7 +72,7 @@ export function LaneRacer() {
   }, [done, score, scoreGame]);
 
   useEffect(() => {
-    if (!active || done) return;
+    if (!running || done) return;
     const t = setInterval(() => {
       setTimeLeft((tm) => {
         const next = tm <= 1 ? 0 : tm - 1;
@@ -81,10 +85,10 @@ export function LaneRacer() {
       });
     }, 1000);
     return () => clearInterval(t);
-  }, [active, done]);
+  }, [running, done]);
 
   const moveLane = (dir: -1 | 1) => {
-    if (!active || overRef.current || done) return;
+    if (!running || overRef.current || done) return;
     const next = lane.current + dir;
     if (next >= 0 && next <= 2) {
       lane.current = next;
@@ -94,7 +98,7 @@ export function LaneRacer() {
 
   useEffect(() => {
     const canvas = canvasRef.current;
-    if (!active || !canvas || done) return;
+    if (!running || !canvas || done) return;
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
@@ -117,7 +121,7 @@ export function LaneRacer() {
 
     let raf = 0;
     const loop = () => {
-      if (!active || overRef.current || done) return;
+      if (!running || overRef.current || done) return;
       frame.current++;
       const nitro = frame.current < nitroUntil.current;
       speed.current = Math.min(0.028, (nitro ? 0.018 : 0.012) + scoreRef.current * 0.000015);
@@ -143,6 +147,8 @@ export function LaneRacer() {
             setScore(scoreRef.current);
             sounds.star();
             spawnBurst(particles.current, cx, cy, 10, ["#fde047", "#fbbf24"]);
+            juiceRef.current.burst(cx, cy, "#fde047", 14);
+            juiceRef.current.popScore(cx, cy - 16, "+40");
             return false;
           }
           if (o.kind === "nitro") {
@@ -213,6 +219,9 @@ export function LaneRacer() {
       });
 
       drawParticles(ctx, particles.current);
+      const fx = juiceRef.current;
+      fx.update();
+      fx.draw(ctx, W, H);
 
       ctx.font = "36px serif";
       ctx.textAlign = "center";
@@ -236,7 +245,7 @@ export function LaneRacer() {
       canvas.removeEventListener("touchstart", onTouchStart);
       canvas.removeEventListener("touchend", onTouchEnd);
     };
-  }, [active, done, reset, shield, scoreGame]);
+  }, [running, done, reset, shield, scoreGame]);
 
   return (
     <div className="game-panel canvas-game">

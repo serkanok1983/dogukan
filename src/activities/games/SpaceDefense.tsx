@@ -2,7 +2,9 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { drawParticles, spawnBurst, updateParticles, type Particle } from "@/lib/particles";
+import { createGameJuice } from "@/lib/gameJuice";
 import { useGameActive, useGameBoot } from "@/lib/gameSession";
+import { useGameRunning } from "@/hooks/useGameRunning";
 import { sounds } from "@/lib/sounds";
 import { randInt } from "@/lib/utils";
 import { useGameScore } from "@/hooks/useGameScore";
@@ -19,6 +21,7 @@ const H = 480;
 
 export function SpaceDefense() {
   const active = useGameActive();
+  const running = useGameRunning();
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [score, setScore] = useState(0);
   const [lives, setLives] = useState(3);
@@ -32,6 +35,7 @@ export function SpaceDefense() {
   const rocks = useRef<Rock[]>([]);
   const powerUps = useRef<PowerUp[]>([]);
   const particles = useRef<Particle[]>([]);
+  const juiceRef = useRef(createGameJuice());
   const stars = useRef<{ x: number; y: number; s: number }[]>([]);
   const frame = useRef(0);
   const shootCd = useRef(0);
@@ -77,7 +81,7 @@ export function SpaceDefense() {
 
   useEffect(() => {
     const canvas = canvasRef.current;
-    if (!active || !canvas || over) return;
+    if (!running || !canvas || over) return;
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
@@ -117,7 +121,7 @@ export function SpaceDefense() {
 
     let raf = 0;
     const loop = () => {
-      if (!active || overRef.current) return;
+      if (!running || overRef.current) return;
       frame.current++;
       if (shootCd.current > 0) shootCd.current--;
 
@@ -171,8 +175,11 @@ export function SpaceDefense() {
             "#fde047",
             "#fff",
           ]);
-          sounds.explode();
           const pts = rock.kind === "big" ? 40 : rock.kind === "fast" ? 20 : 15;
+          juiceRef.current.burst(rx, ry, "#f97316", rock.kind === "big" ? 22 : 14);
+          juiceRef.current.popScore(rx, ry - 12, `+${pts}`);
+          if (rock.kind === "big") juiceRef.current.shakeScreen(4);
+          sounds.explode();
           scoreRef.current += pts;
           killsRef.current += 1;
           setScore(scoreRef.current);
@@ -260,6 +267,9 @@ export function SpaceDefense() {
       });
 
       drawParticles(ctx, particles.current);
+      const fx = juiceRef.current;
+      fx.update();
+      fx.draw(ctx, W, H);
 
       ctx.fillStyle = "#fde047";
       bullets.current.forEach((b) => {
@@ -295,7 +305,7 @@ export function SpaceDefense() {
       canvas.removeEventListener("touchstart", onTap);
       window.removeEventListener("keydown", onKey);
     };
-  }, [active, over, reset, scoreGame]);
+  }, [running, over, reset, scoreGame]);
 
   return (
     <div className="game-panel canvas-game">

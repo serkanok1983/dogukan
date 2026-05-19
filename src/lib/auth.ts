@@ -52,4 +52,9 @@ export function logout(): void {
   sessionStorage.removeItem(PLAYER_KEY);
   localStorage.removeItem(STORAGE_KEY);
   localStorage.removeItem(PLAYER_KEY);
+  try {
+    sessionStorage.removeItem("dogukan-activity-login");
+  } catch {
+    /* ignore */
+  }
 }

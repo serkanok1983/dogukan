@@ -16,6 +16,7 @@ export function useGameScore(gameSlug: string) {
   const player = getPlayerId();
   const rival = player ? getRivalId(player) : null;
   const lastMilestone = useRef(0);
+  const lastCheckAt = useRef(0);
   const [highs, setHighs] = useState<Record<PlayerId, number>>({
     dogukan: 0,
     serkan: 0,
@@ -48,6 +49,9 @@ export function useGameScore(gameSlug: string) {
   const checkMilestone = useCallback(
     async (currentScore: number) => {
       if (!player) return;
+      const now = Date.now();
+      if (now - lastCheckAt.current < 12_000) return;
+      lastCheckAt.current = now;
       const m = await checkLiveMilestone(gameSlug, player, currentScore, lastMilestone.current);
       if (m.celebrate) {
         lastMilestone.current = m.mark;

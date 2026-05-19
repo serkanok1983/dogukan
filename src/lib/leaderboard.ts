@@ -205,7 +205,7 @@ export async function checkLiveMilestone(
       mark: currentScore,
     };
   }
-  const milestones = [50, 100, 250, 500, 1000];
+  const milestones = [500, 1000, 2500, 5000, 10000];
   for (const m of milestones) {
     if (currentScore >= m && lastCelebrated < m) {
       return {

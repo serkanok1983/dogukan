@@ -4,9 +4,11 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { acelyaSounds } from "@/lib/acelyaSounds";
 import { createGameJuice } from "@/lib/gameJuice";
 import { useGameActive, useGameBoot } from "@/lib/gameSession";
+import { useGameRunning } from "@/hooks/useGameRunning";
 import { useGameScore } from "@/hooks/useGameScore";
 import { ScoreHud } from "@/components/ScoreHud";
 import { GameTouchBar } from "@/components/GameTouchBar";
+import { useCanvasFit } from "@/hooks/useCanvasFit";
 
 const GAME_SLUG = "tetris";
 const GAME_W = 400;
@@ -33,8 +35,11 @@ type Piece = { key: string; color: string; matrix: number[][]; x: number; y: num
 
 export function Tetris() {
   const active = useGameActive();
+  const running = useGameRunning();
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const hudRef = useRef<HTMLDivElement>(null);
   const juiceRef = useRef(createGameJuice());
+  useCanvasFit(canvasRef, GAME_W, GAME_H, { hudRef, minWidth: 240 });
   const [score, setScore] = useState(0);
   const [lines, setLines] = useState(0);
   const [level, setLevel] = useState(1);
@@ -193,10 +198,10 @@ export function Tetris() {
   };
 
   const tick = useCallback(() => {
-    if (overRef.current || !active) return;
+    if (overRef.current || !running) return;
     if (!tryMove(0, 1)) lock();
     else draw();
-  }, [active, draw, lock]);
+  }, [running, draw, lock]);
 
   const hardDrop = () => {
     while (tryMove(0, 1)) {
@@ -234,7 +239,7 @@ export function Tetris() {
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      if (!active || overRef.current) return;
+      if (!running || overRef.current) return;
       if (e.key === "ArrowLeft") {
         tryMove(-1, 0);
         draw();
@@ -265,12 +270,12 @@ export function Tetris() {
     };
     document.addEventListener("keydown", onKey);
     return () => document.removeEventListener("keydown", onKey);
-  }, [active, draw, tick]);
+  }, [running, draw, tick]);
 
   useEffect(() => {
     let raf = 0;
     const loop = (now: number) => {
-      if (active && !overRef.current && now - lastDropRef.current > dropMsRef.current) {
+      if (running && !overRef.current && now - lastDropRef.current > dropMsRef.current) {
         lastDropRef.current = now;
         tick();
       } else draw();
@@ -278,7 +283,7 @@ export function Tetris() {
     };
     raf = requestAnimationFrame(loop);
     return () => cancelAnimationFrame(raf);
-  }, [active, draw, tick]);
+  }, [running, draw, tick]);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -309,13 +314,17 @@ export function Tetris() {
   }, [draw]);
 
   return (
-    <div className="game-panel canvas-game acelya-game">
-      <ScoreHud score={score} selfHigh={scoreGame.selfHigh} rivalHigh={scoreGame.rivalHigh} rivalName={scoreGame.rivalName} />
-      <p className="round-label">
-        Skor: {score} · Satır: {lines} · Seviye: {level}
-      </p>
-      {!active && <p className="game-waiting">ℹ️ Başla&apos;ya basınca Tetris başlar</p>}
-      <canvas ref={canvasRef} width={GAME_W} height={GAME_H} className="game-canvas touch-canvas tetris-canvas" />
+    <div className="game-panel canvas-game acelya-game fullscreen-game">
+      <div ref={hudRef} className="acelya-hud">
+        <ScoreHud score={score} selfHigh={scoreGame.selfHigh} rivalHigh={scoreGame.rivalHigh} rivalName={scoreGame.rivalName} />
+        <p className="round-label">
+          Skor: {score} · Satır: {lines} · Seviye: {level}
+        </p>
+        {!active && <p className="game-waiting">ℹ️ Başla&apos;ya basınca Tetris başlar</p>}
+      </div>
+      <div className="acelya-game-stage">
+        <canvas ref={canvasRef} width={GAME_W} height={GAME_H} className="game-canvas touch-canvas tetris-canvas" />
+      </div>
       <GameTouchBar gameId="tetris" />
       {over && (
         <div className="game-over">

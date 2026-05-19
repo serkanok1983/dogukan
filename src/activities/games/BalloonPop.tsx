@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useGameActive } from "@/lib/gameSession";
+import { useGameRunning } from "@/hooks/useGameRunning";
 import { useGameScore } from "@/hooks/useGameScore";
 import { ScoreHud } from "@/components/ScoreHud";
 import { sounds } from "@/lib/sounds";
@@ -13,6 +14,7 @@ type Balloon = { id: number; answer: number; x: number; color: string };
 
 export function BalloonPop() {
   const active = useGameActive();
+  const running = useGameRunning();
   const [round, setRound] = useState(0);
   const { a, b, correct } = useMemo(
     () => {
@@ -34,7 +36,7 @@ export function BalloonPop() {
   ].filter((b) => b.answer > 0);
 
   const pop = (ans: number) => {
-    if (!active) return;
+    if (!running) return;
     if (ans === correct) {
       sounds.pop();
       setScore((s) => s + 1);

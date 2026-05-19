@@ -2,7 +2,9 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { drawParticles, spawnBurst, updateParticles, type Particle } from "@/lib/particles";
+import { createGameJuice } from "@/lib/gameJuice";
 import { useGameActive, useGameBoot } from "@/lib/gameSession";
+import { useGameRunning } from "@/hooks/useGameRunning";
 import { sounds } from "@/lib/sounds";
 import { useGameScore } from "@/hooks/useGameScore";
 import { ScoreHud } from "@/components/ScoreHud";
@@ -31,6 +33,7 @@ function rectsOverlap(
 
 export function TankBattle() {
   const active = useGameActive();
+  const running = useGameRunning();
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [score, setScore] = useState(0);
   const [lives, setLives] = useState(3);
@@ -43,6 +46,7 @@ export function TankBattle() {
   const enemies = useRef<Enemy[]>([]);
   const blocks = useRef<Block[]>([]);
   const particles = useRef<Particle[]>([]);
+  const juiceRef = useRef(createGameJuice());
   const frame = useRef(0);
   const shootCd = useRef(0);
   const scoreRef = useRef(0);
@@ -150,7 +154,7 @@ export function TankBattle() {
       if (e.key === "ArrowRight" || e.key === "d") moveDir.current = 1;
       if (e.key === " " || e.key === "ArrowUp") {
         e.preventDefault();
-        if (shootCd.current <= 0 && !overRef.current) {
+        if (shootCd.current <= 0 && !overRef.current && running) {
           shoot(true, px.current + tankW / 2 - 2, py.current);
           shootCd.current = 14;
         }
@@ -177,7 +181,7 @@ export function TankBattle() {
 
     const fireBtn = (e: Event) => {
       e.preventDefault();
-      if (shootCd.current <= 0 && !overRef.current && active) {
+      if (shootCd.current <= 0 && !overRef.current && running) {
         shoot(true, px.current + tankW / 2 - 2, py.current);
         shootCd.current = 14;
       }
@@ -196,7 +200,7 @@ export function TankBattle() {
       frame.current++;
       if (shootCd.current > 0) shootCd.current--;
 
-      if (active && !overRef.current) {
+      if (running && !overRef.current) {
         px.current += moveDir.current * 4.2;
         px.current = Math.max(8, Math.min(W - tankW - 8, px.current));
 
@@ -227,7 +231,12 @@ export function TankBattle() {
                 e.hp--;
                 b.y = -999;
                 if (e.hp <= 0) {
-                  explode(e.x + 16, e.y + 16, true);
+                  const ex = e.x + 16;
+                  const ey = e.y + 16;
+                  explode(ex, ey, true);
+                  juiceRef.current.burst(ex, ey, "#f97316", 20);
+                  juiceRef.current.popScore(ex, ey - 14, "+80");
+                  juiceRef.current.shakeScreen(5);
                   enemies.current.splice(i, 1);
                   scoreRef.current += 80;
                   setScore(scoreRef.current);
@@ -241,8 +250,13 @@ export function TankBattle() {
               if (bl.hp > 0 && rectsOverlap(b.x - 4, b.y - 4, 8, 8, bl.x, bl.y, bl.w, bl.h)) {
                 bl.hp--;
                 b.y = -999;
-                explode(bl.x + bl.w / 2, bl.y + bl.h / 2);
-                if (bl.hp <= 0) scoreRef.current += 15;
+                const bx = bl.x + bl.w / 2;
+                const by = bl.y + bl.h / 2;
+                explode(bx, by);
+                if (bl.hp <= 0) {
+                  scoreRef.current += 15;
+                  juiceRef.current.popScore(bx, by - 10, "+15");
+                }
                 break;
               }
             }
@@ -333,6 +347,9 @@ export function TankBattle() {
       }
 
       drawParticles(ctx, particles.current);
+      const fx = juiceRef.current;
+      fx.update();
+      fx.draw(ctx, W, H);
 
       ctx.fillStyle = "#fff";
       ctx.font = "bold 14px var(--font-nunito), sans-serif";
@@ -353,7 +370,7 @@ export function TankBattle() {
       window.removeEventListener("keydown", onKey);
       window.removeEventListener("keyup", onKeyUp);
     };
-  }, [active, scoreGame]);
+  }, [running, scoreGame]);
 
   return (
     <div className="game-panel canvas-game tank-game">
@@ -389,7 +406,7 @@ export function TankBattle() {
           aria-label="Ateş"
           onPointerDown={(e) => {
             e.preventDefault();
-            if (shootCd.current <= 0 && !overRef.current && active) {
+            if (shootCd.current <= 0 && !overRef.current && running) {
               bullets.current.push({
                 x: px.current + 16,
                 y: py.current,

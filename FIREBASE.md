@@ -19,6 +19,13 @@
           ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 99999999"
         }
       }
+    },
+    "activity": {
+      ".read": true,
+      "dogukan": {
+        "logins": { ".write": true },
+        "visits": { ".write": true }
+      }
     }
   }
 }
@@ -63,3 +70,14 @@ leaderboard/
 ```
 
 Firebase yapılandırılmazsa skorlar yalnızca tarayıcıda (`localStorage`) saklanır.
+
+## Aktivite takibi (Serkan → Bilgi)
+
+Doğukan giriş yaptığında ve aktivite sayfalarına girdiğinde kayıt oluşur:
+
+```
+activity/dogukan/logins/{id}: { at, iso }
+activity/dogukan/visits/{id}: { at, iso, slug, title }
+```
+
+Serkan kullanıcısı menüde **📊 Bilgi** ile bu özeti görür.

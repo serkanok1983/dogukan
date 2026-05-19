@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { drawParticles, spawnBurst, updateParticles, type Particle } from "@/lib/particles";
 import { useGameActive, useGameBoot } from "@/lib/gameSession";
+import { useGameRunning } from "@/hooks/useGameRunning";
 import { sounds } from "@/lib/sounds";
 import { randInt } from "@/lib/utils";
 import { useGameScore } from "@/hooks/useGameScore";
@@ -34,6 +35,7 @@ function clearInput(leftHeld: React.MutableRefObject<boolean>, rightHeld: React.
 
 export function PlatformJump() {
   const active = useGameActive();
+  const running = useGameRunning();
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [score, setScore] = useState(0);
   const [over, setOver] = useState(false);
@@ -119,7 +121,7 @@ export function PlatformJump() {
 
   useEffect(() => {
     const canvas = canvasRef.current;
-    if (!active || !canvas || over) return;
+    if (!running || !canvas || over) return;
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
@@ -148,7 +150,7 @@ export function PlatformJump() {
 
     let raf = 0;
     const loop = () => {
-      if (!active || overRef.current) return;
+      if (!running || overRef.current) return;
       frame.current++;
 
       if (leftHeld.current) vx.current = Math.max(vx.current - 0.5, -4.5);
@@ -316,7 +318,7 @@ export function PlatformJump() {
       canvas.removeEventListener("touchend", clearTouch);
       canvas.removeEventListener("touchcancel", clearTouch);
     };
-  }, [active, over, reset, scoreGame]);
+  }, [running, over, reset, scoreGame]);
 
   const restart = () => {
     clearInput(leftHeld, rightHeld);
