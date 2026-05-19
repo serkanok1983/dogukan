@@ -34,7 +34,7 @@ export function LoginScreen({ onSuccess }: Props) {
         <div className="brand-mascot" aria-hidden>
           🚀
         </div>
-        <h1>Doğukan&apos;ın Dünyası</h1>
+        <h1>Doğukan&apos;ın Yeri</h1>
         <p>Okuma · Sayılar · Şekiller · Bilim · Oyunlar</p>
         <p className="login-stat">
           <strong>{TOTAL_ACTIVITIES}</strong> eğlenceli aktivite seni bekliyor!

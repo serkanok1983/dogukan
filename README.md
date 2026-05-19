@@ -1,6 +1,6 @@
-# Doğukan'ın Dünyası
+# Doğukan'ın Yeri
 
-İlkokula başlayan çocuklar için oyunlaştırılmış öğrenme sitesi. Okuma-yazma, sayılar, şekiller, bilim ve mantık aktiviteleri içerir.
+Doğukan için eğlenceli oyunlar ve oyunlaştırılmış öğrenme aktiviteleri. Okuma-yazma, sayılar, şekiller, bilim ve mantık aktiviteleri içerir.
 
 ## Geliştirme
 

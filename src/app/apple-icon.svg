@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 180" role="img" aria-label="Doukan'1n Yeri">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="180" y2="180" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#38bdf8"/>
+      <stop offset="48%" stop-color="#8b5cf6"/>
+      <stop offset="100%" stop-color="#f472b6"/>
+    </linearGradient>
+  </defs>
+  <rect width="180" height="180" rx="40" fill="url(#bg)"/>
+  <rect x="34" y="68" width="112" height="68" rx="34" fill="#fff" opacity="0.95"/>
+  <circle cx="68" cy="102" r="20" fill="#2563eb"/>
+  <circle cx="68" cy="102" r="8" fill="#93c5fd"/>
+  <circle cx="118" cy="82" r="12" fill="#fbbf24"/>
+  <circle cx="142" cy="102" r="12" fill="#fbbf24"/>
+  <circle cx="118" cy="122" r="12" fill="#fbbf24"/>
+  <circle cx="142" cy="82" r="12" fill="#fbbf24"/>
+  <path d="M78 42 L102 42 L98 68 L82 68 Z" fill="#fde047"/>
+</svg>

@@ -44,8 +44,8 @@ export function MenuScreen({ onLogout }: Props) {
               className="menu-hero-photo"
             />
             <div>
-              <h1>Doğukan&apos;ın Dünyası</h1>
-              <p className="tagline">İlkokul için eğlenceli öğrenme oyunları</p>
+              <h1>Doğukan&apos;ın Yeri</h1>
+              <p className="tagline">Doğukan için eğlenceli oyunlar</p>
               <div className="stats">
                 <span className="stat">
                   <strong>{TOTAL_ACTIVITIES}</strong> aktivite
