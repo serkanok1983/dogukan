@@ -48,6 +48,17 @@ export const GUIDES: Record<string, Guide> = {
     controls: ["Ekrana dokun — zıpla", "60 saniye dayan"],
     learn: "Zamanlama ve refleks.",
   },
+  "kaydir-puzzle": {
+    type: "Puzzle",
+    intro:
+      "9 karelik bir yapboz! Emojileri üstteki hedef sıraya getir. Boş kare sağ altta olmalı.",
+    controls: [
+      "Boş kareye yan yana bir emojiye dokun — o kare kayar",
+      "Sadece yanındaki kareler hareket eder (parlayanlar)",
+      "Hepsi doğru sırada olunca kazanırsın",
+    ],
+    learn: "Plan yap: hangi emojiyi önce kaydırmalısın? Az hamlede bitirmeye çalış.",
+  },
   "sayma-oyunu": {
     type: "Sayılar",
     intro: "Ekrandaki nesneleri say ve doğru sayıyı seç.",
