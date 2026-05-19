@@ -1,4 +1,4 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" role="img" aria-label="Doukan'1n Yeri">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" role="img" aria-label="Dogukan">
   <defs>
     <linearGradient id="bg" x1="0" y1="0" x2="32" y2="32" gradientUnits="userSpaceOnUse">
       <stop offset="0%" stop-color="#38bdf8"/>
@@ -7,7 +7,6 @@
     </linearGradient>
   </defs>
   <rect width="32" height="32" rx="8" fill="url(#bg)"/>
-  <!-- Oyun kolu stilize -->
   <rect x="6" y="12" width="20" height="12" rx="6" fill="#fff" opacity="0.95"/>
   <circle cx="12" cy="18" r="3.5" fill="#2563eb"/>
   <circle cx="12" cy="18" r="1.5" fill="#93c5fd"/>
