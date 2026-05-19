@@ -42,6 +42,12 @@ export const GUIDES: Record<string, Guide> = {
     controls: ["Baloncuğa dokun — patlat", "45 saniye süren var"],
     learn: "El-göz koordinasyonu ve hız.",
   },
+  "kosu-macera": {
+    type: "Koşu Oyunu",
+    intro: "Karakter otomatik koşar. Zıpla, kaktüs ve kuşlardan kaç, altınları topla!",
+    controls: ["Ekrana dokun — zıpla", "60 saniye dayan"],
+    learn: "Zamanlama ve refleks.",
+  },
   "sayma-oyunu": {
     type: "Sayılar",
     intro: "Ekrandaki nesneleri say ve doğru sayıyı seç.",

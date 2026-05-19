@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { drawParticles, spawnBurst, updateParticles, type Particle } from "@/lib/particles";
+import { useGameActive, useGameBoot } from "@/lib/gameSession";
 import { sounds } from "@/lib/sounds";
 import { randInt } from "@/lib/utils";
 
@@ -16,12 +17,19 @@ type Plat = {
 const W = 320;
 const H = 480;
 const PW = 72;
+const START_W = 100;
 const GRAVITY = 0.42;
 const JUMP = -12.5;
 const SPRING_JUMP = -17;
 const PLAYER_R = 16;
 
+function clearInput(leftHeld: React.MutableRefObject<boolean>, rightHeld: React.MutableRefObject<boolean>) {
+  leftHeld.current = false;
+  rightHeld.current = false;
+}
+
 export function PlatformJump() {
+  const active = useGameActive();
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [score, setScore] = useState(0);
   const [best, setBest] = useState(0);
@@ -41,64 +49,72 @@ export function PlatformJump() {
   const leftHeld = useRef(false);
   const rightHeld = useRef(false);
   const frame = useRef(0);
-  const highestY = useRef(0);
 
-  const makePlatforms = useCallback((startY: number, count: number) => {
-    const list: Plat[] = [];
-    let y = startY;
+  const addPlatformsAbove = useCallback((fromY: number, count: number) => {
+    let y = fromY;
     for (let i = 0; i < count; i++) {
+      y -= randInt(58, 76);
       const kindRoll = Math.random();
       const kind: Plat["kind"] =
-        kindRoll > 0.88 ? "spring" : kindRoll > 0.78 ? "moving" : "normal";
-      list.push({
-        x: randInt(20, W - PW - 20),
+        kindRoll > 0.9 ? "spring" : kindRoll > 0.82 ? "moving" : "normal";
+      plats.current.push({
+        x: randInt(16, W - PW - 16),
         y,
         w: PW,
         kind,
         movePhase: Math.random() * Math.PI * 2,
       });
-      y -= randInt(58, 78);
     }
-    return list;
   }, []);
 
   const reset = useCallback(() => {
-    const groundY = H - 80;
-    plats.current = makePlatforms(groundY, 14);
+    const groundY = H - 72;
+    plats.current = [
+      {
+        x: (W - START_W) / 2,
+        y: groundY,
+        w: START_W,
+        kind: "normal",
+      },
+    ];
+    addPlatformsAbove(groundY, 13);
+
     const startPlat = plats.current[0];
     px.current = startPlat.x + startPlat.w / 2;
-    py.current = startPlat.y - PLAYER_R - 2;
-    vy.current = JUMP;
+    py.current = startPlat.y - PLAYER_R - 1;
+    vy.current = 0;
     vx.current = 0;
+    clearInput(leftHeld, rightHeld);
+
     particles.current = [];
     clouds.current = Array.from({ length: 6 }, () => ({
       x: Math.random() * W,
-      y: Math.random() * H * 0.6,
+      y: Math.random() * H * 0.55,
       s: 0.3 + Math.random() * 0.5,
     }));
     scoreRef.current = 0;
     comboRef.current = 0;
-    highestY.current = py.current;
     overRef.current = false;
     frame.current = 0;
     setScore(0);
     setCombo(0);
     setOver(false);
-  }, [makePlatforms]);
+  }, [addPlatformsAbove]);
+
+  useGameBoot(reset);
 
   useEffect(() => {
-    reset();
     try {
       const saved = localStorage.getItem("dogukan-jump-best");
       if (saved) setBest(Number(saved));
     } catch {
       /* ignore */
     }
-  }, [reset]);
+  }, []);
 
   useEffect(() => {
     const canvas = canvasRef.current;
-    if (!canvas || over) return;
+    if (!active || !canvas || over) return;
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
@@ -116,34 +132,32 @@ export function PlatformJump() {
       leftHeld.current = x < rect.width / 2;
       rightHeld.current = x >= rect.width / 2;
     };
-    const onTouchEnd = () => {
-      leftHeld.current = false;
-      rightHeld.current = false;
-    };
+    const clearTouch = () => clearInput(leftHeld, rightHeld);
 
     window.addEventListener("keydown", onKeyDown);
     window.addEventListener("keyup", onKeyUp);
     canvas.addEventListener("touchstart", onTouchSide, { passive: true });
     canvas.addEventListener("touchmove", onTouchSide, { passive: true });
-    canvas.addEventListener("touchend", onTouchEnd);
+    canvas.addEventListener("touchend", clearTouch);
+    canvas.addEventListener("touchcancel", clearTouch);
 
     let raf = 0;
     const loop = () => {
-      if (overRef.current) return;
+      if (!active || overRef.current) return;
       frame.current++;
 
-      if (leftHeld.current) vx.current = Math.max(vx.current - 0.55, -5);
-      else if (rightHeld.current) vx.current = Math.min(vx.current + 0.55, 5);
-      else vx.current *= 0.88;
+      if (leftHeld.current) vx.current = Math.max(vx.current - 0.5, -4.5);
+      else if (rightHeld.current) vx.current = Math.min(vx.current + 0.5, 4.5);
+      else vx.current *= 0.85;
 
       px.current += vx.current;
       if (px.current < PLAYER_R) {
         px.current = PLAYER_R;
-        vx.current *= -0.5;
+        if (vx.current < 0) vx.current = 0;
       }
       if (px.current > W - PLAYER_R) {
         px.current = W - PLAYER_R;
-        vx.current *= -0.5;
+        if (vx.current > 0) vx.current = 0;
       }
 
       vy.current += GRAVITY;
@@ -151,8 +165,8 @@ export function PlatformJump() {
 
       plats.current.forEach((p) => {
         if (p.kind === "moving") {
-          p.movePhase = (p.movePhase ?? 0) + 0.04;
-          p.x = (W - p.w) / 2 + Math.sin(p.movePhase) * (W / 2 - p.w - 24);
+          p.movePhase = (p.movePhase ?? 0) + 0.035;
+          p.x = (W - p.w) / 2 + Math.sin(p.movePhase) * (W / 2 - p.w - 20);
         }
       });
 
@@ -160,10 +174,10 @@ export function PlatformJump() {
         for (const p of plats.current) {
           const feet = py.current + PLAYER_R;
           if (
-            feet >= p.y - 4 &&
-            feet <= p.y + 12 &&
-            px.current > p.x + 8 &&
-            px.current < p.x + p.w - 8
+            feet >= p.y - 6 &&
+            feet <= p.y + 14 &&
+            px.current > p.x + 6 &&
+            px.current < p.x + p.w - 6
           ) {
             py.current = p.y - PLAYER_R;
             vy.current = p.kind === "spring" ? SPRING_JUMP : JUMP;
@@ -204,19 +218,25 @@ export function PlatformJump() {
         setScore(scoreRef.current);
 
         let topY = plats.current.reduce((m, p) => Math.min(m, p.y), H);
-        while (topY > 50) {
-          topY -= randInt(58, 78);
-          plats.current.push(...makePlatforms(topY, 1));
+        while (topY > 55) {
+          topY -= randInt(58, 76);
+          const kindRoll = Math.random();
+          plats.current.push({
+            x: randInt(16, W - PW - 16),
+            y: topY,
+            w: PW,
+            kind: kindRoll > 0.9 ? "spring" : kindRoll > 0.82 ? "moving" : "normal",
+            movePhase: Math.random() * Math.PI * 2,
+          });
         }
-        plats.current = plats.current.filter((p) => p.y < H + 60);
+        plats.current = plats.current.filter((p) => p.y < H + 80);
       }
 
-      if (py.current < highestY.current) highestY.current = py.current;
-
       const lowest = plats.current.reduce((m, p) => Math.max(m, p.y), 0);
-      if (py.current - PLAYER_R > lowest + 120) {
+      if (py.current - PLAYER_R > lowest + 100) {
         overRef.current = true;
         setOver(true);
+        clearInput(leftHeld, rightHeld);
         sounds.gameOver();
         if (scoreRef.current > best) {
           setBest(scoreRef.current);
@@ -295,37 +315,40 @@ export function PlatformJump() {
       window.removeEventListener("keyup", onKeyUp);
       canvas.removeEventListener("touchstart", onTouchSide);
       canvas.removeEventListener("touchmove", onTouchSide);
-      canvas.removeEventListener("touchend", onTouchEnd);
+      canvas.removeEventListener("touchend", clearTouch);
+      canvas.removeEventListener("touchcancel", clearTouch);
     };
-  }, [over, reset, makePlatforms, best]);
+  }, [active, over, reset, best]);
+
+  const restart = () => {
+    clearInput(leftHeld, rightHeld);
+    reset();
+  };
 
   return (
     <div className="game-panel canvas-game">
       <p className="round-label">
         Adalara zıpla · 🚀 yaylı ada süper zıplar · Düşme!
       </p>
+      {!active && <p className="game-waiting">ℹ️ Başla&apos;ya basınca oyun başlar</p>}
       <canvas ref={canvasRef} width={W} height={H} className="game-canvas touch-canvas" />
       <div className="dpad">
         <div className="dpad-mid">
           <button
             type="button"
             aria-label="Sol"
-            onTouchStart={() => (leftHeld.current = true)}
-            onTouchEnd={() => (leftHeld.current = false)}
-            onMouseDown={() => (leftHeld.current = true)}
-            onMouseUp={() => (leftHeld.current = false)}
-            onMouseLeave={() => (leftHeld.current = false)}
+            onPointerDown={() => (leftHeld.current = true)}
+            onPointerUp={() => (leftHeld.current = false)}
+            onPointerLeave={() => (leftHeld.current = false)}
           >
             ◀
           </button>
           <button
             type="button"
             aria-label="Sağ"
-            onTouchStart={() => (rightHeld.current = true)}
-            onTouchEnd={() => (rightHeld.current = false)}
-            onMouseDown={() => (rightHeld.current = true)}
-            onMouseUp={() => (rightHeld.current = false)}
-            onMouseLeave={() => (rightHeld.current = false)}
+            onPointerDown={() => (rightHeld.current = true)}
+            onPointerUp={() => (rightHeld.current = false)}
+            onPointerLeave={() => (rightHeld.current = false)}
           >
             ▶
           </button>
@@ -335,7 +358,7 @@ export function PlatformJump() {
         <div className="game-over">
           <p>🏝️ Skor: {score}</p>
           {score >= best && score > 0 && <p className="hint-text success">🎉 Yeni rekor!</p>}
-          <button type="button" className="btn-primary" onClick={reset}>
+          <button type="button" className="btn-primary" onClick={restart}>
             Tekrar oyna
           </button>
         </div>

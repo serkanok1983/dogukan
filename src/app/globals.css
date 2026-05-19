@@ -945,6 +945,18 @@ body {
   text-align: center;
 }
 
+.game-waiting {
+  margin: 0 0 0.65rem;
+  padding: 0.5rem 0.75rem;
+  font-size: 0.82rem;
+  font-weight: 600;
+  text-align: center;
+  color: #1e40af;
+  background: #eff6ff;
+  border-radius: var(--radius-sm);
+  border: 2px dashed #93c5fd;
+}
+
 /* Maze */
 .maze-grid {
   display: grid;

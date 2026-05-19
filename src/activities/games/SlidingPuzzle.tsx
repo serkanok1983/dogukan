@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useGameActive } from "@/lib/gameSession";
 import { sounds } from "@/lib/sounds";
 
 const GOAL = [1, 2, 3, 4, 5, 6, 7, 8, 0];
@@ -20,12 +21,14 @@ function shuffleBoard(): number[] {
 }
 
 export function SlidingPuzzle() {
+  const active = useGameActive();
   const [board, setBoard] = useState(shuffleBoard);
   const [moves, setMoves] = useState(0);
 
   const won = board.every((v, i) => v === GOAL[i]);
 
   const tap = (i: number) => {
+    if (!active) return;
     const empty = board.indexOf(0);
     const er = Math.floor(empty / 3);
     const ec = empty % 3;

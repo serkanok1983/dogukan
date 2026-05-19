@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { drawParticles, spawnBurst, updateParticles, type Particle } from "@/lib/particles";
+import { useGameActive, useGameBoot } from "@/lib/gameSession";
 import { sounds } from "@/lib/sounds";
 import { randInt } from "@/lib/utils";
 
@@ -20,6 +21,7 @@ const H = 480;
 const ROUND = 45;
 
 export function BubbleBurst() {
+  const active = useGameActive();
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [score, setScore] = useState(0);
   const [timeLeft, setTimeLeft] = useState(ROUND);
@@ -46,12 +48,10 @@ export function BubbleBurst() {
     setDone(false);
   }, []);
 
-  useEffect(() => {
-    reset();
-  }, [reset]);
+  useGameBoot(reset);
 
   useEffect(() => {
-    if (done) return;
+    if (!active || done) return;
     const t = setInterval(() => {
       setTimeLeft((tm) => {
         const next = tm <= 1 ? 0 : tm - 1;
@@ -64,11 +64,11 @@ export function BubbleBurst() {
       });
     }, 1000);
     return () => clearInterval(t);
-  }, [done]);
+  }, [active, done]);
 
   useEffect(() => {
     const canvas = canvasRef.current;
-    if (!canvas || done) return;
+    if (!active || !canvas || done) return;
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
@@ -102,6 +102,7 @@ export function BubbleBurst() {
 
     let raf = 0;
     const loop = () => {
+      if (!active || done) return;
       frame.current++;
       if (frame.current % 28 === 0) {
         bubbles.current.push({
@@ -165,11 +166,12 @@ export function BubbleBurst() {
       canvas.removeEventListener("mousedown", onPointer);
       canvas.removeEventListener("touchstart", onPointer);
     };
-  }, [done, reset]);
+  }, [active, done, reset]);
 
   return (
     <div className="game-panel canvas-game">
       <p className="round-label">Baloncuklara dokun, patlat! Seri yap, bonus kazan.</p>
+      {!active && <p className="game-waiting">ℹ️ Başla&apos;ya basınca baloncuklar gelir</p>}
       <canvas ref={canvasRef} width={W} height={H} className="game-canvas touch-canvas" />
       {done && (
         <div className="game-over">

@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import { useGameActive, useGameBoot } from "@/lib/gameSession";
 import { sounds } from "@/lib/sounds";
 import { randInt } from "@/lib/utils";
 
@@ -16,6 +17,7 @@ const COLORS = [
 const DURATION = 40;
 
 export function ColorRace() {
+  const active = useGameActive();
   const [target, setTarget] = useState(COLORS[0]);
   const [score, setScore] = useState(0);
   const [streak, setStreak] = useState(0);
@@ -38,8 +40,10 @@ export function ColorRace() {
     nextTarget();
   }, [nextTarget]);
 
+  useGameBoot(reset);
+
   useEffect(() => {
-    if (done) return;
+    if (!active || done) return;
     const t = setInterval(() => {
       setTime((tm) => {
         if (tm <= 1) {
@@ -51,10 +55,10 @@ export function ColorRace() {
       });
     }, 1000);
     return () => clearInterval(t);
-  }, [done]);
+  }, [active, done]);
 
   const pick = (c: (typeof COLORS)[0]) => {
-    if (done) return;
+    if (!active || done) return;
     if (c.name === target.name) {
       const bonus = Math.min(streak, 8) * 2;
       setScore((s) => s + 1 + bonus);
@@ -76,6 +80,7 @@ export function ColorRace() {
       <p className="round-label">
         Süre: {time}s · Puan: {score} {streak >= 3 ? `· 🔥${streak}` : ""}
       </p>
+      {!active && <p className="game-waiting">ℹ️ Başla&apos;ya basınca süre işler</p>}
       {done ? (
         <div className="result-panel inner">
           <h2>🌈 Süre doldu!</h2>

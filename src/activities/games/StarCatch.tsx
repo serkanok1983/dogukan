@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { drawParticles, spawnBurst, updateParticles, type Particle } from "@/lib/particles";
+import { useGameActive, useGameBoot } from "@/lib/gameSession";
 import { sounds } from "@/lib/sounds";
 import { randInt, pickRandom } from "@/lib/utils";
 
@@ -24,6 +25,7 @@ const H = 440;
 const DURATION = 60;
 
 export function StarCatch() {
+  const active = useGameActive();
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [score, setScore] = useState(0);
   const [timeLeft, setTimeLeft] = useState(DURATION);
@@ -54,12 +56,10 @@ export function StarCatch() {
     setDone(false);
   }, []);
 
-  useEffect(() => {
-    reset();
-  }, [reset]);
+  useGameBoot(reset);
 
   useEffect(() => {
-    if (done) return;
+    if (!active || done) return;
     const t = setInterval(() => {
       setTimeLeft((tm) => {
         const next = tm <= 1 ? 0 : tm - 1;
@@ -72,11 +72,11 @@ export function StarCatch() {
       });
     }, 1000);
     return () => clearInterval(t);
-  }, [done]);
+  }, [active, done]);
 
   useEffect(() => {
     const canvas = canvasRef.current;
-    if (!canvas || done) return;
+    if (!active || !canvas || done) return;
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
@@ -90,7 +90,7 @@ export function StarCatch() {
 
     let raf = 0;
     const loop = () => {
-      if (overRef.current || done) return;
+      if (!active || overRef.current || done) return;
       frame.current++;
       const speed = 0.006 + Math.min(0.008, scoreRef.current * 0.00002);
 
@@ -178,11 +178,12 @@ export function StarCatch() {
       canvas.removeEventListener("mousemove", onMove);
       canvas.removeEventListener("touchmove", onMove);
     };
-  }, [done, reset]);
+  }, [active, done, reset]);
 
   return (
     <div className="game-panel canvas-game">
       <p className="round-label">60 saniye · Yıldız ve meyveleri yakala · 💣 kaçın!</p>
+      {!active && <p className="game-waiting">ℹ️ Başla&apos;ya basınca oyun başlar</p>}
       <canvas ref={canvasRef} width={W} height={H} className="game-canvas touch-canvas" />
       {done ? (
         <div className="game-over">

@@ -1,12 +1,14 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { useGameActive } from "@/lib/gameSession";
 import { sounds } from "@/lib/sounds";
 import { randInt } from "@/lib/utils";
 
 type Balloon = { id: number; answer: number; x: number; color: string };
 
 export function BalloonPop() {
+  const active = useGameActive();
   const [round, setRound] = useState(0);
   const { a, b, correct } = useMemo(
     () => {
@@ -26,6 +28,7 @@ export function BalloonPop() {
   ].filter((b) => b.answer > 0);
 
   const pop = (ans: number) => {
+    if (!active) return;
     if (ans === correct) {
       sounds.pop();
       setScore((s) => s + 1);
@@ -56,6 +59,7 @@ export function BalloonPop() {
       <p className="round-label">
         Tur {round + 1}/6 · {a} + {b} = ? · ⭐ {score}
       </p>
+      {!active && <p className="game-waiting">ℹ️ Başla&apos;ya basınca balonlar gelir</p>}
       <h2 className="count-prompt">Doğru cevabın balonunu patlat!</h2>
       <div className="balloon-sky">
         {balloons.map((b) => (

@@ -1,6 +1,8 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import { spawnBurst, type Particle } from "@/lib/particles";
+import { useGameActive, useGameBoot } from "@/lib/gameSession";
 import { sounds } from "@/lib/sounds";
 
 const GRID = 14;
@@ -9,9 +11,11 @@ const CELL = 22;
 type Pt = { x: number; y: number };
 
 export function SnakeGame() {
+  const active = useGameActive();
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [score, setScore] = useState(0);
   const [over, setOver] = useState(false);
+  const particles = useRef<Particle[]>([]);
   const state = useRef({
     snake: [{ x: 7, y: 7 }] as Pt[],
     dir: { x: 1, y: 0 },
@@ -19,6 +23,21 @@ export function SnakeGame() {
     food: { x: 10, y: 7 },
     tick: 0,
   });
+
+  const reset = useCallback(() => {
+    state.current = {
+      snake: [{ x: 7, y: 7 }],
+      dir: { x: 1, y: 0 },
+      nextDir: { x: 1, y: 0 },
+      food: { x: 10, y: 7 },
+      tick: 0,
+    };
+    particles.current = [];
+    setScore(0);
+    setOver(false);
+  }, []);
+
+  useGameBoot(reset);
 
   const spawnFood = useCallback((snake: Pt[]) => {
     let f: Pt;
@@ -60,7 +79,7 @@ export function SnakeGame() {
   }, []);
 
   const step = useCallback(() => {
-    if (over) return;
+    if (!active || over) return;
     const st = state.current;
     st.dir = st.nextDir;
     const head = { x: st.snake[0].x + st.dir.x, y: st.snake[0].y + st.dir.y };
@@ -77,18 +96,23 @@ export function SnakeGame() {
     st.snake.unshift(head);
     if (head.x === st.food.x && head.y === st.food.y) {
       sounds.pop();
+      spawnBurst(particles.current, head.x * CELL + CELL / 2, head.y * CELL + CELL / 2, 8, [
+        "#4ade80",
+        "#fde047",
+      ]);
       setScore((s) => s + 10);
       st.food = spawnFood(st.snake);
     } else {
       st.snake.pop();
     }
     draw();
-  }, [draw, over, spawnFood]);
+  }, [active, draw, over, spawnFood]);
 
   useEffect(() => {
+    if (!active) return;
     const id = setInterval(step, 180);
     return () => clearInterval(id);
-  }, [step]);
+  }, [active, step]);
 
   useEffect(() => {
     draw();
@@ -122,12 +146,13 @@ export function SnakeGame() {
   return (
     <div className="game-panel canvas-game">
       <p className="round-label">Puan: {score}</p>
+      {!active && <p className="game-waiting">ℹ️ Başla&apos;ya basınca yılan hareket eder</p>}
       <canvas ref={canvasRef} width={size} height={size} className="game-canvas" />
       {over && (
         <div className="game-over">
           <p>Oyun bitti!</p>
-          <button type="button" className="btn-primary" onClick={() => window.location.reload()}>
-            Tekrar
+          <button type="button" className="btn-primary" onClick={reset}>
+            Tekrar oyna
           </button>
         </div>
       )}

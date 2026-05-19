@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { useGameActive } from "@/lib/gameSession";
 import { sounds } from "@/lib/sounds";
 import { shuffle } from "@/lib/utils";
 
@@ -9,6 +10,7 @@ const PAIRS = ["🍎", "🐶", "⭐", "🌸", "🎈", "🦋", "🍊", "🐟"];
 type Card = { id: number; emoji: string; matched: boolean };
 
 export function MemoryGame() {
+  const active = useGameActive();
   const [cards, setCards] = useState<Card[]>(() =>
     shuffle([...PAIRS, ...PAIRS]).map((emoji, id) => ({ id, emoji, matched: false }))
   );
@@ -19,7 +21,7 @@ export function MemoryGame() {
   const won = useMemo(() => cards.every((c) => c.matched), [cards]);
 
   const flip = (idx: number) => {
-    if (locked || flipped.includes(idx) || cards[idx].matched) return;
+    if (!active || locked || flipped.includes(idx) || cards[idx].matched) return;
     sounds.tap();
     const next = [...flipped, idx];
     setFlipped(next);
@@ -60,6 +62,7 @@ export function MemoryGame() {
   return (
     <div className="game-panel">
       <p className="round-label">Hamle: {moves}</p>
+      {!active && <p className="game-waiting">ℹ️ Başla&apos;ya basınca kartları çevir</p>}
       <div className="memory-grid">
         {cards.map((c, i) => {
           const show = c.matched || flipped.includes(i);

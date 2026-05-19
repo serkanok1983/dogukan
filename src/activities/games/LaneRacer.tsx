@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { drawParticles, spawnBurst, updateParticles, type Particle } from "@/lib/particles";
+import { useGameActive, useGameBoot } from "@/lib/gameSession";
 import { sounds } from "@/lib/sounds";
 import { randInt } from "@/lib/utils";
 
@@ -14,6 +15,7 @@ const LANES = [0.2, 0.5, 0.8];
 const DURATION = 75;
 
 export function LaneRacer() {
+  const active = useGameActive();
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [score, setScore] = useState(0);
   const [timeLeft, setTimeLeft] = useState(DURATION);
@@ -48,12 +50,10 @@ export function LaneRacer() {
     setDone(false);
   }, []);
 
-  useEffect(() => {
-    reset();
-  }, [reset]);
+  useGameBoot(reset);
 
   useEffect(() => {
-    if (done) return;
+    if (!active || done) return;
     const t = setInterval(() => {
       setTimeLeft((tm) => {
         const next = tm <= 1 ? 0 : tm - 1;
@@ -66,10 +66,10 @@ export function LaneRacer() {
       });
     }, 1000);
     return () => clearInterval(t);
-  }, [done]);
+  }, [active, done]);
 
   const moveLane = (dir: -1 | 1) => {
-    if (overRef.current || done) return;
+    if (!active || overRef.current || done) return;
     const next = lane.current + dir;
     if (next >= 0 && next <= 2) {
       lane.current = next;
@@ -79,7 +79,7 @@ export function LaneRacer() {
 
   useEffect(() => {
     const canvas = canvasRef.current;
-    if (!canvas || done) return;
+    if (!active || !canvas || done) return;
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
@@ -102,7 +102,7 @@ export function LaneRacer() {
 
     let raf = 0;
     const loop = () => {
-      if (overRef.current || done) return;
+      if (!active || overRef.current || done) return;
       frame.current++;
       const nitro = frame.current < nitroUntil.current;
       speed.current = Math.min(0.028, (nitro ? 0.018 : 0.012) + scoreRef.current * 0.000015);
@@ -218,11 +218,12 @@ export function LaneRacer() {
       canvas.removeEventListener("touchstart", onTouchStart);
       canvas.removeEventListener("touchend", onTouchEnd);
     };
-  }, [done, reset, shield]);
+  }, [active, done, reset, shield]);
 
   return (
     <div className="game-panel canvas-game">
       <p className="round-label">75 sn yarış · ⭐⚡🛡️ topla · Kayalardan kaç!</p>
+      {!active && <p className="game-waiting">ℹ️ Başla&apos;ya basınca yarış başlar</p>}
       <canvas ref={canvasRef} width={W} height={H} className="game-canvas touch-canvas racer-canvas" />
       <div className="lane-controls">
         <button type="button" className="lane-btn" onClick={() => moveLane(-1)} aria-label="Sol şerit">

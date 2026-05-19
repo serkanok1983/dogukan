@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { drawParticles, spawnBurst, updateParticles, type Particle } from "@/lib/particles";
+import { useGameActive, useGameBoot } from "@/lib/gameSession";
 import { sounds } from "@/lib/sounds";
 import { randInt } from "@/lib/utils";
 
@@ -13,6 +14,7 @@ const W = 320;
 const H = 480;
 
 export function SpaceDefense() {
+  const active = useGameActive();
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [score, setScore] = useState(0);
   const [lives, setLives] = useState(3);
@@ -56,13 +58,11 @@ export function SpaceDefense() {
     setOver(false);
   }, []);
 
-  useEffect(() => {
-    reset();
-  }, [reset]);
+  useGameBoot(reset);
 
   useEffect(() => {
     const canvas = canvasRef.current;
-    if (!canvas || over) return;
+    if (!active || !canvas || over) return;
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
@@ -102,7 +102,7 @@ export function SpaceDefense() {
 
     let raf = 0;
     const loop = () => {
-      if (overRef.current) return;
+      if (!active || overRef.current) return;
       frame.current++;
       if (shootCd.current > 0) shootCd.current--;
 
@@ -279,11 +279,12 @@ export function SpaceDefense() {
       canvas.removeEventListener("touchstart", onTap);
       window.removeEventListener("keydown", onKey);
     };
-  }, [over, reset]);
+  }, [active, over, reset]);
 
   return (
     <div className="game-panel canvas-game">
       <p className="round-label">Kaydır + dokun · Dalga dalga meteor · ⚡💗 güç topla!</p>
+      {!active && <p className="game-waiting">ℹ️ Başla&apos;ya basınca savaş başlar</p>}
       <canvas ref={canvasRef} width={W} height={H} className="game-canvas touch-canvas space-canvas" />
       {over && (
         <div className="game-over">

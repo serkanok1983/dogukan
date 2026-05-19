@@ -6,6 +6,7 @@ import { BubbleBg } from "./BubbleBg";
 import { IntroModal } from "./IntroModal";
 import { findActivity } from "@/lib/menu";
 import { getGuide } from "@/lib/guides";
+import { GameSessionProvider } from "@/lib/gameSession";
 
 type Props = {
   slug: string;
@@ -41,7 +42,9 @@ export function ActivityShell({ slug, title, children }: Props) {
           ℹ️
         </button>
       </header>
-      <main className="activity-main">{children}</main>
+      <main className="activity-main">
+        <GameSessionProvider active={!showHelp}>{children}</GameSessionProvider>
+      </main>
       {showHelp && (
         <IntroModal
           title={title}
