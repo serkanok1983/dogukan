@@ -1,3 +1,4 @@
+import { createAsteroidsMusic } from "@/lib/acelyaAsteroidsMusic";
 import { acelyaSounds } from "@/lib/acelyaSounds";
 
 const FPS = 30;
@@ -78,6 +79,10 @@ export function mountClassicAsteroids(
   let text = "";
   let textAlpha = 0;
   let gameOverReported = false;
+  let roidsLeft = 0;
+  let roidsTotal = 0;
+
+  const music = createAsteroidsMusic(FPS);
 
   const distBetweenPoints = (x1: number, y1: number, x2: number, y2: number) =>
     Math.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2);
@@ -118,6 +123,8 @@ export function mountClassicAsteroids(
 
   const createAsteroidBelt = () => {
     roids = [];
+    roidsTotal = (ROID_NUM + level) * 7;
+    roidsLeft = roidsTotal;
     for (let i = 0; i < ROID_NUM + level; i++) {
       let x: number;
       let y: number;
@@ -170,6 +177,8 @@ export function mountClassicAsteroids(
     syncScore();
     roids.splice(index, 1);
     acelyaSounds.hit();
+    roidsLeft--;
+    music.setAsteroidRatio(roidsLeft / roidsTotal);
     if (roids.length === 0) {
       level++;
       newLevel();
@@ -192,6 +201,7 @@ export function mountClassicAsteroids(
   };
 
   const newLevel = () => {
+    music.setAsteroidRatio(1);
     text = `Level ${level + 1}`;
     textAlpha = 1.0;
     createAsteroidBelt();
@@ -260,6 +270,8 @@ export function mountClassicAsteroids(
 
   const update = () => {
     const active = isActive();
+    music.tick();
+
     const blinkOn = ship.blinkNum % 2 === 0;
     const exploding = ship.explodeTime > 0;
 
@@ -480,5 +492,6 @@ export function mountClassicAsteroids(
     document.removeEventListener("keydown", keyDown);
     document.removeEventListener("keyup", keyUp);
     acelyaSounds.thrustStop();
+    music.stop();
   };
 }
