@@ -126,8 +126,7 @@ export function Asteroids() {
         <h1 className="asteroids-title">Asteroids 🚀</h1>
         <p className="asteroids-hint">← → dön · ↑ itiş · Space ateş</p>
         <p className="asteroids-rival">
-          Puan: {score} · Rekor: {scoreGame.selfHigh} · {scoreGame.rivalName}:{" "}
-          {scoreGame.rivalHigh}
+          Puan: {score} · Rekor: {scoreGame.selfHigh}
         </p>
         {!active && (
           <p className="game-waiting asteroids-waiting">

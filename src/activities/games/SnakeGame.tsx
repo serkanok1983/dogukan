@@ -169,8 +169,6 @@ export function SnakeGame() {
       <ScoreHud
         score={score}
         selfHigh={scoreGame.selfHigh}
-        rivalHigh={scoreGame.rivalHigh}
-        rivalName={scoreGame.rivalName}
       />
       {!active && <p className="game-waiting">ℹ️ Başla&apos;ya basınca yılan hareket eder</p>}
       <canvas ref={canvasRef} width={size} height={size} className="game-canvas" />

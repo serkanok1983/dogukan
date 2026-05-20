@@ -312,8 +312,6 @@ export function SpaceDefense() {
       <ScoreHud
         score={score}
         selfHigh={scoreGame.selfHigh}
-        rivalHigh={scoreGame.rivalHigh}
-        rivalName={scoreGame.rivalName}
       />
       <p className="round-label">Kaydır + dokun · Dalga dalga meteor · ⚡💗 güç topla!</p>
       {!active && <p className="game-waiting">ℹ️ Başla&apos;ya basınca savaş başlar</p>}

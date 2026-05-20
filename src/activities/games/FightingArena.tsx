@@ -44,6 +44,7 @@ const KEY_HK = "KeyV";
 const KEY_THROW = "KeyB";
 
 type FloatText = { x: number; y: number; text: string; color: string; life: number; scale: number };
+type ImpactRing = { x: number; y: number; life: number; maxLife: number; color: string; maxR: number };
 type KoCinematic = {
   active: boolean;
   t: number;
@@ -70,6 +71,7 @@ export function FightingArena() {
   const projectiles = useRef<Projectile[]>([]);
   const particles = useRef<Particle[]>([]);
   const floatTexts = useRef<FloatText[]>([]);
+  const impactRings = useRef<ImpactRing[]>([]);
   const juiceRef = useRef(createGameJuice());
   const scoreRef = useRef(0);
   const roundRef = useRef(1);
@@ -84,6 +86,7 @@ export function FightingArena() {
   const comboDisplay = useRef(0);
   const comboShow = useRef(0);
   const frame = useRef(0);
+  const shakeRef = useRef({ t: 0, amp: 0 });
 
   const keys = useRef({ left: false, right: false, down: false, up: false, lp: false, hp: false, lk: false, hk: false });
   const downFrames = useRef(0);
@@ -93,6 +96,14 @@ export function FightingArena() {
 
   const spawnFloat = (x: number, y: number, text: string, color = "#fde047", scale = 1) => {
     floatTexts.current.push({ x, y, text, color, life: 55, scale });
+  };
+  const spawnImpactRing = (x: number, y: number, color: string, maxR = 70, life = 16) => {
+    impactRings.current.push({ x, y, color, maxR, life, maxLife: life });
+  };
+
+  const triggerShake = (amp: number, duration = 8) => {
+    shakeRef.current.amp = Math.max(shakeRef.current.amp, amp);
+    shakeRef.current.t = Math.max(shakeRef.current.t, duration);
   };
 
   const setupFighters = useCallback((playerChar: CharacterId, r: number) => {
@@ -111,8 +122,10 @@ export function FightingArena() {
       setupFighters(playerChar, r);
       projectiles.current = [];
       floatTexts.current = [];
+      impactRings.current = [];
       timerRef.current = ROUND_TIME;
       hitStopRef.current = 0;
+      shakeRef.current = { t: 0, amp: 0 };
       koCinematic.current = { active: false, t: 0, maxT: 110, victimId: "cpu", zoom: 1 };
       comboDisplay.current = 0;
       announceRef.current = r === 1 ? "ROUND 1 — FIGHT!" : `ROUND ${r} — FIGHT!`;
@@ -189,9 +202,11 @@ export function FightingArena() {
       zoom: 1,
     };
     hitStopRef.current = 8;
+    triggerShake(10, 16);
     juiceRef.current.shakeScreen(14);
     juiceRef.current.flashScreen(0.45);
     spawnFloat(STAGE_W / 2, STAGE_H / 2 - 30, "K.O.!", "#ef4444", 2.2);
+    spawnImpactRing(victim.x + victim.w / 2, victim.y + victim.h * 0.45, "#ef4444", 120, 24);
     for (let i = 0; i < 5; i++) {
       spawnBurst(particles.current, victim.x + victim.w / 2, victim.y - 20, 22, [
         "#fde047",
@@ -224,6 +239,7 @@ export function FightingArena() {
       comboDisplay.current++;
       comboShow.current = 40;
       hitStopRef.current = atk === "hk" || atk === "throw" ? 7 : atk === "hp" ? 5 : 3;
+      triggerShake(atk === "hk" ? 7.5 : atk === "hp" ? 5.5 : 3.5, atk === "hk" ? 10 : 7);
       juiceRef.current.shakeScreen(atk === "hk" ? 12 : atk === "throw" ? 10 : 6);
       juiceRef.current.popScore(defender.x, defender.y - 40, `${dmg}!`);
       spawnBurst(particles.current, defender.x + defender.w / 2, defender.y - 36, 16, [
@@ -231,6 +247,13 @@ export function FightingArena() {
         "#fde047",
         "#fff",
       ]);
+      spawnImpactRing(
+        defender.x + defender.w / 2,
+        defender.y + defender.h * 0.42,
+        atk === "hk" ? "#f97316" : atk === "hp" ? "#ef4444" : "#fde047",
+        atk === "hk" ? 110 : atk === "hp" ? 88 : 68,
+        atk === "hk" ? 20 : 14,
+      );
       if (comboDisplay.current >= 3) {
         spawnFloat(STAGE_W / 2, 80, `${comboDisplay.current} HİT COMBO!`, "#f472b6", 1.3);
         juiceRef.current.flashScreen(0.15);
@@ -251,6 +274,7 @@ export function FightingArena() {
     defender.hitstun = 28;
     attacker.comboCount++;
     hitStopRef.current = 10;
+    triggerShake(8.5, 12);
     juiceRef.current.shakeScreen(12);
     juiceRef.current.flashScreen(0.3);
     spawnFloat(defender.x, defender.y - 55, "THROW!", "#a78bfa", 1.4);
@@ -260,6 +284,7 @@ export function FightingArena() {
       "#fde047",
       "#fff",
     ]);
+    spawnImpactRing(defender.x + defender.w / 2, defender.y + defender.h * 0.46, "#a78bfa", 95, 18);
     sounds.success();
     attacker.state = "idle";
     attacker.attack = null;
@@ -402,6 +427,8 @@ export function FightingArena() {
       f.facing = other.x + other.w / 2 > f.x + f.w / 2 ? 1 : -1;
     }
 
+    const wasOnGround = f.onGround;
+    const preLandVy = f.vy;
     f.vy += GRAVITY;
     f.x += f.vx;
     f.y += f.vy;
@@ -410,6 +437,13 @@ export function FightingArena() {
       f.y = FLOOR_Y - f.h;
       f.vy = 0;
       f.onGround = true;
+      if (!wasOnGround && preLandVy > 2.2) {
+        const landX = f.x + f.w / 2;
+        const heavy = preLandVy > 5.2;
+        spawnBurst(particles.current, landX, FLOOR_Y - 2, heavy ? 16 : 10, ["#d6d3d1", "#a8a29e", "#fff"]);
+        spawnImpactRing(landX, FLOOR_Y - 4, "rgba(245,245,244,0.9)", heavy ? 80 : 52, heavy ? 14 : 10);
+        if (heavy) triggerShake(3.8, 7);
+      }
     } else {
       f.onGround = false;
       if (f.state !== "attack" && f.state !== "hitstun") f.state = "jump";
@@ -609,12 +643,28 @@ export function FightingArena() {
         ft.y -= 0.6;
         if (ft.life <= 0) floatTexts.current.splice(i, 1);
       }
+      for (let i = impactRings.current.length - 1; i >= 0; i--) {
+        const ring = impactRings.current[i];
+        ring.life--;
+        if (ring.life <= 0) impactRings.current.splice(i, 1);
+      }
 
       const slowMo = koCinematic.current.active;
       const victim = koCinematic.current.victimId === "p1" ? p1.current : cpu.current;
       const zoom = slowMo ? koCinematic.current.zoom : 1;
+      if (shakeRef.current.t > 0) {
+        shakeRef.current.t--;
+        shakeRef.current.amp *= 0.88;
+      } else {
+        shakeRef.current.amp = 0;
+      }
 
       ctx.save();
+      if (shakeRef.current.amp > 0.2) {
+        const sx = (Math.random() * 2 - 1) * shakeRef.current.amp;
+        const sy = (Math.random() * 2 - 1) * shakeRef.current.amp * 0.7;
+        ctx.translate(sx, sy);
+      }
       if (slowMo) {
         const zx = victim.x + victim.w / 2;
         const zy = victim.y + victim.h / 2;
@@ -635,15 +685,132 @@ export function FightingArena() {
         ctx.fillRect(-80, -80, STAGE_W + 160, STAGE_H + 160);
       }
 
+      const crowdBob = Math.sin(frame.current * 0.04) * 3;
       ctx.fillStyle = "rgba(0,0,0,0.25)";
       for (let i = 0; i < 6; i++) {
-        ctx.fillRect(20 + i * 58, 120 + (i % 2) * 30, 40, STAGE_H);
+        ctx.fillRect(20 + i * 58, 120 + (i % 2) * 30 + crowdBob, 40, STAGE_H);
+      }
+      for (let i = 0; i < 4; i++) {
+        const beamX = ((frame.current * (0.8 + i * 0.22) + i * 110) % (STAGE_W + 140)) - 70;
+        const beamAlpha = 0.06 + i * 0.015;
+        ctx.fillStyle = `rgba(255,255,255,${beamAlpha})`;
+        ctx.beginPath();
+        ctx.moveTo(beamX, 40);
+        ctx.lineTo(beamX + 56, 40);
+        ctx.lineTo(beamX + 142, FLOOR_Y - 10);
+        ctx.lineTo(beamX - 84, FLOOR_Y - 10);
+        ctx.closePath();
+        ctx.fill();
       }
 
       ctx.fillStyle = "#57534e";
       ctx.fillRect(0, FLOOR_Y, STAGE_W, STAGE_H - FLOOR_Y);
       ctx.fillStyle = "#78716c";
       ctx.fillRect(0, FLOOR_Y, STAGE_W, 8);
+
+      const drawAttackVfx = (f: Fighter) => {
+        if (f.state !== "attack" || !f.attack) return;
+        const ph = f.attackPhase;
+        const t = f.stateT;
+
+        if (f.attack === "fireball") {
+          const a = ATTACKS.fireball;
+          const charge =
+            ph === "startup" ? Math.min(1, t / Math.max(1, a.startup)) : ph === "active" ? 1 : 0.45;
+          ctx.save();
+          ctx.globalCompositeOperation = "lighter";
+          const warm = f.charId === "dogukan";
+          const c1 = warm ? "rgba(251,146,60," : "rgba(56,189,248,";
+          const c2 = warm ? "rgba(234,88,12," : "rgba(14,165,233,";
+          const r = 10 + charge * 26;
+          ctx.fillStyle = `${c1}${0.35 + charge * 0.35})`;
+          ctx.shadowColor = warm ? "#f97316" : "#0ea5e9";
+          ctx.shadowBlur = 18 + charge * 12;
+          ctx.beginPath();
+          ctx.arc(14, -32, r, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.strokeStyle = `${c2}${0.5 + charge * 0.25})`;
+          ctx.lineWidth = 3;
+          ctx.beginPath();
+          ctx.arc(14, -32, r + 6, 0, Math.PI * 2);
+          ctx.stroke();
+          for (let i = 0; i < 6; i++) {
+            const ang = (frame.current * 0.12 + i / 6) * Math.PI * 2;
+            ctx.globalAlpha = 0.35 * charge;
+            ctx.strokeStyle = "#fff";
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(14 + Math.cos(ang) * (r * 0.4), -32 + Math.sin(ang) * (r * 0.4));
+            ctx.lineTo(14 + Math.cos(ang) * (r + 18), -32 + Math.sin(ang) * (r + 18));
+            ctx.stroke();
+          }
+          ctx.restore();
+          return;
+        }
+
+        const atk = f.attack;
+        const pulse =
+          ph === "active" ? 0.85 + Math.sin(frame.current * 0.8) * 0.15 : ph === "startup" ? 0.35 + t * 0.04 : 0.4;
+        ctx.save();
+        ctx.globalCompositeOperation = "lighter";
+        if (atk === "lp" || atk === "hp") {
+          ctx.strokeStyle =
+            atk === "hp" ? `rgba(248,113,113,${pulse})` : `rgba(253,224,71,${pulse})`;
+          ctx.lineWidth = atk === "hp" ? 7 : 4;
+          ctx.shadowColor = atk === "hp" ? "#ef4444" : "#fbbf24";
+          ctx.shadowBlur = atk === "hp" ? 18 : 10;
+          ctx.beginPath();
+          ctx.arc(8, -36, atk === "hp" ? 56 : 38, -0.45, 1.15);
+          ctx.stroke();
+          ctx.shadowBlur = 0;
+          for (let i = 0; i < 5; i++) {
+            ctx.globalAlpha = 0.25 * pulse;
+            ctx.strokeStyle = "#fff";
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(22 + i * 6, -22 - i * 5);
+            ctx.lineTo(44 + i * 10, -48 - i * 3);
+            ctx.stroke();
+          }
+        } else if (atk === "lk") {
+          ctx.strokeStyle = `rgba(52,211,153,${pulse})`;
+          ctx.lineWidth = 5;
+          ctx.shadowColor = "#22c55e";
+          ctx.shadowBlur = 12;
+          ctx.beginPath();
+          ctx.moveTo(-6, -6);
+          ctx.quadraticCurveTo(38, 12, 54, -12);
+          ctx.stroke();
+          ctx.shadowBlur = 0;
+        } else if (atk === "hk") {
+          ctx.strokeStyle = `rgba(251,191,36,${pulse})`;
+          ctx.lineWidth = 9;
+          ctx.shadowColor = "#ea580c";
+          ctx.shadowBlur = 20;
+          ctx.beginPath();
+          ctx.arc(-4, -26, 64, -0.15 * Math.PI, 1.2 * Math.PI);
+          ctx.stroke();
+          ctx.fillStyle = `rgba(239,68,68,${pulse * 0.45})`;
+          ctx.beginPath();
+          ctx.arc(52, -32, 16, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.shadowBlur = 0;
+        }
+        ctx.restore();
+      };
+
+      const drawThrowVfx = (f: Fighter) => {
+        if (f.state !== "throwing") return;
+        ctx.save();
+        ctx.strokeStyle = "rgba(167,139,250,0.9)";
+        ctx.lineWidth = 4;
+        ctx.setLineDash([6, 6]);
+        ctx.beginPath();
+        ctx.arc(0, -32, 48, 0, Math.PI * 1.6);
+        ctx.stroke();
+        ctx.setLineDash([]);
+        ctx.restore();
+      };
 
       const drawFighter = (f: Fighter) => {
         const flash = f.state === "hitstun" && frame.current % 4 < 2;
@@ -657,11 +824,23 @@ export function FightingArena() {
         if (f.state === "throwing" || f.state === "thrown") scale = 1.05;
         if (slowMo && f.id === koCinematic.current.victimId) scale *= 1.15;
         ctx.scale(scale, scale);
+        ctx.fillStyle = "rgba(0,0,0,0.28)";
+        ctx.beginPath();
+        ctx.ellipse(0, -2, 24, 9, 0, 0, Math.PI * 2);
+        ctx.fill();
+        drawAttackVfx(f);
+        drawThrowVfx(f);
         ctx.font = f.state === "crouch" ? "32px serif" : "40px serif";
         ctx.textAlign = "center";
         ctx.textBaseline = "bottom";
         let em = f.emoji;
-        if (f.state === "attack") em = f.attack === "hk" || f.attack === "hp" ? `${f.emoji}💥` : "👊";
+        if (f.state === "attack" && f.attack) {
+          if (f.attack === "fireball") em = f.charId === "dogukan" ? "🔥" : "⚡";
+          else if (f.attack === "lp") em = "👊";
+          else if (f.attack === "hp") em = "💪";
+          else if (f.attack === "lk") em = "🦵";
+          else if (f.attack === "hk") em = "🌀";
+        }
         if (f.state === "block") em = "🛡️";
         if (f.state === "ko") em = "😵";
         if (f.state === "throwing") em = f.throwEmoji;
@@ -684,6 +863,63 @@ export function FightingArena() {
         ctx.globalAlpha = 1;
         ctx.font = "24px serif";
         ctx.fillText(pr.charId === "dogukan" ? CHARS.dogukan.fireEmoji : CHARS.serkan.fireEmoji, pr.x, pr.y + pr.h);
+      }
+      for (const ring of impactRings.current) {
+        const t = 1 - ring.life / ring.maxLife;
+        const r = 18 + ring.maxR * t;
+        ctx.save();
+        ctx.globalCompositeOperation = "lighter";
+        ctx.globalAlpha = Math.max(0, 1 - t) * 0.65;
+        ctx.strokeStyle = ring.color;
+        ctx.lineWidth = 6 * (1 - t) + 1.2;
+        ctx.beginPath();
+        ctx.arc(ring.x, ring.y, r, 0, Math.PI * 2);
+        ctx.stroke();
+        ctx.globalAlpha = Math.max(0, 1 - t) * 0.24;
+        ctx.fillStyle = ring.color;
+        ctx.beginPath();
+        ctx.arc(ring.x, ring.y, r * 0.56, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+      }
+
+      if (hitStopRef.current > 0) {
+        const cx = (p1.current.x + p1.current.w / 2 + cpu.current.x + cpu.current.w / 2) / 2;
+        const cy = (p1.current.y + p1.current.h * 0.38 + cpu.current.y + cpu.current.h * 0.38) / 2;
+        const hs = hitStopRef.current;
+        const k = Math.min(1, hs / 10);
+        ctx.save();
+        ctx.globalCompositeOperation = "lighter";
+        const rad = 36 + (10 - hs) * 10;
+        const g = ctx.createRadialGradient(cx, cy, 0, cx, cy, rad);
+        g.addColorStop(0, `rgba(255,255,255,${0.45 * k})`);
+        g.addColorStop(0.35, `rgba(253,224,71,${0.35 * k})`);
+        g.addColorStop(0.65, `rgba(248,113,113,${0.2 * k})`);
+        g.addColorStop(1, "rgba(239,68,68,0)");
+        ctx.fillStyle = g;
+        ctx.beginPath();
+        ctx.arc(cx, cy, rad, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.strokeStyle = `rgba(255,255,255,${0.35 * k})`;
+        ctx.lineWidth = 2;
+        for (let i = 0; i < 10; i++) {
+          const ang = (i / 10) * Math.PI * 2 + frame.current * 0.05;
+          ctx.beginPath();
+          ctx.moveTo(cx + Math.cos(ang) * 14, cy + Math.sin(ang) * 14);
+          ctx.lineTo(cx + Math.cos(ang) * rad * 0.92, cy + Math.sin(ang) * rad * 0.92);
+          ctx.stroke();
+        }
+        ctx.restore();
+        if (!slowMo) {
+          const split = 1 + hitStopRef.current * 0.25;
+          ctx.globalCompositeOperation = "screen";
+          ctx.globalAlpha = 0.09;
+          ctx.drawImage(canvas, split, 0, STAGE_W - split, STAGE_H, 0, 0, STAGE_W - split, STAGE_H);
+          ctx.globalAlpha = 0.09;
+          ctx.drawImage(canvas, 0, 0, STAGE_W - split, STAGE_H, split, 0, STAGE_W - split, STAGE_H);
+          ctx.globalCompositeOperation = "source-over";
+          ctx.globalAlpha = 1;
+        }
       }
 
       ctx.restore();
@@ -742,11 +978,22 @@ export function FightingArena() {
       ctx.fillText(String(Math.ceil(timerRef.current)), STAGE_W / 2, 28);
 
       if (announceTRef.current > 0) {
+        const p = announceTRef.current / 90;
+        const intro = 1 - p;
+        const scale = 0.9 + Math.min(1, intro * 2.8) * 0.2;
         ctx.fillStyle = "rgba(0,0,0,0.55)";
         ctx.fillRect(0, STAGE_H / 2 - 50, STAGE_W, 100);
+        ctx.save();
+        ctx.translate(STAGE_W / 2, STAGE_H / 2 + 8);
+        ctx.scale(scale, scale);
+        ctx.globalAlpha = 0.75 + Math.min(1, intro * 2) * 0.25;
         ctx.fillStyle = "#fde047";
-        ctx.font = "bold 24px var(--font-nunito), sans-serif";
-        ctx.fillText(announceRef.current, STAGE_W / 2, STAGE_H / 2 + 8);
+        ctx.strokeStyle = "rgba(0,0,0,0.45)";
+        ctx.lineWidth = 4;
+        ctx.font = `bold ${24 + Math.round((1 - Math.min(1, intro * 2)) * 10)}px var(--font-nunito), sans-serif`;
+        ctx.strokeText(announceRef.current, 0, 0);
+        ctx.fillText(announceRef.current, 0, 0);
+        ctx.restore();
       }
 
       if (slowMo) {
@@ -785,8 +1032,6 @@ export function FightingArena() {
       <ScoreHud
         score={score}
         selfHigh={scoreGame.selfHigh}
-        rivalHigh={scoreGame.rivalHigh}
-        rivalName={scoreGame.rivalName}
       />
       <p className="round-label">
         Dövüş Arenası · Doğukan vs Serkan · 3 raunt arcade

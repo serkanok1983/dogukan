@@ -5,7 +5,6 @@ import { useMemo, useState } from "react";
 import { assetPath } from "@/lib/asset";
 import { MENU, TOTAL_ACTIVITIES, type MenuCategory } from "@/lib/menu";
 import { getPlayerDisplayName, getPlayerId, logout } from "@/lib/auth";
-import { RivalryBoard } from "@/components/RivalryBoard";
 import { normalizeSearch } from "@/lib/utils";
 import { sounds } from "@/lib/sounds";
 
@@ -105,8 +104,6 @@ export function MenuScreen({ onLogout }: Props) {
           ))}
         </div>
       </header>
-
-      <RivalryBoard />
 
       <main className="menu-body">
         {filtered.length === 0 ? (

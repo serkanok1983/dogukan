@@ -200,8 +200,6 @@ export function BubbleBurst() {
       <ScoreHud
         score={score}
         selfHigh={scoreGame.selfHigh}
-        rivalHigh={scoreGame.rivalHigh}
-        rivalName={scoreGame.rivalName}
       />
       <p className="round-label">Baloncuklara dokun, patlat! Seri yap, bonus kazan.</p>
       {!active && <p className="game-waiting">ℹ️ Başla&apos;ya basınca baloncuklar gelir</p>}

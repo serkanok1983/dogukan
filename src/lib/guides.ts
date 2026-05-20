@@ -39,7 +39,7 @@ export const GUIDES: Record<string, Guide> = {
   "super-ayi": {
     type: "Macera Oyunu",
     intro:
-      "Cesur ayıyı kontrol et! Ormanı keşfet, bal topla, düşmanlara yumruk at veya üstlerine zıpla. Bayrağa ulaşınca kazanırsın!",
+      "Cesur ayıyı kontrol et! 100 seviyelik kampanya: her bölüm biraz daha zorlar (daha geniş harita, daha çok düşman, daha hızlı hareket). Bal topla, düşmanlara yumruk at veya üstlerine zıpla; her seviyede bayrağa ulaşınca bir sonrakine geçersin. Son seviyeyi bitirince kutlama ekranı gelir.",
     controls: [
       "← → — koş",
       "↑ veya Space — zıpla (havada bir kez daha!)",

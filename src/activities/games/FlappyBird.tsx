@@ -284,8 +284,6 @@ export function FlappyBird() {
       <ScoreHud
         score={score}
         selfHigh={scoreGame.selfHigh}
-        rivalHigh={scoreGame.rivalHigh}
-        rivalName={scoreGame.rivalName}
       />
       <p className="round-label">
         Flappy Bird · Dokun / Space ile zıpla · Boruların arasından geç!

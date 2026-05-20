@@ -247,8 +247,6 @@ export function RunnerDash() {
       <ScoreHud
         score={score}
         selfHigh={scoreGame.selfHigh}
-        rivalHigh={scoreGame.rivalHigh}
-        rivalName={scoreGame.rivalName}
       />
       <p className="round-label">Dokun = zıpla · 🪙 topla · 🌵🦅 kaç · 60 saniye!</p>
       {!active && <p className="game-waiting">ℹ️ Başla&apos;ya basınca koşu başlar</p>}

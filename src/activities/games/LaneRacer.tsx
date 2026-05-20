@@ -252,8 +252,6 @@ export function LaneRacer() {
       <ScoreHud
         score={score}
         selfHigh={scoreGame.selfHigh}
-        rivalHigh={scoreGame.rivalHigh}
-        rivalName={scoreGame.rivalName}
       />
       <p className="round-label">75 sn yarış · ⭐⚡🛡️ topla · Kayalardan kaç!</p>
       {!active && <p className="game-waiting">ℹ️ Başla&apos;ya basınca yarış başlar</p>}

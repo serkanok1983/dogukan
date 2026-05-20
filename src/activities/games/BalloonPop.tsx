@@ -81,8 +81,6 @@ export function BalloonPop() {
       <ScoreHud
         score={score}
         selfHigh={scoreGame.selfHigh}
-        rivalHigh={scoreGame.rivalHigh}
-        rivalName={scoreGame.rivalName}
       />
       <p className="round-label">
         Tur {round + 1}/6 · {a} + {b} = ?

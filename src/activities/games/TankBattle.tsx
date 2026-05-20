@@ -377,8 +377,6 @@ export function TankBattle() {
       <ScoreHud
         score={score}
         selfHigh={scoreGame.selfHigh}
-        rivalHigh={scoreGame.rivalHigh}
-        rivalName={scoreGame.rivalName}
       />
       <p className="round-label">Sol/sağ kaydır · Dokun = ateş · Tuğlaları kır, düşmanları vur!</p>
       {!active && <p className="game-waiting">ℹ️ Başla&apos;ya basınca savaş başlar</p>}
