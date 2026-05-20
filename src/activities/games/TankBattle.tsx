@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import { matchGameKey } from "@/lib/gameKeys";
 import { drawParticles, spawnBurst, updateParticles, type Particle } from "@/lib/particles";
 import { createGameJuice } from "@/lib/gameJuice";
 import { useGameActive, useGameBoot } from "@/lib/gameSession";
@@ -150,9 +151,9 @@ export function TankBattle() {
     };
 
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === "ArrowLeft" || e.key === "a") moveDir.current = -1;
-      if (e.key === "ArrowRight" || e.key === "d") moveDir.current = 1;
-      if (e.key === " " || e.key === "ArrowUp") {
+      if (matchGameKey(e, "ArrowLeft") || e.key === "a") moveDir.current = -1;
+      if (matchGameKey(e, "ArrowRight") || e.key === "d") moveDir.current = 1;
+      if (matchGameKey(e, "Space") || matchGameKey(e, "ArrowUp")) {
         e.preventDefault();
         if (shootCd.current <= 0 && !overRef.current && running) {
           shoot(true, px.current + tankW / 2 - 2, py.current);
@@ -161,7 +162,7 @@ export function TankBattle() {
       }
     };
     const onKeyUp = (e: KeyboardEvent) => {
-      if (e.key === "ArrowLeft" || e.key === "a" || e.key === "ArrowRight" || e.key === "d")
+      if (matchGameKey(e, "ArrowLeft") || e.key === "a" || matchGameKey(e, "ArrowRight") || e.key === "d")
         moveDir.current = 0;
     };
 

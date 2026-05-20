@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import { matchGameKey } from "@/lib/gameKeys";
 import { drawParticles, spawnBurst, updateParticles, type Particle } from "@/lib/particles";
 import { createGameJuice } from "@/lib/gameJuice";
 import { useGameActive, useGameBoot } from "@/lib/gameSession";
@@ -178,10 +179,10 @@ export function SnakeGame() {
     const onKey = (e: KeyboardEvent) => {
       const st = state.current;
       const d = st.dir;
-      if (e.key === "ArrowUp" && d.y !== 1) st.nextDir = { x: 0, y: -1 };
-      if (e.key === "ArrowDown" && d.y !== -1) st.nextDir = { x: 0, y: 1 };
-      if (e.key === "ArrowLeft" && d.x !== 1) st.nextDir = { x: -1, y: 0 };
-      if (e.key === "ArrowRight" && d.x !== -1) st.nextDir = { x: 1, y: 0 };
+      if (matchGameKey(e, "ArrowUp") && d.y !== 1) st.nextDir = { x: 0, y: -1 };
+      if (matchGameKey(e, "ArrowDown") && d.y !== -1) st.nextDir = { x: 0, y: 1 };
+      if (matchGameKey(e, "ArrowLeft") && d.x !== 1) st.nextDir = { x: -1, y: 0 };
+      if (matchGameKey(e, "ArrowRight") && d.x !== -1) st.nextDir = { x: 1, y: 0 };
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);

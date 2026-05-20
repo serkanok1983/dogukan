@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import { matchGameKey } from "@/lib/gameKeys";
 import { acelyaSounds } from "@/lib/acelyaSounds";
 import { createGameJuice } from "@/lib/gameJuice";
 import { useGameActive, useGameBoot } from "@/lib/gameSession";
@@ -240,21 +241,21 @@ export function Tetris() {
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (!running || overRef.current) return;
-      if (e.key === "ArrowLeft") {
+      if (matchGameKey(e, "ArrowLeft")) {
         tryMove(-1, 0);
         draw();
         e.preventDefault();
       }
-      if (e.key === "ArrowRight") {
+      if (matchGameKey(e, "ArrowRight")) {
         tryMove(1, 0);
         draw();
         e.preventDefault();
       }
-      if (e.key === "ArrowDown") {
+      if (matchGameKey(e, "ArrowDown")) {
         tick();
         e.preventDefault();
       }
-      if (e.key === "ArrowUp") {
+      if (matchGameKey(e, "ArrowUp")) {
         const piece = pieceRef.current;
         if (piece) {
           const rot = rotate(piece.matrix);
@@ -263,7 +264,7 @@ export function Tetris() {
         }
         e.preventDefault();
       }
-      if (e.code === "Space") {
+      if (matchGameKey(e, "Space")) {
         hardDrop();
         e.preventDefault();
       }

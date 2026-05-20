@@ -1,20 +1,8 @@
 "use client";
 
-type Btn = { id: string; label: string; code: string; fire?: boolean; span?: number };
+import { dispatchGameKey } from "@/lib/gameKeys";
 
-const KEY_CODES: Record<string, number> = {
-  ArrowLeft: 37,
-  ArrowUp: 38,
-  ArrowRight: 39,
-  ArrowDown: 40,
-  Space: 32,
-  Shift: 16,
-  KeyZ: 90,
-  KeyX: 88,
-  KeyC: 67,
-  KeyV: 86,
-  KeyB: 66,
-};
+type Btn = { id: string; label: string; code: string; fire?: boolean; span?: number };
 
 const LAYOUTS: Record<string, { className?: string; buttons: Btn[] }> = {
   "super-ayi": {
@@ -73,6 +61,7 @@ const LAYOUTS: Record<string, { className?: string; buttons: Btn[] }> = {
     ],
   },
   snake: {
+    className: "layout-snake",
     buttons: [
       { id: "up", label: "▲", code: "ArrowUp" },
       { id: "left", label: "◀", code: "ArrowLeft" },
@@ -89,25 +78,8 @@ const LAYOUTS: Record<string, { className?: string; buttons: Btn[] }> = {
   },
 };
 
-function dispatchKey(code: string, type: "keydown" | "keyup") {
-  const keyCode = KEY_CODES[code] ?? 0;
-  document.dispatchEvent(
-    new KeyboardEvent(type, {
-      code,
-      key:
-        code === "Space"
-          ? " "
-          : code === "Shift"
-            ? "Shift"
-            : code.startsWith("Key")
-              ? code.slice(3).toLowerCase()
-              : code.replace("Arrow", ""),
-      keyCode,
-      which: keyCode,
-      bubbles: true,
-      cancelable: true,
-    }),
-  );
+function releaseKey(code: string) {
+  dispatchGameKey(code, "keyup");
 }
 
 type Props = { gameId: keyof typeof LAYOUTS };
@@ -129,15 +101,20 @@ export function GameTouchBar({ gameId }: Props) {
           style={b.span ? { gridColumn: `span ${b.span}` } : undefined}
           onPointerDown={(e) => {
             e.preventDefault();
-            dispatchKey(b.code, "keydown");
+            e.currentTarget.setPointerCapture(e.pointerId);
+            dispatchGameKey(b.code, "keydown");
           }}
           onPointerUp={(e) => {
             e.preventDefault();
-            dispatchKey(b.code, "keyup");
+            releaseKey(b.code);
           }}
           onPointerLeave={(e) => {
+            if (e.currentTarget.hasPointerCapture(e.pointerId)) return;
+            releaseKey(b.code);
+          }}
+          onPointerCancel={(e) => {
             e.preventDefault();
-            dispatchKey(b.code, "keyup");
+            releaseKey(b.code);
           }}
         >
           {b.label}

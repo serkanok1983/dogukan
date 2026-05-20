@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import { matchGameKey } from "@/lib/gameKeys";
 import { drawParticles, spawnBurst, updateParticles, type Particle } from "@/lib/particles";
 import { createGameJuice } from "@/lib/gameJuice";
 import { useGameActive, useGameBoot } from "@/lib/gameSession";
@@ -175,20 +176,20 @@ export function SuperBear() {
     const fx = juiceRef.current;
 
     const onKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "ArrowLeft" || e.key === "a") leftHeld.current = true;
-      if (e.key === "ArrowRight" || e.key === "d") rightHeld.current = true;
-      if (e.key === "ArrowUp" || e.key === " " || e.key === "w") {
+      if (matchGameKey(e, "ArrowLeft") || e.key === "a") leftHeld.current = true;
+      if (matchGameKey(e, "ArrowRight") || e.key === "d") rightHeld.current = true;
+      if (matchGameKey(e, "ArrowUp") || matchGameKey(e, "Space") || e.key === "w") {
         e.preventDefault();
         jump();
       }
-      if (e.key === "Shift" || e.key === "z" || e.key === "x") {
+      if (matchGameKey(e, "Shift") || e.key === "z" || e.key === "x") {
         e.preventDefault();
         punch();
       }
     };
     const onKeyUp = (e: KeyboardEvent) => {
-      if (e.key === "ArrowLeft" || e.key === "a") leftHeld.current = false;
-      if (e.key === "ArrowRight" || e.key === "d") rightHeld.current = false;
+      if (matchGameKey(e, "ArrowLeft") || e.key === "a") leftHeld.current = false;
+      if (matchGameKey(e, "ArrowRight") || e.key === "d") rightHeld.current = false;
     };
 
     window.addEventListener("keydown", onKeyDown);

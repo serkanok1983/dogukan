@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import { matchGameKey } from "@/lib/gameKeys";
 import { drawParticles, spawnBurst, updateParticles, type Particle } from "@/lib/particles";
 import { useGameActive, useGameBoot } from "@/lib/gameSession";
 import { useGameRunning } from "@/hooks/useGameRunning";
@@ -126,12 +127,12 @@ export function PlatformJump() {
     if (!ctx) return;
 
     const onKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "ArrowLeft" || e.key === "a") leftHeld.current = true;
-      if (e.key === "ArrowRight" || e.key === "d") rightHeld.current = true;
+      if (matchGameKey(e, "ArrowLeft") || e.key === "a") leftHeld.current = true;
+      if (matchGameKey(e, "ArrowRight") || e.key === "d") rightHeld.current = true;
     };
     const onKeyUp = (e: KeyboardEvent) => {
-      if (e.key === "ArrowLeft" || e.key === "a") leftHeld.current = false;
-      if (e.key === "ArrowRight" || e.key === "d") rightHeld.current = false;
+      if (matchGameKey(e, "ArrowLeft") || e.key === "a") leftHeld.current = false;
+      if (matchGameKey(e, "ArrowRight") || e.key === "d") rightHeld.current = false;
     };
     const onTouchSide = (e: TouchEvent) => {
       const rect = canvas.getBoundingClientRect();

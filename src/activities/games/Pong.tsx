@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { matchGameKey } from "@/lib/gameKeys";
 import { acelyaSounds } from "@/lib/acelyaSounds";
 import { createGameJuice } from "@/lib/gameJuice";
 import { useGameActive, useGameBoot } from "@/lib/gameSession";
@@ -130,15 +131,15 @@ export function Pong() {
     const fx = juiceRef.current;
 
     const onKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "ArrowUp") {
+      if (matchGameKey(e, "ArrowUp")) {
         state.current.up = true;
         e.preventDefault();
       }
-      if (e.key === "ArrowDown") {
+      if (matchGameKey(e, "ArrowDown")) {
         state.current.down = true;
         e.preventDefault();
       }
-      if (e.code === "Space") {
+      if (matchGameKey(e, "Space")) {
         e.preventDefault();
         const s = state.current;
         if (!s.ended && s.ballSpeed < 10) {
@@ -152,8 +153,8 @@ export function Pong() {
       }
     };
     const onKeyUp = (e: KeyboardEvent) => {
-      if (e.key === "ArrowUp") state.current.up = false;
-      if (e.key === "ArrowDown") state.current.down = false;
+      if (matchGameKey(e, "ArrowUp")) state.current.up = false;
+      if (matchGameKey(e, "ArrowDown")) state.current.down = false;
     };
 
     const cssToY = (clientY: number) => {

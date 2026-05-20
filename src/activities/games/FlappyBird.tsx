@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import { matchGameKey } from "@/lib/gameKeys";
 import { drawParticles, spawnBurst, updateParticles, type Particle } from "@/lib/particles";
 import { createGameJuice } from "@/lib/gameJuice";
 import { useGameActive, useGameBoot } from "@/lib/gameSession";
@@ -100,7 +101,7 @@ export function FlappyBird() {
     if (!ctx) return;
 
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === " " || e.key === "ArrowUp" || e.key === "w") {
+      if (matchGameKey(e, "Space") || matchGameKey(e, "ArrowUp") || e.key === "w") {
         e.preventDefault();
         flap();
       }

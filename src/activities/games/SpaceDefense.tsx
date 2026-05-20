@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import { matchGameKey } from "@/lib/gameKeys";
 import { drawParticles, spawnBurst, updateParticles, type Particle } from "@/lib/particles";
 import { createGameJuice } from "@/lib/gameJuice";
 import { useGameActive, useGameBoot } from "@/lib/gameSession";
@@ -105,12 +106,12 @@ export function SpaceDefense() {
       shoot();
     };
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === " " || e.key === "ArrowUp") {
+      if (matchGameKey(e, "Space") || matchGameKey(e, "ArrowUp")) {
         e.preventDefault();
         shoot();
       }
-      if (e.key === "ArrowLeft") shipX.current = Math.max(0.1, shipX.current - 0.06);
-      if (e.key === "ArrowRight") shipX.current = Math.min(0.9, shipX.current + 0.06);
+      if (matchGameKey(e, "ArrowLeft")) shipX.current = Math.max(0.1, shipX.current - 0.06);
+      if (matchGameKey(e, "ArrowRight")) shipX.current = Math.min(0.9, shipX.current + 0.06);
     };
 
     canvas.addEventListener("mousemove", onMove);

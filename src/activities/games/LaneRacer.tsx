@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import { matchGameKey } from "@/lib/gameKeys";
 import { drawParticles, spawnBurst, updateParticles, type Particle } from "@/lib/particles";
 import { createGameJuice } from "@/lib/gameJuice";
 import { useGameActive, useGameBoot } from "@/lib/gameSession";
@@ -103,8 +104,8 @@ export function LaneRacer() {
     if (!ctx) return;
 
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === "ArrowLeft") moveLane(-1);
-      if (e.key === "ArrowRight") moveLane(1);
+      if (matchGameKey(e, "ArrowLeft")) moveLane(-1);
+      if (matchGameKey(e, "ArrowRight")) moveLane(1);
     };
     window.addEventListener("keydown", onKey);
 
