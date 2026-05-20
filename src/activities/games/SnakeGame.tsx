@@ -191,7 +191,7 @@ export function SnakeGame() {
     <div className="game-panel canvas-game acelya-game fullscreen-game">
       <div ref={hudRef} className="acelya-hud">
         <ScoreHud score={score} selfHigh={scoreGame.selfHigh} />
-        <p className="round-label">Açelya Snake · daha büyük alan · daha akıcı juice</p>
+        <p className="round-label">Snake · daha büyük alan · daha akıcı juice</p>
         {!active && <p className="game-waiting">ℹ️ Başla&apos;ya basınca yılan hareket eder</p>}
       </div>
       <div className="acelya-game-stage">

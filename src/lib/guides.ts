@@ -68,7 +68,7 @@ export const GUIDES: Record<string, Guide> = {
   },
   "tugla-kir": {
     type: "Oyun",
-    intro: "Açelya Breakout: hassas raket kontrolüyle topu sektir, tüm tuğlaları temizle.",
+    intro: "Breakout: hassas raket kontrolüyle topu sektir, tüm tuğlaları temizle.",
     controls: ["← → veya yatay sürükleme", "Top rakete hangi noktada vurursa açı ona göre değişir"],
     learn: "Çarpışma açısı topun yansıma yönünü belirler.",
   },

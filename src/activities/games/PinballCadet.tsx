@@ -14,6 +14,9 @@ const GAME_SLUG = "pinball-space-cadet";
 const W = 900;
 const H = 560;
 const GRAVITY = 980;
+const LEFT_FLIPPER_X = 320;
+const RIGHT_FLIPPER_X = 580;
+const FLIPPER_Y = 500;
 
 type Ball = { x: number; y: number; vx: number; vy: number; r: number; active: boolean };
 type Bumper = { x: number; y: number; r: number; score: number; color: string };
@@ -168,8 +171,8 @@ export function PinballCadet() {
             }
           }
 
-          const leftPivot = { x: 336, y: 500 };
-          const rightPivot = { x: 564, y: 500 };
+          const leftPivot = { x: LEFT_FLIPPER_X, y: FLIPPER_Y };
+          const rightPivot = { x: RIGHT_FLIPPER_X, y: FLIPPER_Y };
           const leftAngle = leftHeld.current ? -0.62 : -0.22;
           const rightAngle = rightHeld.current ? Math.PI + 0.62 : Math.PI + 0.22;
           const flipperHit = (pivot: { x: number; y: number }, angle: number) => {
@@ -246,8 +249,8 @@ export function PinballCadet() {
         ctx.fill();
         ctx.restore();
       };
-      drawFlipper(336, 500, leftHeld.current ? -0.62 : -0.22, "#f59e0b");
-      drawFlipper(564, 500, rightHeld.current ? Math.PI + 0.62 : Math.PI + 0.22, "#22d3ee");
+      drawFlipper(LEFT_FLIPPER_X, FLIPPER_Y, leftHeld.current ? -0.62 : -0.22, "#f59e0b");
+      drawFlipper(RIGHT_FLIPPER_X, FLIPPER_Y, rightHeld.current ? Math.PI + 0.62 : Math.PI + 0.22, "#22d3ee");
 
       if (ballRef.current.active || !overRef.current) {
         const b = ballRef.current;
