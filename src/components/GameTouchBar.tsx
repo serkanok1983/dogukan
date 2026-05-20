@@ -72,6 +72,21 @@ const LAYOUTS: Record<string, { className?: string; buttons: Btn[] }> = {
       { id: "right", label: "▶", code: "ArrowRight" },
     ],
   },
+  snake: {
+    buttons: [
+      { id: "up", label: "▲", code: "ArrowUp" },
+      { id: "left", label: "◀", code: "ArrowLeft" },
+      { id: "right", label: "▶", code: "ArrowRight" },
+      { id: "down", label: "▼", code: "ArrowDown" },
+    ],
+  },
+  pinball: {
+    buttons: [
+      { id: "left", label: "⟪", code: "ArrowLeft" },
+      { id: "launch", label: "LAUNCH", code: "Space", fire: true, span: 2 },
+      { id: "right", label: "⟫", code: "ArrowRight" },
+    ],
+  },
 };
 
 function dispatchKey(code: string, type: "keydown" | "keyup") {

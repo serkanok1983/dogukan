@@ -11,8 +11,11 @@ import { GameTouchBar } from "@/components/GameTouchBar";
 import { useCanvasFit } from "@/hooks/useCanvasFit";
 
 const GAME_SLUG = "tugla-kir";
-const GAME_W = 800;
-const GAME_H = 500;
+const GAME_W = 900;
+const GAME_H = 560;
+const BRICK_COLS = 10;
+const BRICK_ROWS = 6;
+const BRICK_GAP = 8;
 
 type Brick = { x: number; y: number; w: number; h: number; color: string; status: number };
 
@@ -21,46 +24,49 @@ export function Breakout() {
   const running = useGameRunning();
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const hudRef = useRef<HTMLDivElement>(null);
+  useCanvasFit(canvasRef, GAME_W, GAME_H, { hudRef, minWidth: 300 });
   const juiceRef = useRef(createGameJuice());
   const keysRef = useRef({ left: false, right: false });
-  useCanvasFit(canvasRef, GAME_W, GAME_H, { hudRef, minWidth: 280 });
   const [score, setScore] = useState(0);
   const [over, setOver] = useState(false);
   const [won, setWon] = useState(false);
   const scoreGame = useGameScore(GAME_SLUG);
   const submitted = useRef(false);
 
-  const paddleRef = useRef({ x: 350, y: 480, w: 100, h: 10, speed: 50 });
-  const ballRef = useRef({ x: 400, y: 250, dx: 4, dy: -4, r: 8 });
+  const paddleRef = useRef({ x: GAME_W / 2 - 64, y: GAME_H - 34, w: 128, h: 14, speed: 610 });
+  const ballRef = useRef({ x: GAME_W / 2, y: GAME_H - 58, dx: 320, dy: -320, r: 9 });
   const bricksRef = useRef<Brick[]>([]);
   const scoreRef = useRef(0);
-  const destroyedRef = useRef(0);
   const overRef = useRef(false);
+  const lastTs = useRef(0);
 
   const createBricks = () => {
     const bricks: Brick[] = [];
-    for (let c = 0; c < 8; c++) {
-      for (let r = 0; r < 5; r++) {
+    const totalGap = BRICK_GAP * (BRICK_COLS - 1);
+    const brickW = Math.floor((GAME_W - 44 - totalGap) / BRICK_COLS);
+    const brickH = 24;
+    for (let r = 0; r < BRICK_ROWS; r++) {
+      for (let c = 0; c < BRICK_COLS; c++) {
         bricks.push({
-          x: c * 100 + 10,
-          y: r * 30 + 30,
-          w: 80,
-          h: 20,
-          color: `hsl(${Math.random() * 360}, 100%, 50%)`,
+          x: 22 + c * (brickW + BRICK_GAP),
+          y: 44 + r * (brickH + BRICK_GAP),
+          w: brickW,
+          h: brickH,
+          color: `hsl(${(r * 48 + c * 12) % 360} 90% 58%)`,
           status: 1,
         });
       }
     }
     bricksRef.current = bricks;
-    destroyedRef.current = 0;
   };
 
   const reset = () => {
-    paddleRef.current = { x: 350, y: 480, w: 100, h: 10, speed: 50 };
-    ballRef.current = { x: 400, y: 250, dx: 4, dy: -4, r: 8 };
+    paddleRef.current = { x: GAME_W / 2 - 64, y: GAME_H - 34, w: 128, h: 14, speed: 610 };
+    ballRef.current = { x: GAME_W / 2, y: GAME_H - 58, dx: 320, dy: -320, r: 9 };
     scoreRef.current = 0;
     overRef.current = false;
     submitted.current = false;
+    lastTs.current = 0;
     createBricks();
     setScore(0);
     setOver(false);
@@ -85,112 +91,140 @@ export function Breakout() {
     const fx = juiceRef.current;
 
     const onKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "ArrowLeft") keysRef.current.left = true;
-      if (e.key === "ArrowRight") keysRef.current.right = true;
+      if (e.code === "ArrowLeft") keysRef.current.left = true;
+      if (e.code === "ArrowRight") keysRef.current.right = true;
     };
     const onKeyUp = (e: KeyboardEvent) => {
-      if (e.key === "ArrowLeft") keysRef.current.left = false;
-      if (e.key === "ArrowRight") keysRef.current.right = false;
+      if (e.code === "ArrowLeft") keysRef.current.left = false;
+      if (e.code === "ArrowRight") keysRef.current.right = false;
     };
-
     const cssToX = (clientX: number) => {
       const rect = canvas.getBoundingClientRect();
       return ((clientX - rect.left) / rect.width) * GAME_W;
     };
-    const onTouch = (e: TouchEvent) => {
-      e.preventDefault();
-      if (!e.touches.length) return;
-      const x = cssToX(e.touches[0].clientX);
+    const onPointer = (e: PointerEvent) => {
       const p = paddleRef.current;
+      const x = cssToX(e.clientX);
       p.x = Math.max(0, Math.min(GAME_W - p.w, x - p.w / 2));
     };
 
     document.addEventListener("keydown", onKeyDown);
     document.addEventListener("keyup", onKeyUp);
-    canvas.addEventListener("touchstart", onTouch, { passive: false });
-    canvas.addEventListener("touchmove", onTouch, { passive: false });
+    canvas.addEventListener("pointerdown", onPointer);
+    canvas.addEventListener("pointermove", onPointer);
 
     let raf = 0;
-    const loop = () => {
+    const loop = (ts: number) => {
+      const dt = Math.min(0.025, lastTs.current ? (ts - lastTs.current) / 1000 : 1 / 60);
+      lastTs.current = ts;
       if (running && !overRef.current) {
         const ball = ballRef.current;
         const paddle = paddleRef.current;
         const keys = keysRef.current;
-        if (keys.left) paddle.x = Math.max(0, paddle.x - paddle.speed);
-        if (keys.right) paddle.x = Math.min(GAME_W - paddle.w, paddle.x + paddle.speed);
-        ball.x += ball.dx;
-        ball.y += ball.dy;
+        const move = paddle.speed * dt;
+        if (keys.left) paddle.x = Math.max(0, paddle.x - move);
+        if (keys.right) paddle.x = Math.min(GAME_W - paddle.w, paddle.x + move);
 
-        if (ball.x < 0 || ball.x > GAME_W) ball.dx *= -1;
-        if (ball.y < 0) ball.dy *= -1;
+        ball.x += ball.dx * dt;
+        ball.y += ball.dy * dt;
 
-        if (ball.y > GAME_H) {
+        if (ball.x < ball.r) {
+          ball.x = ball.r;
+          ball.dx = Math.abs(ball.dx);
+          acelyaSounds.hit();
+        } else if (ball.x > GAME_W - ball.r) {
+          ball.x = GAME_W - ball.r;
+          ball.dx = -Math.abs(ball.dx);
+          acelyaSounds.hit();
+        }
+        if (ball.y < ball.r) {
+          ball.y = ball.r;
+          ball.dy = Math.abs(ball.dy);
+          acelyaSounds.hit();
+        }
+        if (ball.y - ball.r > GAME_H) {
           overRef.current = true;
           setOver(true);
-          fx.shakeScreen(12);
+          fx.shakeScreen(14);
+          fx.flashScreen(0.26);
           acelyaSounds.explode();
         }
 
         if (
-          ball.y > paddle.y - ball.r &&
-          ball.x > paddle.x &&
-          ball.x < paddle.x + paddle.w
+          ball.dy > 0 &&
+          ball.y + ball.r >= paddle.y &&
+          ball.y + ball.r <= paddle.y + paddle.h + 8 &&
+          ball.x >= paddle.x - ball.r &&
+          ball.x <= paddle.x + paddle.w + ball.r
         ) {
-          ball.dy *= -1;
+          const rel = (ball.x - (paddle.x + paddle.w / 2)) / (paddle.w / 2);
+          const angle = rel * 1.05;
+          const speed = Math.min(560, Math.hypot(ball.dx, ball.dy) * 1.015);
+          ball.dx = Math.sin(angle) * speed;
+          ball.dy = -Math.abs(Math.cos(angle) * speed);
+          ball.y = paddle.y - ball.r - 1;
           acelyaSounds.hit();
+          fx.burst(ball.x, paddle.y, "#fca5a5", 8);
         }
 
         for (const b of bricksRef.current) {
+          if (!b.status) continue;
           if (
-            b.status &&
-            ball.x > b.x &&
-            ball.x < b.x + b.w &&
-            ball.y > b.y &&
-            ball.y < b.y + b.h
+            ball.x + ball.r > b.x &&
+            ball.x - ball.r < b.x + b.w &&
+            ball.y + ball.r > b.y &&
+            ball.y - ball.r < b.y + b.h
           ) {
-            ball.dy *= -1;
+            const fromLeft = Math.abs(ball.x + ball.r - b.x);
+            const fromRight = Math.abs(b.x + b.w - (ball.x - ball.r));
+            const fromTop = Math.abs(ball.y + ball.r - b.y);
+            const fromBottom = Math.abs(b.y + b.h - (ball.y - ball.r));
+            const m = Math.min(fromLeft, fromRight, fromTop, fromBottom);
+            if (m === fromLeft || m === fromRight) ball.dx *= -1;
+            else ball.dy *= -1;
             b.status = 0;
-            destroyedRef.current++;
             acelyaSounds.explode();
             fx.burst(b.x + b.w / 2, b.y + b.h / 2, b.color, 18);
-            fx.popScore(b.x + b.w / 2, b.y, "+10");
+            fx.popScore(b.x + b.w / 2, b.y - 6, "+10");
             scoreRef.current += 10;
             setScore(scoreRef.current);
             if (scoreRef.current % 100 === 0) void scoreGame.checkMilestone(scoreRef.current);
-            if (destroyedRef.current % 10 === 0) {
-              ball.dx *= 1.1;
-              ball.dy *= 1.1;
-            }
+            break;
           }
         }
 
-        if (bricksRef.current.every((b) => !b.status)) {
+        if (bricksRef.current.every((b) => b.status === 0)) {
           overRef.current = true;
           setWon(true);
           setOver(true);
-          fx.flashScreen(0.35);
-          fx.shakeScreen(8);
-          void scoreGame.submitFinal(scoreRef.current);
+          fx.flashScreen(0.4);
+          fx.shakeScreen(10);
+          acelyaSounds.explode();
         }
       }
 
-      ctx.clearRect(0, 0, GAME_W, GAME_H);
-      ctx.fillStyle = "#1e3a8a";
+      const bg = ctx.createLinearGradient(0, 0, 0, GAME_H);
+      bg.addColorStop(0, "#1e1b4b");
+      bg.addColorStop(1, "#0f172a");
+      ctx.fillStyle = bg;
       ctx.fillRect(0, 0, GAME_W, GAME_H);
       fx.wrapDraw(ctx, GAME_W, GAME_H, () => {
         const paddle = paddleRef.current;
         const ball = ballRef.current;
         ctx.fillStyle = "#ef4444";
         ctx.fillRect(paddle.x, paddle.y, paddle.w, paddle.h);
+        ctx.fillStyle = "rgba(255,255,255,0.35)";
+        ctx.fillRect(paddle.x + 8, paddle.y + 2, paddle.w - 16, 3);
         ctx.beginPath();
         ctx.fillStyle = "#fff";
         ctx.arc(ball.x, ball.y, ball.r, 0, Math.PI * 2);
         ctx.fill();
         for (const b of bricksRef.current) {
-          if (b.status) {
-            ctx.fillStyle = b.color;
-            ctx.fillRect(b.x, b.y, b.w, b.h);
-          }
+          if (!b.status) continue;
+          ctx.fillStyle = b.color;
+          ctx.fillRect(b.x, b.y, b.w, b.h);
+          ctx.fillStyle = "rgba(255,255,255,0.28)";
+          ctx.fillRect(b.x + 3, b.y + 3, b.w - 6, 4);
         }
       });
 
@@ -202,8 +236,8 @@ export function Breakout() {
       cancelAnimationFrame(raf);
       document.removeEventListener("keydown", onKeyDown);
       document.removeEventListener("keyup", onKeyUp);
-      canvas.removeEventListener("touchstart", onTouch);
-      canvas.removeEventListener("touchmove", onTouch);
+      canvas.removeEventListener("pointerdown", onPointer);
+      canvas.removeEventListener("pointermove", onPointer);
     };
   }, [running, scoreGame]);
 
@@ -211,7 +245,7 @@ export function Breakout() {
     <div className="game-panel canvas-game acelya-game fullscreen-game">
       <div ref={hudRef} className="acelya-hud">
         <ScoreHud score={score} selfHigh={scoreGame.selfHigh} />
-        <p className="round-label">Tuğlaları kır, topu düşürme!</p>
+        <p className="round-label">Açelya Breakout · hassas raket · hızlı refleks</p>
         {!active && <p className="game-waiting">ℹ️ Başla&apos;ya basınca oyun başlar</p>}
       </div>
       <div className="acelya-game-stage">

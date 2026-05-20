@@ -33,6 +33,7 @@ const Tetris = dynamic(() => import("./games/Tetris").then((m) => m.Tetris), { s
 const Pong = dynamic(() => import("./games/Pong").then((m) => m.Pong), { ssr: false });
 const Asteroids = dynamic(() => import("./games/Asteroids").then((m) => m.Asteroids), { ssr: false });
 const Breakout = dynamic(() => import("./games/Breakout").then((m) => m.Breakout), { ssr: false });
+const PinballCadet = dynamic(() => import("./games/PinballCadet").then((m) => m.PinballCadet), { ssr: false });
 
 const GEZEGENLER: ExploreItem[] = [
   { id: "sun", emoji: "☀️", title: "Güneş", fact: "Güneş sistemimizin merkezi. Dünya ve diğer gezegenler onun etrafında döner." },
@@ -59,6 +60,7 @@ export const ACTIVITY_MAP: Record<string, () => React.ReactNode> = {
   pong: () => <Pong />,
   asteroids: () => <Asteroids />,
   "tugla-kir": () => <Breakout />,
+  "pinball-space-cadet": () => <PinballCadet />,
   "tank-savasi": () => <TankBattle />,
   "uzay-savunma": () => <SpaceDefense />,
   "ziplama-adasi": () => <PlatformJump />,

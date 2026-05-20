@@ -20,6 +20,7 @@ export const MENU: MenuCategory[] = [
       { slug: "pong", label: "Masa Tenisi", emoji: "🏓" },
       { slug: "asteroids", label: "Asteroids", emoji: "☄️" },
       { slug: "tugla-kir", label: "Tuğla Kırmaca", emoji: "🧱" },
+      { slug: "pinball-space-cadet", label: "Pinball Space Cadet", emoji: "🛰️" },
       { slug: "tank-savasi", label: "Tank Savaşı", emoji: "💥" },
       { slug: "uzay-savunma", label: "Uzay Savunması", emoji: "🚀" },
       { slug: "ziplama-adasi", label: "Zıplama Adası", emoji: "🏝️" },

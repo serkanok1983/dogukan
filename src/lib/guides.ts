@@ -68,9 +68,15 @@ export const GUIDES: Record<string, Guide> = {
   },
   "tugla-kir": {
     type: "Oyun",
-    intro: "Topu raketle sektir, renkli tuğlaları kır. Top aşağı düşerse kaybedersin.",
-    controls: ["← → veya yatay kaydırma"],
+    intro: "Açelya Breakout: hassas raket kontrolüyle topu sektir, tüm tuğlaları temizle.",
+    controls: ["← → veya yatay sürükleme", "Top rakete hangi noktada vurursa açı ona göre değişir"],
     learn: "Çarpışma açısı topun yansıma yönünü belirler.",
+  },
+  "pinball-space-cadet": {
+    type: "Arcade Oyun",
+    intro: "Klasik Space Cadet tarzı pinball: bumpers, flipperlar ve launch lane ile yüksek skor kovala.",
+    controls: ["← / → — sol ve sağ flipper", "Space — launch gücü doldur, bırakınca fırlat"],
+    learn: "Refleks + açı kontrolü: doğru zamanda flipper basmak topu masada tutar.",
   },
   "tank-savasi": {
     type: "Tank Oyunu",
