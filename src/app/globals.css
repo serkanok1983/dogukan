@@ -1338,7 +1338,24 @@ body {
 }
 
 .score-hud-rival {
-  color: #1d4ed8;
+  width: min(100%, 520px);
+  margin-top: 0.25rem;
+  padding: 0.65rem 0.9rem;
+  border-radius: 14px;
+  border: 1px solid rgba(45, 212, 191, 0.35);
+  background: rgba(15, 23, 42, 0.68);
+  color: #dbeafe;
+  text-align: center;
+}
+
+.score-hud-rival p {
+  margin: 0.15rem 0;
+}
+
+.score-hud-rival-title {
+  font-size: 1.05rem;
+  font-weight: 800;
+  color: #fef08a;
 }
 
 .rivalry-board {

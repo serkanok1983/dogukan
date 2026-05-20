@@ -546,7 +546,10 @@ export function SuperBear() {
   return (
     <div className="game-panel canvas-game super-bear-game fullscreen-game">
       <div ref={hudRef} className="super-bear-hud">
-        <ScoreHud score={score} selfHigh={scoreGame.selfHigh} />
+        <ScoreHud score={score} selfHigh={scoreGame.selfHigh}
+        rivalHigh={scoreGame.rivalHigh}
+        rivalName={scoreGame.rivalName}
+        playerName={scoreGame.playerName} />
         <p className="round-label">
           Süper Ayı · {MAX_LEVELS} seviye · ← → · ↑ zıpla · Shift yumruk · 🏁
         </p>

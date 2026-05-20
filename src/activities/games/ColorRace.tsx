@@ -101,6 +101,9 @@ export function ColorRace() {
       <ScoreHud
         score={score}
         selfHigh={scoreGame.selfHigh}
+        rivalHigh={scoreGame.rivalHigh}
+        rivalName={scoreGame.rivalName}
+        playerName={scoreGame.playerName}
       />
       <p className="round-label">
         Süre: {time}s {streak >= 3 ? `· 🔥${streak}` : ""}

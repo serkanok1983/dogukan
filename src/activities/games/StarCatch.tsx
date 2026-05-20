@@ -212,6 +212,9 @@ export function StarCatch() {
       <ScoreHud
         score={score}
         selfHigh={scoreGame.selfHigh}
+        rivalHigh={scoreGame.rivalHigh}
+        rivalName={scoreGame.rivalName}
+        playerName={scoreGame.playerName}
       />
       <p className="round-label">60 saniye · Yıldız ve meyveleri yakala · 💣 kaçın!</p>
       {!active && <p className="game-waiting">ℹ️ Başla&apos;ya basınca oyun başlar</p>}

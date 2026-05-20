@@ -244,7 +244,10 @@ export function Breakout() {
   return (
     <div className="game-panel canvas-game acelya-game fullscreen-game">
       <div ref={hudRef} className="acelya-hud">
-        <ScoreHud score={score} selfHigh={scoreGame.selfHigh} />
+        <ScoreHud score={score} selfHigh={scoreGame.selfHigh}
+        rivalHigh={scoreGame.rivalHigh}
+        rivalName={scoreGame.rivalName}
+        playerName={scoreGame.playerName} />
         <p className="round-label">Breakout · hassas raket · hızlı refleks</p>
         {!active && <p className="game-waiting">ℹ️ Başla&apos;ya basınca oyun başlar</p>}
       </div>

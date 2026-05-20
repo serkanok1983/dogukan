@@ -1032,6 +1032,9 @@ export function FightingArena() {
       <ScoreHud
         score={score}
         selfHigh={scoreGame.selfHigh}
+        rivalHigh={scoreGame.rivalHigh}
+        rivalName={scoreGame.rivalName}
+        playerName={scoreGame.playerName}
       />
       <p className="round-label">
         Dövüş Arenası · Doğukan vs Serkan · 3 raunt arcade

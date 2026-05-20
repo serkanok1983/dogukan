@@ -267,6 +267,9 @@ export function Pong() {
         <ScoreHud
           score={playerScore}
           selfHigh={scoreGame.selfHigh}
+        rivalHigh={scoreGame.rivalHigh}
+        rivalName={scoreGame.rivalName}
+        playerName={scoreGame.playerName}
         />
         <p className="round-label">
           Sen: {playerScore} | Bilgisayar: {computerScore} · Hız: {ballSpeed.toFixed(2)}x

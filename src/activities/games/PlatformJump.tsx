@@ -330,6 +330,9 @@ export function PlatformJump() {
       <ScoreHud
         score={score}
         selfHigh={scoreGame.selfHigh}
+        rivalHigh={scoreGame.rivalHigh}
+        rivalName={scoreGame.rivalName}
+        playerName={scoreGame.playerName}
       />
       <p className="round-label">
         Adalara zıpla · 🚀 yaylı ada süper zıplar · Düşme!

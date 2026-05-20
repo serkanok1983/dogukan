@@ -316,7 +316,10 @@ export function Tetris() {
   return (
     <div className="game-panel canvas-game acelya-game fullscreen-game">
       <div ref={hudRef} className="acelya-hud">
-        <ScoreHud score={score} selfHigh={scoreGame.selfHigh} />
+        <ScoreHud score={score} selfHigh={scoreGame.selfHigh}
+        rivalHigh={scoreGame.rivalHigh}
+        rivalName={scoreGame.rivalName}
+        playerName={scoreGame.playerName} />
         <p className="round-label">
           Skor: {score} · Satır: {lines} · Seviye: {level}
         </p>
