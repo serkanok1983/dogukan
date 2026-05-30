@@ -18,11 +18,6 @@ export const metadata: Metadata = {
   title: "Doğukan'ın Yeri",
   description: "Doğukan için eğlenceli oyunlar — okuma, sayılar, şekiller ve bilim",
   appleWebApp: { capable: true, title: "Doğukan'ın Yeri" },
-  icons: {
-    icon: [{ url: "/icon.svg", type: "image/svg+xml" }],
-    shortcut: ["/icon.svg"],
-    apple: [{ url: "/icon.svg", type: "image/svg+xml" }],
-  },
 };
 
 export const viewport: Viewport = {

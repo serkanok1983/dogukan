@@ -34,6 +34,7 @@ const Pong = dynamic(() => import("./games/Pong").then((m) => m.Pong), { ssr: fa
 const Asteroids = dynamic(() => import("./games/Asteroids").then((m) => m.Asteroids), { ssr: false });
 const Breakout = dynamic(() => import("./games/Breakout").then((m) => m.Breakout), { ssr: false });
 const PinballCadet = dynamic(() => import("./games/PinballCadet").then((m) => m.PinballCadet), { ssr: false });
+const WhackMole = dynamic(() => import("./games/WhackMole").then((m) => m.WhackMole), { ssr: false });
 
 const GEZEGENLER: ExploreItem[] = [
   { id: "sun", emoji: "☀️", title: "Güneş", fact: "Güneş sistemimizin merkezi. Dünya ve diğer gezegenler onun etrafında döner." },
@@ -73,6 +74,7 @@ export const ACTIVITY_MAP: Record<string, () => React.ReactNode> = {
   labirent: () => <MazeGame />,
   "balon-patlat": () => <BalloonPop />,
   "renk-yaris": () => <ColorRace />,
+  "kostebek-vur": () => <WhackMole />,
   "kaydir-puzzle": () => <SlidingPuzzle />,
   "hizli-matematik": () => <QuizGame questions={Q.hizliMatematik} />,
   "kelime-avcisi": () => <QuizGame questions={Q.kelimeAvcisi} />,

@@ -125,6 +125,17 @@ export const GUIDES: Record<string, Guide> = {
     ],
     learn: "Plan yap: hangi emojiyi önce kaydırmalısın? Az hamlede bitirmeye çalış.",
   },
+  "kostebek-vur": {
+    type: "Refleks Oyunu",
+    intro:
+      "Köstebekler deliklerden çıkıyor! Hepsine vur ve puan topla. Ama dikkat — 💀 işaretli yeşil kafalı olanlar zehirli, onlara vurma!",
+    controls: [
+      "Köstebeğe dokun — vur (+10 puan, bonuslu)",
+      "💀 yeşil olana dokunma (-20 puan)",
+      "30 saniye süren var, puan arttıkça köstebekler hızlanır",
+    ],
+    learn: "El-göz koordinasyonu ve hızlı refleks gelişir.",
+  },
   "sayma-oyunu": {
     type: "Sayılar",
     intro: "Ekrandaki nesneleri say ve doğru sayıyı seç.",
