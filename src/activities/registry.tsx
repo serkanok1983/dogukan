@@ -36,6 +36,15 @@ const Breakout = dynamic(() => import("./games/Breakout").then((m) => m.Breakout
 const PinballCadet = dynamic(() => import("./games/PinballCadet").then((m) => m.PinballCadet), { ssr: false });
 const WhackMole = dynamic(() => import("./games/WhackMole").then((m) => m.WhackMole), { ssr: false });
 
+// Yeni oyunlar
+const ColorWorkshop = dynamic(() => import("./games/ColorWorkshop").then((m) => m.ColorWorkshop), { ssr: false });
+const LetterTrace = dynamic(() => import("./games/LetterTrace").then((m) => m.LetterTrace), { ssr: false });
+const FruitSlice = dynamic(() => import("./games/FruitSlice").then((m) => m.FruitSlice), { ssr: false });
+const TreasureMap = dynamic(() => import("./games/TreasureMap").then((m) => m.TreasureMap), { ssr: false });
+const RainCatcher = dynamic(() => import("./games/RainCatcher").then((m) => m.RainCatcher), { ssr: false });
+const AlienInvasion = dynamic(() => import("./games/AlienInvasion").then((m) => m.AlienInvasion), { ssr: false });
+const DinoDig = dynamic(() => import("./games/DinoDig").then((m) => m.DinoDig), { ssr: false });
+
 const GEZEGENLER: ExploreItem[] = [
   { id: "sun", emoji: "☀️", title: "Güneş", fact: "Güneş sistemimizin merkezi. Dünya ve diğer gezegenler onun etrafında döner." },
   { id: "mercury", emoji: "☿️", title: "Merkür", fact: "Güneşe en yakın gezegen. Çok sıcaktır." },
@@ -115,6 +124,14 @@ export const ACTIVITY_MAP: Record<string, () => React.ReactNode> = {
   "mantik-eslestir": () => <QuizGame questions={Q.mantikEslestir} />,
   "fark-bul": () => <QuizGame questions={Q.farkBul} />,
   grupla: () => <QuizGame questions={Q.grupla} />,
+  // Yeni oyunlar
+  "renk-atolyesi": () => <ColorWorkshop />,
+  "harf-yazma": () => <LetterTrace />,
+  "meyve-bicagi": () => <FruitSlice />,
+  "hazine-haritasi": () => <TreasureMap />,
+  "yagmur-damlasi": () => <RainCatcher />,
+  "uzayli-istilasi": () => <AlienInvasion />,
+  "dinozor-kazi": () => <DinoDig />,
 };
 
 export function getActivity(slug: string) {

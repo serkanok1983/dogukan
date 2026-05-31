@@ -23,6 +23,9 @@ export const MENU: MenuCategory[] = [
       { slug: "pinball-space-cadet", label: "Pinball Space Cadet", emoji: "🛰️" },
       { slug: "tank-savasi", label: "Tank Savaşı", emoji: "💥" },
       { slug: "uzay-savunma", label: "Uzay Savunması", emoji: "🚀" },
+      { slug: "uzayli-istilasi", label: "Uzaylı İstilası", emoji: "👾" },
+      { slug: "meyve-bicagi", label: "Meyve Bıçağı", emoji: "🍉" },
+      { slug: "yagmur-damlasi", label: "Yağmur Damlası", emoji: "☂️" },
       { slug: "ziplama-adasi", label: "Zıplama Adası", emoji: "🏝️" },
       { slug: "serit-yarisi", label: "Şerit Yarışı", emoji: "🏎️" },
       { slug: "baloncuk-patlat", label: "Baloncuk Patlat", emoji: "🫧" },
@@ -47,6 +50,7 @@ export const MENU: MenuCategory[] = [
     accent: "#4ecdc4",
     items: [
       { slug: "harf-tanima", label: "Harf Tanıma", emoji: "🔤" },
+      { slug: "harf-yazma", label: "Harf Yazma", emoji: "✍️" },
       { slug: "hece-birlestir", label: "Hece Birleştir", emoji: "🧱" },
       { slug: "kelime-okuma", label: "Kelime Okuma", emoji: "📚" },
       { slug: "sesli-harf", label: "Sesli Harfler", emoji: "🎵" },
@@ -76,9 +80,10 @@ export const MENU: MenuCategory[] = [
   {
     id: "sekil",
     icon: "🔷",
-    title: "Şekiller",
+    title: "Şekiller & Renkler",
     accent: "#a78bfa",
     items: [
+      { slug: "renk-atolyesi", label: "Renk Atölyesi", emoji: "🎨" },
       { slug: "sekil-tani", label: "Şekil Tanı", emoji: "⬛" },
       { slug: "sekil-ciz", label: "Şekil Çiz", emoji: "✏️" },
       { slug: "simetri", label: "Simetri", emoji: "🪞" },
@@ -93,6 +98,7 @@ export const MENU: MenuCategory[] = [
     title: "Bilim & Doğa",
     accent: "#6bcb77",
     items: [
+      { slug: "dinozor-kazi", label: "Dinozor Kazı", emoji: "🦖" },
       { slug: "hava-durumu", label: "Hava Durumu", emoji: "☀️" },
       { slug: "gezegenler", label: "Gezegenler", emoji: "🪐" },
       { slug: "vucudumuz", label: "Vücudumuz", emoji: "🫀" },
@@ -109,6 +115,7 @@ export const MENU: MenuCategory[] = [
     title: "Mantık",
     accent: "#ff9f43",
     items: [
+      { slug: "hazine-haritasi", label: "Hazine Haritası", emoji: "🗺️" },
       { slug: "sira-bul", label: "Sıra Bul", emoji: "🔁" },
       { slug: "boyut-sirala", label: "Boyut Sırala", emoji: "📏" },
       { slug: "mantik-eslestir", label: "Mantık Eşleştir", emoji: "🔗" },
