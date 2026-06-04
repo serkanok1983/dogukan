@@ -44,6 +44,7 @@ const TreasureMap = dynamic(() => import("./games/TreasureMap").then((m) => m.Tr
 const RainCatcher = dynamic(() => import("./games/RainCatcher").then((m) => m.RainCatcher), { ssr: false });
 const AlienInvasion = dynamic(() => import("./games/AlienInvasion").then((m) => m.AlienInvasion), { ssr: false });
 const DinoDig = dynamic(() => import("./games/DinoDig").then((m) => m.DinoDig), { ssr: false });
+const RoyalMatch = dynamic(() => import("./games/RoyalMatch").then((m) => m.RoyalMatch), { ssr: false });
 
 const GEZEGENLER: ExploreItem[] = [
   { id: "sun", emoji: "☀️", title: "Güneş", fact: "Güneş sistemimizin merkezi. Dünya ve diğer gezegenler onun etrafında döner." },
@@ -132,6 +133,7 @@ export const ACTIVITY_MAP: Record<string, () => React.ReactNode> = {
   "yagmur-damlasi": () => <RainCatcher />,
   "uzayli-istilasi": () => <AlienInvasion />,
   "dinozor-kazi": () => <DinoDig />,
+  "royal-match": () => <RoyalMatch />,
 };
 
 export function getActivity(slug: string) {
