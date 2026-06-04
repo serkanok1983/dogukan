@@ -38,6 +38,7 @@ export const MENU: MenuCategory[] = [
       { slug: "renk-yaris", label: "Renk Yarışı", emoji: "🌈" },
       { slug: "kostebek-vur", label: "Köstebek Vur", emoji: "🔨" },
       { slug: "kaydir-puzzle", label: "Kaydırmalı Puzzle", emoji: "🧩" },
+      { slug: "royal-match", label: "Royal Match", emoji: "💎" },
       { slug: "hizli-matematik", label: "Hızlı Matematik", emoji: "⚡" },
       { slug: "kelime-avcisi", label: "Kelime Avcısı", emoji: "🔤" },
       { slug: "hedef-vur", label: "Doğru Hedef", emoji: "🎯" },
