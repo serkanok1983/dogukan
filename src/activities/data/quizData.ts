@@ -2,6 +2,7 @@ import type { QuizQuestion } from "../shared/QuizGame";
 
 const LETTERS = "ABCÇDEFGĞHIİJKLMNOÖPRSŞTUÜVYZ".split("");
 const VOWELS = ["A", "E", "I", "İ", "O", "Ö", "U", "Ü"];
+const VOWEL_TEST_LETTERS = ["A", "B", "E", "K", "I", "M", "Ö", "S", "Ü", "Y"];
 
 export const harfTania: QuizQuestion[] = LETTERS.slice(0, 12).map((L) => ({
   prompt: `Hangi harf "${L}"?`,
@@ -11,11 +12,12 @@ export const harfTania: QuizQuestion[] = LETTERS.slice(0, 12).map((L) => ({
   hint: `Sesini söyle: ${L}`,
 }));
 
-export const sesliHarf: QuizQuestion[] = VOWELS.map((L) => ({
+export const sesliHarf: QuizQuestion[] = VOWEL_TEST_LETTERS.map((L) => ({
   prompt: `"${L}" sesli harf mi?`,
   emoji: "🎵",
-  answer: "Evet",
+  answer: VOWELS.includes(L) ? "Evet" : "Hayır",
   options: ["Evet", "Hayır"],
+  hint: "Sesli harfler: A, E, I, İ, O, Ö, U, Ü",
 }));
 
 export const kelimeOkuma: QuizQuestion[] = [
@@ -33,14 +35,14 @@ export const kelimeOkuma: QuizQuestion[] = [
 
 export const heceBirlestir: QuizQuestion[] = [
   { prompt: "el + ma = ?", emoji: "🧱", answer: "elma", options: ["elma", "alem", "mela", "lame"], hint: "Meyve" },
-  { prompt: "ka + pa = ?", emoji: "🧱", answer: "kapa", options: ["kapa", "apak", "paka", "akap"], hint: "Kapağı kapat" },
-  { prompt: "ba + la = ?", emoji: "🧱", answer: "bala", options: ["bala", "alab", "laba", "abla"], hint: "Arı yapar" },
-  { prompt: "a + ta = ?", emoji: "🧱", answer: "ata", options: ["ata", "taa", "aat", "tat"], hint: "Babaanne dediğimiz" },
+  { prompt: "ka + lem = ?", emoji: "🧱", answer: "kalem", options: ["kalem", "kelam", "lemka", "mekal"], hint: "Yazı yazarken kullanırız" },
+  { prompt: "ba + lık = ?", emoji: "🧱", answer: "balık", options: ["balık", "kalıb", "lıkba", "bılık"], hint: "Suda yaşayan hayvan" },
+  { prompt: "a + ta = ?", emoji: "🧱", answer: "ata", options: ["ata", "taa", "aat", "tat"], hint: "Geçmişte yaşamış büyüklerimizden biri" },
 ];
 
 export const cumleKur: QuizQuestion[] = [
-  { prompt: "Doğru sıra?", emoji: "✏️", answer: "Ben okula giderim", options: ["Ben okula giderim", "Okula ben giderim", "Giderim ben okula", "Okula giderim ben"] },
-  { prompt: "Doğru sıra?", emoji: "✏️", answer: "Annem yemek yapar", options: ["Annem yemek yapar", "Yemek annem yapar", "Yapar annem yemek", "Yemek yapar annem"] },
+  { prompt: "“Kim? → Nereye? → Ne yapıyor?” sırasını seç.", emoji: "✏️", answer: "Ben okula giderim", options: ["Ben okula giderim", "Ben giderim okula", "Giderim okula ben", "Okula giderim ben"], hint: "Kurallı cümlede yüklem genellikle sondadır." },
+  { prompt: "“Kim? → Ne? → Ne yapıyor?” sırasını seç.", emoji: "✏️", answer: "Annem yemek yapar", options: ["Annem yemek yapar", "Annem yapar yemek", "Yapar yemek annem", "Yemek yapar annem"], hint: "Kurallı cümlede yüklem genellikle sondadır." },
 ];
 
 export const alfabeSirasi: QuizQuestion[] = [
@@ -50,8 +52,8 @@ export const alfabeSirasi: QuizQuestion[] = [
 ];
 
 export const benzerKelime: QuizQuestion[] = [
-  { prompt: "Hangisi 'anne' ile aynı aileden?", emoji: "👯", answer: "baba", options: ["baba", "masa", "kalem", "top"], hint: "Aile" },
-  { prompt: "Hangisi 'kedi' gibi hayvan?", emoji: "👯", answer: "köpek", options: ["köpek", "araba", "ev", "kitap"] },
+  { prompt: "Hangisi 'anne' ile aynı gruptadır?", emoji: "👯", answer: "baba", options: ["baba", "masa", "kalem", "top"], hint: "Aile üyeleri" },
+  { prompt: "Hangisi 'kedi' ile aynı gruptadır?", emoji: "👯", answer: "köpek", options: ["köpek", "araba", "ev", "kitap"], hint: "Hayvanlar" },
 ];
 
 export const boslukDoldur: QuizQuestion[] = [
@@ -141,7 +143,7 @@ export const havaDurumu: QuizQuestion[] = [
 export const gezegenler: QuizQuestion[] = [
   { prompt: "Güneş sisteminde en büyük gezegen?", emoji: "🪐", answer: "Jüpiter", options: ["Jüpiter", "Mars", "Ay", "Plüton"] },
   { prompt: "Mavi gezegen hangisi?", emoji: "🌍", answer: "Dünya", options: ["Dünya", "Venüs", "Merkür", "Güneş"] },
-  { prompt: "Ay nerede döner?", emoji: "🌙", answer: "Dünya", options: ["Dünya", "Güneş", "Mars", "Jüpiter"] },
+  { prompt: "Ay hangi gök cisminin çevresinde dolanır?", emoji: "🌙", answer: "Dünya", options: ["Dünya", "Güneş", "Mars", "Jüpiter"] },
 ];
 
 export const vucudumuz: QuizQuestion[] = [
@@ -158,7 +160,7 @@ export const besinGruplari: QuizQuestion[] = [
 
 export const bitkiBuyume: QuizQuestion[] = [
   { prompt: "Tohum önce ne yapar?", emoji: "🌱", answer: "Filizlenir", options: ["Filizlenir", "Uçar", "Büyür", "Konuşur"] },
-  { prompt: "Bitki neyle beslenir?", emoji: "🌱", answer: "Su ve güneş", options: ["Su ve güneş", "Sadece rüzgar", "Taş", "Plastik"] },
+  { prompt: "Bitki kendi besinini üretirken hangilerini kullanır?", emoji: "🌱", answer: "Işık, su ve karbondioksit", options: ["Işık, su ve karbondioksit", "Yalnız toprak", "Taş ve plastik", "Yalnız rüzgâr"], hint: "Bu olaya fotosentez denir." },
 ];
 
 export const hayvanlar: QuizQuestion[] = [
@@ -173,8 +175,9 @@ export const mevsimler: QuizQuestion[] = [
 ];
 
 export const suDongu: QuizQuestion[] = [
-  { prompt: "Su güneşle buharlaşınca?", emoji: "💧", answer: "Buluta çıkar", options: ["Buluta çıkar", "Kaybolur", "Taşa dönüşür", "Çikolata olur"] },
-  { prompt: "Bulut şişince?", emoji: "💧", answer: "Yağmur yağar", options: ["Yağmur yağar", "Gökkuşağı yer", "Deniz kurur", "Rüzgar durur"] },
+  { prompt: "Sıvı su ısı enerjisi alınca ne olabilir?", emoji: "💧", answer: "Su buharına dönüşebilir", options: ["Su buharına dönüşebilir", "Kaybolur", "Taşa dönüşür", "Çikolataya dönüşür"], hint: "Bu değişime buharlaşma denir." },
+  { prompt: "Su buharı yükselip soğuyunca ne oluşabilir?", emoji: "☁️", answer: "Küçük su damlacıkları", options: ["Küçük su damlacıkları", "Kuru taşlar", "Güneş ışınları", "Toprak parçaları"], hint: "Bu değişime yoğunlaşma denir." },
+  { prompt: "Buluttaki damlacıklar büyüyüp ağırlaşınca ne olabilir?", emoji: "🌧️", answer: "Yağışla yeryüzüne döner", options: ["Yağışla yeryüzüne döner", "Tamamen yok olur", "Ateşe dönüşür", "Uzayda kalır"], hint: "Yağmur, kar veya dolu birer yağış türüdür." },
 ];
 
 export const siraBul: QuizQuestion[] = [

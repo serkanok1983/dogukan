@@ -15,8 +15,19 @@ const nunito = Nunito({
 });
 
 export const metadata: Metadata = {
-  title: "Doğukan'ın Yeri",
-  description: "Doğukan için eğlenceli oyunlar — okuma, sayılar, şekiller ve bilim",
+  title: {
+    default: "Doğukan'ın Yeri",
+    template: "%s | Doğukan'ın Yeri",
+  },
+  description:
+    "İlkokula hazırlanan meraklı çocuklar için Türkçe temel bilimler ansiklopedisi, sesli keşifler, mini deneyler, okuma, matematik ve oyunlar.",
+  keywords: [
+    "çocuklar için bilim",
+    "temel bilimler ansiklopedisi",
+    "ilkokula hazırlık",
+    "etkileşimli öğrenme",
+    "Türkçe bilim",
+  ],
   appleWebApp: { capable: true, title: "Doğukan'ın Yeri" },
 };
 

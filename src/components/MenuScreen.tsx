@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { useMemo, useState } from "react";
 import { assetPath } from "@/lib/asset";
 import { MENU, TOTAL_ACTIVITIES, type MenuCategory } from "@/lib/menu";
@@ -37,7 +38,7 @@ export function MenuScreen({ onLogout }: Props) {
       <header className="menu-header">
         <div className="menu-header-top">
           <div className="menu-hero">
-            <img
+            <Image
               src={assetPath("/dogukan.jpg")}
               alt="Doğukan"
               width={96}
@@ -106,6 +107,27 @@ export function MenuScreen({ onLogout }: Props) {
       </header>
 
       <main className="menu-body">
+        <Link
+          href="/kesfet/"
+          className="merak-portal"
+          onClick={() => sounds.star()}
+        >
+          <span className="merak-portal-visual" aria-hidden>
+            <span>?</span>
+            <i>🌱</i>
+            <i>🌙</i>
+            <i>🧲</i>
+          </span>
+          <span className="merak-portal-copy">
+            <small>Yeni · Temel Bilimler</small>
+            <strong>Merak Ansiklopedisi</strong>
+            <span>
+              Sesli hikâyeler, dokunarak deneyler ve gerçek dünya görevleriyle
+              14 büyük keşif.
+            </span>
+            <b>Keşfetmeye başla →</b>
+          </span>
+        </Link>
         {filtered.length === 0 ? (
           <p className="empty-search">Sonuç bulunamadı. Başka bir kelime dene!</p>
         ) : (

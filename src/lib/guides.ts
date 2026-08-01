@@ -207,9 +207,9 @@ export const GUIDES: Record<string, Guide> = {
   },
   "cumle-kur": {
     type: "Okuma",
-    intro: "Kelimeleri doğru sıraya koyarak anlamlı bir cümle oluştur.",
-    controls: ["Kelimelere bak", "Doğru sıralanmış cümleyi seç"],
-    learn: "Cümle yapısı: özne + yüklem + nesne sırasını öğrenirsin.",
+    intro: "Kelimeleri verilen “kim, ne/nereye, ne yapıyor” sırasına koyarak kurallı bir cümle oluştur.",
+    controls: ["Sorudaki sıra ipucunu oku", "Bu sıraya uyan cümleyi seç"],
+    learn: "Türkçede kurallı cümlenin yüklemi sondadır; yaygın diziliş özne + tümleç/nesne + yüklemdir. Sözcük sırası vurguya göre değişebilir.",
   },
   "alfabe-sirasi": {
     type: "Okuma",
@@ -219,9 +219,9 @@ export const GUIDES: Record<string, Guide> = {
   },
   "benzer-kelime": {
     type: "Okuma",
-    intro: "Verilen kelimeyle aynı aileden olan kelimeyi bul.",
+    intro: "Verilen kelimeyle aynı anlam grubunda olan kelimeyi bul.",
     controls: ["Kelimeleri oku", "Aynı gruptan olanı seç"],
-    learn: "Kelimeler arası anlam ilişkisi: eş anlam ve kategori kavramı.",
+    learn: "Aynı kategoriye giren kelimeleri bul: anne ve baba aile üyesidir; kedi ve köpek hayvandır.",
   },
   "bosluk-doldur": {
     type: "Okuma",
@@ -333,9 +333,9 @@ export const GUIDES: Record<string, Guide> = {
   },
   gezegenler: {
     type: "Bilim",
-    intro: "Güneş sistemindeki gezegenleri keşfet. Sırayla Güneş'e uzaklıkları artar.",
+    intro: "Güneş sistemindeki sekiz gezegeni, Güneş'e yakınlık sırasıyla keşfet.",
     controls: ["Gezegene dokun — bilgi", "Kaydır — tüm gezegenler"],
-    learn: "Dünya, Güneş'in etrafında döner. Ay, Dünya'nın uydusudur.",
+    learn: "Gezegenler Güneş'in çevresinde dolanır. Güneş bir yıldızdır; Ay ise Dünya'nın doğal uydusudur.",
   },
   vucudumuz: {
     type: "Bilim",
@@ -353,7 +353,7 @@ export const GUIDES: Record<string, Guide> = {
     type: "Bilim",
     intro: "Bir tohum nasıl bitki olur? Büyüme aşamalarını öğren!",
     controls: ["Soruyu oku", "Doğru aşamayı seç"],
-    learn: "Bitkiler su, güneş ve toprakla büyür. Önce filizlenir, sonra yaprak açar.",
+    learn: "Bitkiler fotosentez sırasında ışık enerjisi, su ve karbondioksit kullanarak şeker üretir. Topraktan su ve mineraller alırlar.",
   },
   hayvanlar: {
     type: "Bilim",
@@ -365,13 +365,13 @@ export const GUIDES: Record<string, Guide> = {
     type: "Bilim",
     intro: "Dört mevsimi ve özelliklerini öğren! İlkbahar, yaz, sonbahar, kış.",
     controls: ["Soruyu oku", "Doğru mevsimi seç"],
-    learn: "Mevsimler Dünya'nın Güneş etrafında dönmesiyle oluşur. Her mevsim 3 ay sürer.",
+    learn: "Mevsimler Dünya'nın eksen eğikliği ve Güneş çevresindeki dolanımı nedeniyle oluşur. Mevsim süreleri tam olarak eşit değildir.",
   },
   "su-dongu": {
     type: "Bilim",
     intro: "Su gökyüzüne nasıl çıkar ve yağmur olarak geri döner? Su döngüsünü keşfet!",
     controls: ["Soruyu oku", "Doğru adımı seç"],
-    learn: "Su buharlaşır → bulut olur → yağmur yağar → göllere döner. Bu döngü hiç bitmez!",
+    learn: "Su buharlaşabilir; yükselen buhar soğuyup yoğunlaşarak küçük damlacıklar oluşturabilir. Damlacıklar büyüyünce yağışla yeryüzüne döner.",
   },
 
   // ==================== 🧠 MANTIK ====================

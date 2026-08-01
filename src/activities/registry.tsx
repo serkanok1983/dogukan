@@ -47,20 +47,21 @@ const DinoDig = dynamic(() => import("./games/DinoDig").then((m) => m.DinoDig), 
 const RoyalMatch = dynamic(() => import("./games/RoyalMatch").then((m) => m.RoyalMatch), { ssr: false });
 
 const GEZEGENLER: ExploreItem[] = [
-  { id: "sun", emoji: "☀️", title: "Güneş", fact: "Güneş sistemimizin merkezi. Dünya ve diğer gezegenler onun etrafında döner." },
-  { id: "mercury", emoji: "☿️", title: "Merkür", fact: "Güneşe en yakın gezegen. Çok sıcaktır." },
-  { id: "venus", emoji: "♀️", title: "Venüs", fact: "Bulutları kalın. Gündüz gökyüzünde bazen görülür." },
-  { id: "earth", emoji: "🌍", title: "Dünya", fact: "Evimiz! Su ve hava sayesinde canlılar yaşar." },
-  { id: "mars", emoji: "♂️", title: "Mars", fact: "Kızıl gezegen. Üzerinde volkanlar ve kutuplarda buz vardır." },
-  { id: "jupiter", emoji: "🪐", title: "Jüpiter", fact: "En büyük gezegen. Büyük Kırmızı Leke bir fırtınadır." },
-  { id: "moon", emoji: "🌙", title: "Ay", fact: "Dünya'nın uydusu. Gelgitlere neden olur." },
+  { id: "mercury", emoji: "🩶", title: "1 · Merkür", fact: "Güneş'e en yakın gezegendir. Atmosferi çok ince olduğu için gündüz ve gece sıcaklıkları çok farklıdır." },
+  { id: "venus", emoji: "🟡", title: "2 · Venüs", fact: "Kalın karbondioksit atmosferinin oluşturduğu güçlü sera etkisi nedeniyle Güneş sisteminin en sıcak gezegenidir." },
+  { id: "earth", emoji: "🌍", title: "3 · Dünya", fact: "Üzerinde sıvı suyun ve canlı yaşamının bulunduğunu kesin olarak bildiğimiz tek gezegendir." },
+  { id: "mars", emoji: "🔴", title: "4 · Mars", fact: "Demir mineralleri yüzeyine kızıl rengini verir. Dev volkanları ve kutup buzları vardır." },
+  { id: "jupiter", emoji: "🟤", title: "5 · Jüpiter", fact: "Güneş sisteminin en büyük gezegenidir. Büyük Kırmızı Leke, çok uzun süredir gözlenen dev bir fırtınadır." },
+  { id: "saturn", emoji: "🪐", title: "6 · Satürn", fact: "Buz ve kaya parçalarından oluşan geniş halka sistemiyle tanınan bir gaz devidir." },
+  { id: "uranus", emoji: "🩵", title: "7 · Uranüs", fact: "Bir buz devidir ve dönme ekseni neredeyse yana yatıktır." },
+  { id: "neptune", emoji: "🔵", title: "8 · Neptün", fact: "Güneş'e en uzak gezegendir. Atmosferinde çok hızlı rüzgârlar gözlenir." },
 ];
 
 const HAYVANLAR: ExploreItem[] = [
-  { id: "aslan", emoji: "🦁", title: "Aslan", fact: "Ormanların kralı. Etçildir, yani et yer." },
+  { id: "aslan", emoji: "🦁", title: "Aslan", fact: "Çoğunlukla Afrika'nın savan ve otlaklarında yaşayan, gruplar hâlinde bulunabilen etçil bir memelidir." },
   { id: "balik", emoji: "🐟", title: "Balık", fact: "Suda solungaçla nefes alır." },
   { id: "kus", emoji: "🐦", title: "Kuş", fact: "Kanatları ve tüyleri vardır. Çoğu uçar." },
-  { id: "ari", emoji: "🐝", title: "Arı", fact: "Çiçeklerden bal yapar. Polinasyona yardım eder." },
+  { id: "ari", emoji: "🐝", title: "Arı", fact: "Bazı arı türleri çiçeklerden topladığı nektardan bal üretir; çiçeklerin tozlaşmasına da yardım eder." },
 ];
 
 export const ACTIVITY_MAP: Record<string, () => React.ReactNode> = {
@@ -113,7 +114,7 @@ export const ACTIVITY_MAP: Record<string, () => React.ReactNode> = {
   "sekil-say": () => <QuizGame questions={Q.sekilSay} />,
   tangram: () => <TangramLite />,
   "hava-durumu": () => <QuizGame questions={Q.havaDurumu} />,
-  gezegenler: () => <ExplorePanel items={GEZEGENLER} title="Güneş Sistemi" />,
+  gezegenler: () => <ExplorePanel items={GEZEGENLER} title="Güneş Sistemi'nin Sekiz Gezegeni" />,
   vucudumuz: () => <QuizGame questions={Q.vucudumuz} />,
   "besin-gruplari": () => <QuizGame questions={Q.besinGruplari} />,
   "bitki-buyume": () => <QuizGame questions={Q.bitkiBuyume} />,
