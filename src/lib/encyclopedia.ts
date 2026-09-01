@@ -72,6 +72,12 @@ export type EncyclopediaQuiz = {
   explanation: string;
 };
 
+export type EncyclopediaSource = {
+  title: string;
+  organization: string;
+  url: string;
+};
+
 export type EncyclopediaTopic = {
   slug: string;
   category: CategoryId;
@@ -96,6 +102,8 @@ export type EncyclopediaTopic = {
     emoji: string;
     reason: string;
   }[];
+  reviewedAt: string;
+  sources: EncyclopediaSource[];
   lab:
     | "senses"
     | "body"
@@ -1362,7 +1370,7 @@ const topicSources: RawTopic[] = [
       {
         title: "Sürtünme: hem yardımcı hem engel",
         body:
-          "Temas eden yüzeyler hareket ederken sürtünme hareket değişimine karşı koyar. Pürüzlü halıda oyuncak araba daha çabuk yavaşlar. Yürürken ayağının kaymaması ve frenlerin bisikleti durdurması içinse sürtünme gereklidir.",
+          "Sürtünme, temas eden yüzeylerin göreli kaymasına ya da kayma eğilimine karşı koyar. Pürüzlü halıda oyuncak araba daha çabuk yavaşlar. Yürürken ayağının kaymaması ve frenlerin bisikleti durdurması içinse sürtünme gereklidir.",
         wonder:
           "Tekerlekler kayma yerine yuvarlanmayı sağladığından ağır yükleri taşımayı kolaylaştırabilir.",
       },
@@ -1853,6 +1861,184 @@ const topicClassification: Record<
   },
 };
 
+const ENCYCLOPEDIA_REVIEWED_AT = "2026-08-01";
+
+const topicSourcesBySlug: Record<string, EncyclopediaSource[]> = {
+  "bes-duyum": [
+    {
+      title: "Gözler nasıl çalışır?",
+      organization: "ABD Ulusal Göz Enstitüsü (NEI)",
+      url: "https://www.nei.nih.gov/eye-health-information/healthy-vision/how-eyes-work",
+    },
+    {
+      title: "Nasıl işitiriz?",
+      organization: "ABD Ulusal Sağırlık ve Diğer İletişim Bozuklukları Enstitüsü (NIDCD)",
+      url: "https://www.nidcd.nih.gov/health/how-do-we-hear",
+    },
+    {
+      title: "Tat ve koku",
+      organization: "ABD Ulusal Sağırlık ve Diğer İletişim Bozuklukları Enstitüsü (NIDCD)",
+      url: "https://www.nidcd.nih.gov/health/taste-smell",
+    },
+  ],
+  "kalbim-ve-nefesim": [
+    {
+      title: "Kalp nasıl çalışır?",
+      organization: "ABD Ulusal Kalp, Akciğer ve Kan Enstitüsü (NHLBI)",
+      url: "https://www.nhlbi.nih.gov/health/heart",
+    },
+    {
+      title: "Akciğerler nasıl çalışır?",
+      organization: "ABD Ulusal Kalp, Akciğer ve Kan Enstitüsü (NHLBI)",
+      url: "https://www.nhlbi.nih.gov/health/lungs",
+    },
+  ],
+  "tohumdan-bitkiye": [
+    {
+      title: "Tozlaşma, döllenme ve tohumun çimlenmesi",
+      organization: "OpenStax · Rice Üniversitesi",
+      url: "https://openstax.org/books/biology-2e/pages/32-2-pollination-and-fertilization",
+    },
+    {
+      title: "Fotosenteze genel bakış",
+      organization: "OpenStax · Rice Üniversitesi",
+      url: "https://openstax.org/books/biology-2e/pages/8-1-overview-of-photosynthesis",
+    },
+  ],
+  "hayvanlar-ve-yasam-alanlari": [
+    {
+      title: "Ekolojinin kapsamı",
+      organization: "OpenStax · Rice Üniversitesi",
+      url: "https://openstax.org/books/biology-2e/pages/44-1-the-scope-of-ecology",
+    },
+    {
+      title: "Karasal biyomlar",
+      organization: "OpenStax · Rice Üniversitesi",
+      url: "https://openstax.org/books/biology-2e/pages/44-3-terrestrial-biomes",
+    },
+  ],
+  "hava-bugun-nasil": [
+    {
+      title: "Hava durumu ile iklim arasındaki fark nedir?",
+      organization: "ABD Ulusal Okyanus ve Atmosfer Dairesi (NOAA NESDIS)",
+      url: "https://www.nesdis.noaa.gov/about/k-12-education/understanding-our-planet/whats-the-difference-between-weather-and-climate",
+    },
+    {
+      title: "İklim gözlem ağı ve ölçümler",
+      organization: "ABD Ulusal Çevresel Bilgi Merkezleri (NOAA NCEI)",
+      url: "https://www.ncei.noaa.gov/access/crn/",
+    },
+  ],
+  "bir-su-damlasinin-yolculugu": [
+    {
+      title: "Su hakkında bilgi edin",
+      organization: "ABD Jeoloji Araştırmaları Kurumu (USGS)",
+      url: "https://www.usgs.gov/water-science-school/learn-about-water",
+    },
+    {
+      title: "Su döngüsü",
+      organization: "ABD Jeoloji Araştırmaları Kurumu (USGS)",
+      url: "https://water.usgs.gov/vizlab/water-cycle/",
+    },
+  ],
+  "gece-ve-gunduz": [
+    {
+      title: "Dünya nedir?",
+      organization: "NASA",
+      url: "https://www.nasa.gov/learning-resources/for-kids-and-students/what-is-earth-grades-k-4/",
+    },
+    {
+      title: "Dünya hakkında her şey",
+      organization: "NASA Space Place",
+      url: "https://spaceplace.nasa.gov/all-about-earth/en/",
+    },
+  ],
+  "gunes-dunya-ve-ay": [
+    {
+      title: "Ay'ın evreleri",
+      organization: "NASA Science",
+      url: "https://science.nasa.gov/moon/moon-phases/",
+    },
+    {
+      title: "Ay hakkında temel bilgiler",
+      organization: "NASA Science",
+      url: "https://science.nasa.gov/moon/facts/",
+    },
+  ],
+  "kati-ve-sivi": [
+    {
+      title: "Moleküller önemlidir",
+      organization: "Amerikan Kimya Derneği (ACS)",
+      url: "https://www.acs.org/middleschoolchemistry/lessonplans/chapter1/lesson1.html",
+    },
+    {
+      title: "Madde küçük parçacıklardan oluşur",
+      organization: "Amerikan Kimya Derneği (ACS)",
+      url: "https://www.acs.org/education/resources/k-8/inquiryinaction/fifth-grade.html",
+    },
+  ],
+  "isik-ve-golge": [
+    {
+      title: "Işığın ışın modeli",
+      organization: "OpenStax · Rice Üniversitesi",
+      url: "https://openstax.org/books/college-physics-2e/pages/25-1-the-ray-aspect-of-light",
+    },
+    {
+      title: "Yansıma yasası",
+      organization: "OpenStax · Rice Üniversitesi",
+      url: "https://openstax.org/books/college-physics-2e/pages/25-2-the-law-of-reflection",
+    },
+  ],
+  "itme-cekme-ve-yuvarlanma": [
+    {
+      title: "Newton'ın birinci hareket yasası: Eylemsizlik",
+      organization: "OpenStax · Rice Üniversitesi",
+      url: "https://openstax.org/books/physics/pages/4-2-newtons-first-law-of-motion-inertia",
+    },
+    {
+      title: "Newton'ın ikinci hareket yasası",
+      organization: "OpenStax · Rice Üniversitesi",
+      url: "https://openstax.org/books/physics/pages/4-3-newtons-second-law-of-motion",
+    },
+  ],
+  miknatislar: [
+    {
+      title: "Yer manyetizması hakkında sık sorulan sorular",
+      organization: "ABD Ulusal Çevresel Bilgi Merkezleri (NOAA NCEI)",
+      url: "https://www.ncei.noaa.gov/products/geomagnetism-frequently-asked-questions",
+    },
+    {
+      title: "Manyetik alanlar, alan çizgileri ve kuvvet",
+      organization: "OpenStax · Rice Üniversitesi",
+      url: "https://openstax.org/books/physics/pages/20-1-magnetic-fields-field-lines-and-force",
+    },
+  ],
+  "sayilar-sifir-ve-sayi-dogrusu": [
+    {
+      title: "Doğal sayılara giriş",
+      organization: "OpenStax · Rice Üniversitesi",
+      url: "https://openstax.org/books/prealgebra-2e/pages/1-1-introduction-to-whole-numbers",
+    },
+    {
+      title: "Doğal sayılarla toplama",
+      organization: "OpenStax · Rice Üniversitesi",
+      url: "https://openstax.org/books/prealgebra-2e/pages/1-2-add-whole-numbers",
+    },
+  ],
+  "sekiller-oruntuler-ve-simetri": [
+    {
+      title: "Dikdörtgen, üçgen ve yamukların özellikleri",
+      organization: "OpenStax · Rice Üniversitesi",
+      url: "https://openstax.org/books/prealgebra-2e/pages/9-4-use-properties-of-rectangles-triangles-and-trapezoids",
+    },
+    {
+      title: "Düzlemi kaplayan örüntüler",
+      organization: "OpenStax · Rice Üniversitesi",
+      url: "https://openstax.org/books/contemporary-mathematics/pages/10-5-tessellations",
+    },
+  ],
+};
+
 const relatedActivitiesByTopic: Partial<
   Record<string, EncyclopediaTopic["relatedActivities"]>
 > = {
@@ -2022,9 +2208,18 @@ const relatedActivitiesByTopic: Partial<
 
 export const TOPICS: EncyclopediaTopic[] = topicSources.map((topic) => {
   const classification = topicClassification[topic.slug];
+  const sources = topicSourcesBySlug[topic.slug];
 
   if (!classification) {
     throw new Error(`Konu sınıflandırması bulunamadı: ${topic.slug}`);
+  }
+
+  if (!sources) {
+    throw new Error(`Konu kaynakları bulunamadı: ${topic.slug}`);
+  }
+
+  if (sources.length < 2 || sources.length > 3) {
+    throw new Error(`Konu için 2–3 kaynak bekleniyor: ${topic.slug}`);
   }
 
   return {
@@ -2060,6 +2255,8 @@ export const TOPICS: EncyclopediaTopic[] = topicSources.map((topic) => {
     },
     quiz: topic.quiz,
     relatedActivities: relatedActivitiesByTopic[topic.slug] ?? [],
+    reviewedAt: ENCYCLOPEDIA_REVIEWED_AT,
+    sources,
     lab: classification.lab,
   };
 });

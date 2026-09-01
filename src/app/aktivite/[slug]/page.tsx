@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 import { findActivity, MENU } from "@/lib/menu";
+import { getActivityLearning } from "@/lib/activityLearning";
 import { ActivityClient } from "./ActivityClient";
 
 type Props = { params: Promise<{ slug: string }> };
@@ -14,5 +15,11 @@ export default async function AktivitePage({ params }: Props) {
 
   if (!meta) notFound();
 
-  return <ActivityClient slug={slug} title={meta.label} />;
+  return (
+    <ActivityClient
+      slug={slug}
+      title={meta.label}
+      learning={getActivityLearning(slug)}
+    />
+  );
 }

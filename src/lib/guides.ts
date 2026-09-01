@@ -20,21 +20,21 @@ export const GUIDES: Record<string, Guide> = {
     learn: "Planlama: bir sonraki hamleyi düşün.",
   },
   "dovus-arenasi": {
-    type: "Dövüş Oyunu",
+    type: "Sanal Spor Karşılaşması",
     intro:
-      "Street Fighter tarzı 2D dövüş! Tek karakterle 3 arcade rauntunu kazan. Yumruk, tekme, blok ve ateş topu!",
+      "İki çizgi karakterin üç turluk sanal spor karşılaşmasında mesafeyi koru, doğru anda savunma ve hamle yap. Buradaki hareketler yalnızca oyun animasyonudur; gerçek hayatta kimseye uygulanmaz.",
     controls: [
       "Önce karakterini seç: Doğukan veya Serkan",
-      "← → — yürü · ↑ — zıpla · geri yön — blok",
-      "Z/X/C/V — yumruk ve tekme · B — yakalama (throw)",
-      "↓ basılı + Z — ateş topu · Serkan güçlü, Doğukan hızlı",
+      "← → — yürü · ↑ — zıpla · geri yön — savun",
+      "Z/X/C/V — farklı yakın hamleler · B — denge hamlesi",
+      "↓ basılı + Z — ışık topu · Serkan dayanıklı, Doğukan hızlı",
     ],
-    learn: "Mesafe, blok ve zamanlama — gerçek dövüş oyunlarının temeli.",
+    learn: "Mesafe, denge, savunma ve zamanlamanın bir hareketin sonucunu nasıl değiştirdiğini gözlemlersin.",
   },
   "flappy-bird": {
-    type: "Arcade Oyunu",
+    type: "Klasik Beceri Oyunu",
     intro: "Klasik Flappy Bird! Küçük kuşu boruların arasından geçir. Her boru +1 puan. Çarpınca oyun biter.",
-    controls: ["Ekrana dokun veya Space — zıpla", "Boruların ortasından geç"],
+    controls: ["Ekrana dokun veya Boşluk tuşuna bas — zıpla", "Boruların ortasından geç"],
     learn: "Zamanlama ve sabır: çok hızlı veya yavaş zıplama boruya çarptırır.",
   },
   "super-ayi": {
@@ -43,56 +43,56 @@ export const GUIDES: Record<string, Guide> = {
       "Cesur ayıyı kontrol et! 100 seviyelik kampanya: her bölüm biraz daha zorlar (daha geniş harita, daha çok düşman, daha hızlı hareket). Bal topla, düşmanlara yumruk at veya üstlerine zıpla; her seviyede bayrağa ulaşınca bir sonrakine geçersin. Son seviyeyi bitirince kutlama ekranı gelir.",
     controls: [
       "← → — koş",
-      "↑ veya Space — zıpla (havada bir kez daha!)",
-      "Shift — yumruk",
-      "Düşmana üstten zıpla veya yumrukla vur",
+      "↑ veya Boşluk — zıpla (havada bir kez daha!)",
+      "Shift — engeli uzaklaştır",
+      "Hareketli engellerin üstünden zıpla veya onları yolundan uzaklaştır",
     ],
     learn: "Keşif, zamanlama ve cesaret — Super Bear Adventure gibi macera!",
   },
   tetris: {
     type: "Oyun",
     intro: "Düşen blokları döndür ve satır doldur. Tam satır silinir; seviye arttıkça hız artar.",
-    controls: ["← → — hareket", "↑ — döndür", "↓ — hızlı düşür", "Space — anında düşür"],
+    controls: ["← → — hareket", "↑ — döndür", "↓ — hızlı düşür", "Boşluk — anında düşür"],
     learn: "Uzamsal örüntü ve planlama becerisi.",
   },
   pong: {
     type: "Oyun",
     intro: "Klasik Pong: Sol raketi sen kontrol edersin. Önce 20 sayıya ulaşan kazanır.",
-    controls: ["↑ ↓ veya parmakla kaydır", "Space — topu hızlandır"],
+    controls: ["↑ ↓ veya parmakla kaydır", "Boşluk — topu hızlandır"],
     learn: "Açılı çarpışmada top yön değiştirir.",
   },
   asteroids: {
     type: "Oyun",
     intro: "Uzay gemini döndür, it ve kayaları lazerle parçala. Büyük kayalar küçüğe bölünür.",
-    controls: ["← → — dönüş", "↑ — itiş", "Space — lazer"],
-    learn: "Momentum korunur; sürtünme yoksa gemi kaymaya devam eder.",
+    controls: ["← → — dönüş", "↑ — itiş", "Boşluk — ışın gönder"],
+    learn: "Gemiye etki eden net kuvvet yoksa hareketini aynı hız ve yönde sürdürür; ters yöndeki itiş hareketi değiştirir.",
   },
   "tugla-kir": {
     type: "Oyun",
-    intro: "Breakout: hassas raket kontrolüyle topu sektir, tüm tuğlaları temizle.",
+    intro: "Tuğla kırma oyununda raketi dikkatle yönet, topu sektir ve tüm tuğlaları temizle.",
     controls: ["← → veya yatay sürükleme", "Top rakete hangi noktada vurursa açı ona göre değişir"],
     learn: "Çarpışma açısı topun yansıma yönünü belirler.",
   },
   "pinball-space-cadet": {
-    type: "Arcade Oyun",
-    intro: "Klasik Space Cadet tarzı pinball: bumpers, flipperlar ve launch lane ile yüksek skor kovala.",
-    controls: ["← / → — sol ve sağ flipper", "Space — launch gücü doldur, bırakınca fırlat"],
-    learn: "Refleks + açı kontrolü: doğru zamanda flipper basmak topu masada tutar.",
+    type: "Klasik Beceri Oyunu",
+    intro: "Uzay temalı langırt masasında çarpma tamponlarını, kanatçıkları ve fırlatma yolunu kullanarak topu oyunda tut ve puan topla.",
+    controls: ["← / → — sol ve sağ kanatçık", "Boşluk — fırlatma gücünü doldur; bırakınca topu gönder"],
+    learn: "Tepki ve açı kontrolü: kanatçığa doğru anda basmak topun yönünü değiştirir.",
   },
   "tank-savasi": {
-    type: "Tank Oyunu",
-    intro: "Yeşil tankını hareket ettir, tuğlaları kır, kırmızı düşmanları vur! Patlamalar ve puan yağmuru.",
-    controls: ["◀ ▶ tuşları veya alt pad", "🔥 veya ekrana dokun — ateş"],
-    learn: "Strateji ve nişan alma; engelleri kalkan gibi kullan.",
+    type: "Oyuncak Araç Stratejisi",
+    intro: "Yeşil oyuncak aracını hareket ettir, tuğla engeller arasından geç ve kırmızı hedef tabelalarını ışık toplarıyla işaretle.",
+    controls: ["◀ ▶ tuşları veya alt yön alanı — hareket et", "Ekrana dokun — hedefe ışık topu gönder"],
+    learn: "Yön, mesafe ve zamanlama: engelleri güvenli bir rota planlamak için kullanırsın.",
   },
   "uzay-savunma": {
     type: "Uzay Oyunu",
-    intro: "Roketini kaydır, meteorlara ateş et! Üç canın var.",
-    controls: ["Parmakla kaydır — roket", "Dokun — lazer ateşi"],
-    learn: "El-göz koordinasyonu ve refleks gelişir.",
+    intro: "Roketini kaydır, yaklaşan meteorları ışınla parçala ve üç hakkını dikkatli kullan.",
+    controls: ["Parmakla kaydır — roketi taşı", "Dokun — ışın gönder"],
+    learn: "Göz–el eşgüdümü ile hareketli nesnelerin yönünü ve yaklaşma hızını tahmin edersin.",
   },
   "ziplama-adasi": {
-    type: "Platform Oyunu",
+    type: "Zıplama Oyunu",
     intro: "Yeşil adalara zıplayarak yüksel. Yıldızları topla, düşme!",
     controls: ["◀ ▶ veya ekranın sol/sağı — hareket", "Otomatik zıplama"],
     learn: "Zamanlama ve dikkat: doğru platforma iniş önemli.",
@@ -116,7 +116,7 @@ export const GUIDES: Record<string, Guide> = {
     learn: "Zamanlama ve refleks.",
   },
   "kaydir-puzzle": {
-    type: "Puzzle",
+    type: "Kaydırmalı Yapboz",
     intro:
       "9 karelik bir yapboz! Emojileri üstteki hedef sıraya getir. Boş kare sağ altta olmalı.",
     controls: [
@@ -127,15 +127,15 @@ export const GUIDES: Record<string, Guide> = {
     learn: "Plan yap: hangi emojiyi önce kaydırmalısın? Az hamlede bitirmeye çalış.",
   },
   "kostebek-vur": {
-    type: "Refleks Oyunu",
+    type: "Dikkat Oyunu",
     intro:
-      "Köstebekler deliklerden çıkıyor! Hepsine vur ve puan topla. Ama dikkat — 💀 işaretli yeşil kafalı olanlar zehirli, onlara vurma!",
+      "Köstebekler deliklerden kısa süreliğine görünüyor. Uygun hedeflere dokunup puan topla; yeşil uyarı işaretli olanları atla.",
     controls: [
-      "Köstebeğe dokun — vur (+10 puan, bonuslu)",
-      "💀 yeşil olana dokunma (-20 puan)",
+      "Uygun köstebeğe dokun — +10 puan",
+      "Yeşil uyarı işaretli olana dokunma — −20 puan",
       "30 saniye süren var, puan arttıkça köstebekler hızlanır",
     ],
-    learn: "El-göz koordinasyonu ve hızlı refleks gelişir.",
+    learn: "Seçici dikkat: hedefi görür, uygun olup olmadığına karar verir ve sonra dokunursun.",
   },
   "balon-patlat": {
     type: "Matematik Oyunu",
@@ -159,7 +159,7 @@ export const GUIDES: Record<string, Guide> = {
     type: "Labirent Oyunu",
     intro: "Ok tuşları veya kaydırarak karakteri labirentten çıkar. Duvarlara çarpma!",
     controls: ["← → ↑ ↓ veya kaydırma", " Hedefe ulaşınca yeni tur"],
-    learn: "Yön bulma ve mekansal düşünme: bir yol planla ve takip et.",
+    learn: "Yön bulma ve uzamsal düşünme: bir yol planlar ve adım adım izlersin.",
   },
   "hizli-matematik": {
     type: "Matematik Oyunu",
@@ -175,7 +175,7 @@ export const GUIDES: Record<string, Guide> = {
   },
   "hedef-vur": {
     type: "Matematik Oyunu",
-    intro: "Toplama işlemlerini çözerek hedefi vur! Ne kadar doğru o kadar çok puan.",
+    intro: "Toplama işlemini çöz ve doğru sonucu taşıyan hedefi seç. Her doğru seçim puan kazandırır.",
     controls: ["İşleme bak", "Doğru cevaba dokun"],
     learn: "Toplama pratiği: eğlenerek matematik.",
   },
@@ -405,15 +405,58 @@ export const GUIDES: Record<string, Guide> = {
     controls: ["Grubu tanı", "Ait olmayanı seç"],
     learn: "Kategorileme: nesneleri ortak özelliklerine göre gruplandırma.",
   },
-};
-
-const DEFAULT_GUIDE: Guide = {
-  type: "Keşif",
-  intro: "Bu oyunda soruları cevapla, sürükle-bırak veya dokunarak keşfet. Yanlış cevapta tekrar dene!",
-  controls: ["Dokun veya sürükle", "ℹ️ ile bu yardımı tekrar aç"],
-  learn: "Oyun oynarken öğrenmek en eğlenceli yoldur!",
+  "uzayli-istilasi": {
+    type: "Uzay Takip Oyunu",
+    intro: "Hareket eden çizgi uzaylıların yolunu izle, bir sonraki konumlarını tahmin et ve doğru anda ışık sinyali gönder.",
+    controls: ["Sağa–sola hareket et", "Hedefin ilerleyeceği yere doğru ışık sinyali gönder"],
+    learn: "Hız, yön ve zamanı birlikte düşünerek hareketli bir hedefin sonraki yerini tahmin edersin.",
+  },
+  "meyve-bicagi": {
+    type: "Meyve Çizgisi Oyunu",
+    intro: "Ekrandaki çizgi meyvelerin yolunu izle ve parmağınla üzerlerinden geçen bir hareket izi çiz. Bu yalnızca ekran oyunudur; gerçek kesici araçları çocuklar kullanmamalıdır.",
+    controls: ["Meyvenin üstünde parmağını kaydır", "Uyarı işaretli nesnelerden uzak dur"],
+    learn: "Göz–el eşgüdümü ve hareket yolu: çizginin yönünü hedefin geleceği yere göre ayarlarsın.",
+  },
+  "yagmur-damlasi": {
+    type: "Su Döngüsü Oyunu",
+    intro: "Buluttan düşen su damlalarını yakala ve kaç damlanın yeryüzüne ulaştığını gözle.",
+    controls: ["Kabı sağa–sola taşı", "Damlaların düşme yolunu izle"],
+    learn: "Yağış, suyun atmosferden yağmur, kar veya dolu olarak yeryüzüne dönmesidir.",
+  },
+  "royal-match": {
+    type: "Örüntü Oyunu",
+    intro: "Komşu taşların yerini değiştirerek aynı özellikteki taşlardan sıralar oluştur.",
+    controls: ["Bir taşı komşusuna doğru kaydır", "Üç veya daha fazla aynı taşı yan yana getir"],
+    learn: "Renk, biçim ve konuma göre örüntü arar; bir hamlenin sonraki düzeni nasıl değiştirdiğini planlarsın.",
+  },
+  "harf-yazma": {
+    type: "Yazma Atölyesi",
+    intro: "Harflerin başlangıç noktasını ve çizgi yönünü izleyerek parmağınla yazmayı dene.",
+    controls: ["Harf ve renk seç", "Çizgiyi yavaşça takip et", "Gerekirse temizleyip yeniden dene"],
+    learn: "Göz–el eşgüdümü, çizgi yönü ve ince motor kontrolü yazının temelini oluşturur.",
+  },
+  "renk-atolyesi": {
+    type: "Renk Deneyi",
+    intro: "Renkleri seç, karşılaştır ve karışımların nasıl yeni görünümler oluşturduğunu keşfet.",
+    controls: ["Bir renk seç", "Karıştır veya hedef renkle eşleştir"],
+    learn: "Bir cismin gördüğümüz rengi, gözümüze ulaşan ışıkla ilişkilidir.",
+  },
+  "dinozor-kazi": {
+    type: "Fosil Keşfi",
+    intro: "Katmanları dikkatle kaz, fosil parçalarını bul ve geçmiş canlı hakkında kanıt topla.",
+    controls: ["Kazı alanına dokun", "Bulduğun parçaları bir araya getir"],
+    learn: "Fosiller geçmiş canlıların kalıntı veya izleridir; bilim insanları bu kanıtlardan çıkarım yapar.",
+  },
+  "hazine-haritasi": {
+    type: "Harita Oyunu",
+    intro: "İşaretleri ve yönleri okuyarak başlangıçtan hazineye giden yolu planla.",
+    controls: ["Haritadaki ipuçlarını incele", "Yönünü seç ve yolu adım adım izle"],
+    learn: "Haritalar gerçek alanları küçültülmüş simge, yön ve göreli konumlarla gösteren modellerdir.",
+  },
 };
 
 export function getGuide(slug: string): Guide {
-  return GUIDES[slug] ?? DEFAULT_GUIDE;
+  const guide = GUIDES[slug];
+  if (!guide) throw new Error(`Etkinlik rehberi bulunamadı: ${slug}`);
+  return guide;
 }

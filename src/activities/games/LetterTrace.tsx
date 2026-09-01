@@ -46,9 +46,9 @@ export function LetterTrace() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [letterIdx, setLetterIdx] = useState(0);
   const [dots, setDots] = useState<Dot[]>([]);
-  const [drawing, setDrawing] = useState(false);
   const [done, setDone] = useState(false);
   const progressRef = useRef<Set<number>>(new Set());
+  const initializedRef = useRef(false);
 
   const letter = LETTERS[letterIdx];
 
@@ -109,6 +109,8 @@ export function LetterTrace() {
   const initCanvas = (el: HTMLCanvasElement | null) => {
     if (!el) return;
     canvasRef.current = el;
+    if (initializedRef.current) return;
+    initializedRef.current = true;
     startLetter(0);
   };
 
@@ -140,6 +142,37 @@ export function LetterTrace() {
     }
 
     progressRef.current.add(idx);
+    setDots((current) =>
+      current.map((dot, dotIdx) =>
+        dotIdx === idx ? { ...dot, touched: true } : dot,
+      ),
+    );
+    sounds.tap();
+    drawDots();
+
+    if (progressRef.current.size >= letter.points.length) {
+      sounds.success();
+      setTimeout(() => {
+        if (letterIdx + 1 >= LETTERS.length) {
+          setDone(true);
+          sounds.win();
+        } else {
+          startLetter(letterIdx + 1);
+        }
+      }, 500);
+    }
+  };
+
+  const markNextDot = () => {
+    const nextDot = progressRef.current.size;
+    if (nextDot >= letter.points.length) return;
+
+    progressRef.current.add(nextDot);
+    setDots((current) =>
+      current.map((dot, dotIdx) =>
+        dotIdx === nextDot ? { ...dot, touched: true } : dot,
+      ),
+    );
     sounds.tap();
     drawDots();
 
@@ -166,7 +199,7 @@ export function LetterTrace() {
       <div className="game-panel result-panel">
         <div className="result-emoji">✍️</div>
         <h2>Harikasın!</h2>
-        <p className="result-score">Tüm harfleri tamamladın!</p>
+        <p className="result-score">Bu seviyedeki {LETTERS.length} harfi tamamladın!</p>
         <button type="button" className="btn-primary" onClick={restart}>
           Tekrar Oyna
         </button>
@@ -185,12 +218,18 @@ export function LetterTrace() {
         width={300}
         height={300}
         className="draw-canvas"
+        role="img"
+        aria-label={`${letter.char} büyük harfinin ${letter.points.length} noktalı yazım yolu`}
+        aria-describedby="letter-trace-status"
         style={{ touchAction: "none", borderRadius: 16, border: "2px solid #e5e7eb" }}
         onClick={(e) => handlePointer(e.clientX, e.clientY)}
       />
-      <p className="hint-text" style={{ marginTop: 8 }}>
-        1→2→3→ sırayla noktalara dokun ✨
+      <p id="letter-trace-status" className="hint-text" style={{ marginTop: 8 }} aria-live="polite">
+        {dots.filter((dot) => dot.touched).length}/{letter.points.length} nokta tamamlandı. 1→2→3→ sırayla ilerle ✨
       </p>
+      <button type="button" className="btn-primary" onClick={markNextDot}>
+        Sıradaki Noktayı İşaretle
+      </button>
     </div>
   );
 }

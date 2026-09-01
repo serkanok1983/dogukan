@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { sounds } from "@/lib/sounds";
 
 const W = 300;
@@ -62,6 +62,7 @@ export function DinoDig() {
   const [revealed, setRevealed] = useState<Set<number>>(new Set());
   const [done, setDone] = useState(false);
   const [brushPos, setBrushPos] = useState<{ x: number; y: number } | null>(null);
+  const revealedRef = useRef<Set<number>>(new Set());
   const dinoKey = DINO_KEYS[dinoIdx];
   const dino = DINO_BONES[dinoKey];
   const isDigging = useRef(false);
@@ -69,16 +70,17 @@ export function DinoDig() {
 
   const totalBones = dino.bones.length;
   const revealedCount = revealed.size;
-  const allRevealed = revealedCount >= totalBones;
 
   const resetDino = (idx: number) => {
+    const empty = new Set<number>();
+    revealedRef.current = empty;
     setDinoIdx(idx);
-    setRevealed(new Set());
+    setRevealed(empty);
     setDone(false);
     sounds.tap();
   };
 
-  const draw = (brushAt?: { x: number; y: number } | null) => {
+  const draw = useCallback((brushAt?: { x: number; y: number } | null) => {
     const canvas = canvasRef.current;
     if (!canvas) return;
     const ctx = canvas.getContext("2d");
@@ -136,7 +138,7 @@ export function DinoDig() {
       ctx.fillStyle = "rgba(210,180,140,0.3)";
       ctx.fill();
     }
-  };
+  }, [dino.bones, revealed]);
 
   const initCanvas = (el: HTMLCanvasElement | null) => {
     if (!el) return;
@@ -146,14 +148,20 @@ export function DinoDig() {
 
   useEffect(() => {
     draw(brushPos);
-  }, [revealed, dinoIdx, brushPos]);
+  }, [brushPos, draw]);
 
-  useEffect(() => {
-    if (allRevealed && !done) {
+  const revealBone = (boneIndex: number) => {
+    if (revealedRef.current.has(boneIndex)) return;
+    const next = new Set(revealedRef.current);
+    next.add(boneIndex);
+    revealedRef.current = next;
+    setRevealed(next);
+    sounds.coin();
+    if (next.size >= totalBones) {
       setDone(true);
       sounds.win();
     }
-  }, [allRevealed, done]);
+  };
 
   const getPos = (clientX: number, clientY: number) => {
     const canvas = canvasRef.current;
@@ -174,15 +182,10 @@ export function DinoDig() {
     const normY = my / H;
 
     for (let i = 0; i < dino.bones.length; i++) {
-      if (revealed.has(i)) continue;
+      if (revealedRef.current.has(i)) continue;
       const b = dino.bones[i];
       if (Math.hypot(normX - b.x, normY - b.y) < 0.1) {
-        setRevealed((prev) => {
-          const next = new Set(prev);
-          next.add(i);
-          return next;
-        });
-        sounds.coin();
+        revealBone(i);
         break;
       }
     }
@@ -214,6 +217,14 @@ export function DinoDig() {
     resetDino(next);
   };
 
+  const revealNextBone = () => {
+    const nextBone = dino.bones.findIndex(
+      (_, index) => !revealedRef.current.has(index),
+    );
+    if (nextBone < 0) return;
+    revealBone(nextBone);
+  };
+
   if (done) {
     return (
       <div className="game-panel result-panel">
@@ -241,6 +252,9 @@ export function DinoDig() {
         width={W}
         height={H}
         className="draw-canvas"
+        role="img"
+        aria-label={`${dino.name} fosil kazısı: ${totalBones} kemiğin ${revealedCount} tanesi bulundu`}
+        aria-describedby="dino-dig-status"
         style={{ touchAction: "none", borderRadius: 16, border: "3px solid #8B6914", cursor: "crosshair" }}
         onMouseDown={(e) => handleStart(e.clientX, e.clientY)}
         onMouseMove={(e) => handleMove(e.clientX, e.clientY)}
@@ -256,6 +270,12 @@ export function DinoDig() {
         }}
         onTouchEnd={handleEnd}
       />
+      <p id="dino-dig-status" className="hint-text" aria-live="polite">
+        {revealedCount}/{totalBones} kemik bulundu.
+      </p>
+      <button type="button" className="btn-primary" onClick={revealNextBone}>
+        Fırçayla Sıradaki Bölgeyi Aç
+      </button>
       <div style={{ display: "flex", gap: 8, marginTop: 12, flexWrap: "wrap", justifyContent: "center" }}>
         {DINO_KEYS.map((key, i) => (
           <button

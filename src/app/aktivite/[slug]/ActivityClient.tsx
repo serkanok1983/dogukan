@@ -4,13 +4,15 @@ import { useEffect } from "react";
 import { ActivityShell } from "@/components/ActivityShell";
 import { getActivity } from "@/activities/registry";
 import { logDogukanVisit } from "@/lib/activityLog";
+import type { ActivityLearning } from "@/lib/activityLearning.types";
 
 type Props = {
   slug: string;
   title: string;
+  learning: ActivityLearning;
 };
 
-export function ActivityClient({ slug, title }: Props) {
+export function ActivityClient({ slug, title, learning }: Props) {
   useEffect(() => {
     logDogukanVisit(slug, title);
   }, [slug, title]);
@@ -19,7 +21,7 @@ export function ActivityClient({ slug, title }: Props) {
 
   if (!Activity) {
     return (
-      <ActivityShell slug={slug} title={title}>
+      <ActivityShell key={slug} slug={slug} title={title} learning={learning}>
         <div className="game-panel">
           <p>Bu aktivite bulunamadı.</p>
         </div>
@@ -27,5 +29,9 @@ export function ActivityClient({ slug, title }: Props) {
     );
   }
 
-  return <ActivityShell slug={slug} title={title}>{Activity()}</ActivityShell>;
+  return (
+    <ActivityShell key={slug} slug={slug} title={title} learning={learning}>
+      {Activity()}
+    </ActivityShell>
+  );
 }

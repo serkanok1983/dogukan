@@ -8,10 +8,14 @@ import { MENU, TOTAL_ACTIVITIES, type MenuCategory } from "@/lib/menu";
 import { getPlayerDisplayName, getPlayerId, logout } from "@/lib/auth";
 import { normalizeSearch } from "@/lib/utils";
 import { sounds } from "@/lib/sounds";
+import type { ActivityLearningPreviews } from "@/lib/activityLearning.types";
 
-type Props = { onLogout: () => void };
+type Props = {
+  onLogout: () => void;
+  learningPreviews: ActivityLearningPreviews;
+};
 
-export function MenuScreen({ onLogout }: Props) {
+export function MenuScreen({ onLogout, learningPreviews }: Props) {
   const player = getPlayerId();
   const [search, setSearch] = useState("");
   const [activeCat, setActiveCat] = useState("all");
@@ -23,10 +27,19 @@ export function MenuScreen({ onLogout }: Props) {
       items: cat.items.filter((it) => {
         if (activeCat !== "all" && activeCat !== cat.id) return false;
         if (!q) return true;
-        return normalizeSearch(it.label).includes(q) || normalizeSearch(cat.title).includes(q);
+        const learning = learningPreviews[it.slug];
+        const searchText = [
+          it.label,
+          cat.title,
+          learning?.concept,
+          learning?.relatedTopicTitle,
+        ]
+          .filter(Boolean)
+          .join(" ");
+        return normalizeSearch(searchText).includes(q);
       }),
     })).filter((cat) => cat.items.length > 0);
-  }, [search, activeCat]);
+  }, [search, activeCat, learningPreviews]);
 
   const handleLogout = () => {
     logout();
@@ -74,10 +87,14 @@ export function MenuScreen({ onLogout }: Props) {
           </div>
         </div>
         <div className="search-wrap">
+          <label className="sr-only" htmlFor="activity-search">
+            Etkinlik adı, kavram veya ansiklopedi konusu ara
+          </label>
           <span className="search-icon" aria-hidden>
             🔍
           </span>
           <input
+            id="activity-search"
             type="search"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
@@ -85,9 +102,11 @@ export function MenuScreen({ onLogout }: Props) {
             autoComplete="off"
           />
         </div>
-        <div className="category-tabs" role="tablist">
+        <div className="category-tabs" role="group" aria-label="Etkinlik kategorisi filtresi">
           <button
             type="button"
+            aria-pressed={activeCat === "all"}
+            aria-controls="activity-menu-results"
             className={`tab ${activeCat === "all" ? "active" : ""}`}
             onClick={() => setActiveCat("all")}
           >
@@ -97,6 +116,8 @@ export function MenuScreen({ onLogout }: Props) {
             <button
               key={cat.id}
               type="button"
+              aria-pressed={activeCat === cat.id}
+              aria-controls="activity-menu-results"
               className={`tab ${activeCat === cat.id ? "active" : ""}`}
               onClick={() => setActiveCat(cat.id)}
             >
@@ -106,7 +127,15 @@ export function MenuScreen({ onLogout }: Props) {
         </div>
       </header>
 
-      <main className="menu-body">
+      <main
+        id="activity-menu-results"
+        className="menu-body"
+        role="region"
+        aria-label={activeCat === "all" ? "Tüm etkinlikler" : `${MENU.find((cat) => cat.id === activeCat)?.title ?? "Etkinlik"} sonuçları`}
+      >
+        <p className="sr-only" role="status" aria-live="polite">
+          {filtered.reduce((count, category) => count + category.items.length, 0)} etkinlik gösteriliyor.
+        </p>
         <Link
           href="/kesfet/"
           className="merak-portal"
@@ -132,7 +161,11 @@ export function MenuScreen({ onLogout }: Props) {
           <p className="empty-search">Sonuç bulunamadı. Başka bir kelime dene!</p>
         ) : (
           filtered.map((cat) => (
-            <MenuSection key={cat.id} cat={cat} />
+            <MenuSection
+              key={cat.id}
+              cat={cat}
+              learningPreviews={learningPreviews}
+            />
           ))
         )}
       </main>
@@ -140,27 +173,64 @@ export function MenuScreen({ onLogout }: Props) {
   );
 }
 
-function MenuSection({ cat }: { cat: MenuCategory & { items: MenuCategory["items"] } }) {
+function MenuSection({
+  cat,
+  learningPreviews,
+}: {
+  cat: MenuCategory & { items: MenuCategory["items"] };
+  learningPreviews: ActivityLearningPreviews;
+}) {
+  const headingId = `menu-category-${cat.id}`;
   return (
-    <section className="menu-section">
+    <section className="menu-section" aria-labelledby={headingId}>
       <div className="section-head">
         <span className="icon">{cat.icon}</span>
-        <h2>{cat.title}</h2>
+        <h2 id={headingId}>{cat.title}</h2>
         <span className="count">{cat.items.length}</span>
       </div>
       <div className="card-grid">
-        {cat.items.map((it) => (
-          <Link
-            key={it.slug}
-            href={`/aktivite/${it.slug}/`}
-            className="menu-card"
-            style={{ "--card-accent": cat.accent } as React.CSSProperties}
-            onClick={() => sounds.tap()}
-          >
-            <span className="card-emoji">{it.emoji}</span>
-            <span className="card-label">{it.label}</span>
-          </Link>
-        ))}
+        {cat.items.map((it) => {
+          const learning = learningPreviews[it.slug];
+          return (
+            <article
+              key={it.slug}
+              className="menu-card-wrap"
+              style={{ "--card-accent": cat.accent } as React.CSSProperties}
+            >
+              <Link
+                href={`/aktivite/${it.slug}/`}
+                className="menu-card"
+                onClick={() => sounds.tap()}
+              >
+                <span className="card-emoji" aria-hidden="true">
+                  {it.emoji}
+                </span>
+                <span className="card-copy">
+                  <span className="card-label">{it.label}</span>
+                  {learning ? (
+                    <span className="card-concept">💡 {learning.concept}</span>
+                  ) : null}
+                </span>
+                <span className="card-play" aria-hidden="true">
+                  ▶
+                </span>
+              </Link>
+              {learning ? (
+                <Link
+                  href={`/kesfet/${learning.relatedTopicSlug}/`}
+                  className="menu-knowledge-link"
+                  prefetch={false}
+                  onClick={() => sounds.star()}
+                  aria-label={`${it.label} ile ilgili ${learning.relatedTopicTitle} ansiklopedi keşfine git`}
+                >
+                  <span aria-hidden="true">{learning.relatedTopicEmoji}</span>
+                  <span>{learning.relatedTopicTitle}</span>
+                  <b aria-hidden="true">→</b>
+                </Link>
+              ) : null}
+            </article>
+          );
+        })}
       </div>
     </section>
   );

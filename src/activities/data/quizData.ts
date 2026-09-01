@@ -4,12 +4,30 @@ const LETTERS = "ABCÇDEFGĞHIİJKLMNOÖPRSŞTUÜVYZ".split("");
 const VOWELS = ["A", "E", "I", "İ", "O", "Ö", "U", "Ü"];
 const VOWEL_TEST_LETTERS = ["A", "B", "E", "K", "I", "M", "Ö", "S", "Ü", "Y"];
 
-export const harfTania: QuizQuestion[] = LETTERS.slice(0, 12).map((L) => ({
-  prompt: `Hangi harf "${L}"?`,
+const LETTER_CLUES = [
+  ["A", "Arı"], ["B", "Balık"], ["C", "Ceviz"], ["Ç", "Çilek"],
+  ["D", "Deniz"], ["E", "Elma"], ["F", "Fil"], ["G", "Güneş"],
+  ["Ğ", "Dağ kelimesinin sonu"], ["H", "Havuç"], ["I", "Işık"], ["İ", "İnek"],
+  ["J", "Jilet"], ["K", "Kedi"], ["L", "Limon"], ["M", "Masa"],
+  ["N", "Nar"], ["O", "Okul"], ["Ö", "Ördek"], ["P", "Papatya"],
+  ["R", "Rüzgâr"], ["S", "Saat"], ["Ş", "Şemsiye"], ["T", "Top"],
+  ["U", "Uçak"], ["Ü", "Üzüm"], ["V", "Vapur"], ["Y", "Yıldız"],
+  ["Z", "Zeytin"],
+] as const;
+
+export const harfTania: QuizQuestion[] = LETTER_CLUES.map(([letter, clue]) => ({
+  prompt: letter === "Ğ"
+    ? `“${clue}” ipucunda hangi harf anlatılıyor?`
+    : `“${clue}” kelimesi hangi harfle başlar?`,
   emoji: "🔤",
-  answer: L,
+  answer: letter,
   options: LETTERS,
-  hint: `Sesini söyle: ${L}`,
+  hint: letter === "Ğ"
+    ? "Ğ, Türkçede sözcük başında bulunmaz; ünlüler arasında veya sözcük sonunda görülür."
+    : `${clue} kelimesini yavaşça söyle ve ilk sesi dinle.`,
+  explanation: letter === "Ğ"
+    ? "Dağ sözcüğü Ğ ile biter. Ğ, kendinden önceki ünlünün söylenişini etkileyen Türkçe bir harftir."
+    : `${clue}, ${letter} harfiyle başlar.`,
 }));
 
 export const sesliHarf: QuizQuestion[] = VOWEL_TEST_LETTERS.map((L) => ({
@@ -43,6 +61,10 @@ export const heceBirlestir: QuizQuestion[] = [
 export const cumleKur: QuizQuestion[] = [
   { prompt: "“Kim? → Nereye? → Ne yapıyor?” sırasını seç.", emoji: "✏️", answer: "Ben okula giderim", options: ["Ben okula giderim", "Ben giderim okula", "Giderim okula ben", "Okula giderim ben"], hint: "Kurallı cümlede yüklem genellikle sondadır." },
   { prompt: "“Kim? → Ne? → Ne yapıyor?” sırasını seç.", emoji: "✏️", answer: "Annem yemek yapar", options: ["Annem yemek yapar", "Annem yapar yemek", "Yapar yemek annem", "Yemek yapar annem"], hint: "Kurallı cümlede yüklem genellikle sondadır." },
+  { prompt: "“Kim? → Nerede? → Ne yapıyor?” sırasını seç.", emoji: "✏️", answer: "Kedi bahçede uyuyor", options: ["Kedi bahçede uyuyor", "Bahçede uyuyor kedi", "Uyuyor kedi bahçede", "Kedi uyuyor bahçede"], hint: "Önce işi yapanı, sonra yeri, en son eylemi söyle." },
+  { prompt: "“Kim? → Ne zaman? → Ne yapacak?” sırasını seç.", emoji: "✏️", answer: "Ece yarın yüzecek", options: ["Ece yarın yüzecek", "Yarın yüzecek Ece", "Yüzecek Ece yarın", "Ece yüzecek yarın"], hint: "Yüklem genellikle cümlenin sonundadır." },
+  { prompt: "Hangi seçenek tamamlanmış ve kurallı bir cümledir?", emoji: "✏️", answer: "Çocuklar parkta oynadı", options: ["Çocuklar parkta oynadı", "Parkta çocuklar", "Oynadı parkta", "Çocuklar ve parkta"], explanation: "Tamamlanmış cümle bir yargı bildirir; burada 'oynadı' yüklemdir." },
+  { prompt: "Hangi cümlenin sonunda soru işareti kullanılmalıdır?", emoji: "❓", answer: "Bugün bize gelir misin", options: ["Bugün bize gelir misin", "Bugün bize geldin", "Yarın okul açılıyor", "Kitabımı masaya koydum"], explanation: "'Gelir misin' yanıt bekleyen bir soru bildirir." },
 ];
 
 export const alfabeSirasi: QuizQuestion[] = [
@@ -54,11 +76,19 @@ export const alfabeSirasi: QuizQuestion[] = [
 export const benzerKelime: QuizQuestion[] = [
   { prompt: "Hangisi 'anne' ile aynı gruptadır?", emoji: "👯", answer: "baba", options: ["baba", "masa", "kalem", "top"], hint: "Aile üyeleri" },
   { prompt: "Hangisi 'kedi' ile aynı gruptadır?", emoji: "👯", answer: "köpek", options: ["köpek", "araba", "ev", "kitap"], hint: "Hayvanlar" },
+  { prompt: "Hangisi 'elma' ile aynı gruptadır?", emoji: "👯", answer: "armut", options: ["armut", "bardak", "çorap", "otobüs"], hint: "Meyveleri düşün." },
+  { prompt: "Hangisi 'mavi' ile aynı gruptadır?", emoji: "👯", answer: "yeşil", options: ["yeşil", "üçgen", "yavaş", "kalem"], hint: "Renk adlarını düşün." },
+  { prompt: "Hangisi 'koşmak' ile aynı gruptadır?", emoji: "👯", answer: "yüzmek", options: ["yüzmek", "sandalye", "sarı", "elma"], explanation: "Koşmak ve yüzmek birer eylemdir." },
+  { prompt: "Hangisi 'sevinçli' sözcüğüne anlamca en yakındır?", emoji: "👯", answer: "mutlu", options: ["mutlu", "öfkeli", "uykulu", "ıslak"], explanation: "Sevinçli ve mutlu yakın anlamlı sözcüklerdir." },
 ];
 
 export const boslukDoldur: QuizQuestion[] = [
   { prompt: "Güneş gökyüzünde ___", emoji: "📝", answer: "parlar", options: ["parlar", "yüzer", "uçar", "koşar"], hint: "Işık verir" },
   { prompt: "Balıklar suda ___", emoji: "📝", answer: "yüzer", options: ["yüzer", "uçar", "yürür", "konuşur"] },
+  { prompt: "Kuşlar yuvalarını dallara ___", emoji: "📝", answer: "kurabilir", options: ["kurabilir", "içebilir", "okuyabilir", "sayabilir"] },
+  { prompt: "Yağmur yağınca toprak ___", emoji: "📝", answer: "ıslanır", options: ["ıslanır", "uçar", "yanar", "kaybolur"] },
+  { prompt: "Kitabı dikkatle ___", emoji: "📝", answer: "okudum", options: ["okudum", "yüzdüm", "kokladım", "uçtum"], explanation: "Kitapla anlamlı bir eylem kuran sözcük 'okudum'dur." },
+  { prompt: "Fidan büyüyünce bir ___ olabilir", emoji: "📝", answer: "ağaç", options: ["ağaç", "bulut", "bardak", "taş"], explanation: "Fidan, genç ağaçtır; uygun koşullarda gelişerek büyür." },
 ];
 
 export const toplama: QuizQuestion[] = Array.from({ length: 12 }, (_, i) => {
@@ -95,9 +125,9 @@ export const ciftTek: QuizQuestion[] = [
 ];
 
 export const onlukBirlik: QuizQuestion[] = [
-  { prompt: "23'te kaç onluk var?", emoji: "🧮", answer: "2", options: ["2", "3", "23", "5"] },
-  { prompt: "45'te kaç birlik?", emoji: "🧮", answer: "5", options: ["4", "5", "45", "9"] },
-  { prompt: "30 sayısı kaç onluk?", emoji: "🧮", answer: "3", options: ["0", "3", "30", "10"] },
+  { prompt: "23 sayısının onluk basamağındaki rakam nedir?", emoji: "🧮", answer: "2", options: ["2", "3", "23", "5"], explanation: "23, 2 onluk ve 3 birlikten oluşur." },
+  { prompt: "45 sayısının birlik basamağındaki rakam nedir?", emoji: "🧮", answer: "5", options: ["4", "5", "45", "9"], explanation: "45, 4 onluk ve 5 birlikten oluşur." },
+  { prompt: "30 sayısında kaç onluk vardır?", emoji: "🧮", answer: "3", options: ["0", "3", "30", "10"], explanation: "30, 3 onluk ve 0 birliktir." },
 ];
 
 export const saatOgren: QuizQuestion[] = [
@@ -107,8 +137,12 @@ export const saatOgren: QuizQuestion[] = [
 ];
 
 export const paraSay: QuizQuestion[] = [
-  { prompt: "1 TL + 1 TL = ?", emoji: "💰", answer: "2 TL", options: ["2 TL", "1 TL", "3 TL", "11 TL"] },
-  { prompt: "5 TL + 2 TL = ?", emoji: "💰", answer: "7 TL", options: ["7 TL", "52 TL", "3 TL", "10 TL"] },
+  { prompt: "1 TL + 1 TL toplam kaç TL eder?", emoji: "💰", answer: "2 TL", options: ["2 TL", "1 TL", "3 TL", "11 TL"] },
+  { prompt: "5 TL + 2 TL toplam kaç TL eder?", emoji: "💰", answer: "7 TL", options: ["7 TL", "52 TL", "3 TL", "10 TL"] },
+  { prompt: "10 TL ile 6 TL'lik bir ürün alırsan kaç TL para üstü alırsın?", emoji: "💰", answer: "4 TL", options: ["4 TL", "6 TL", "10 TL", "16 TL"], explanation: "Para üstü için ödenen tutardan fiyatı çıkarırız: 10 − 6 = 4." },
+  { prompt: "2 TL + 2 TL + 1 TL toplam kaç TL eder?", emoji: "💰", answer: "5 TL", options: ["5 TL", "4 TL", "3 TL", "6 TL"] },
+  { prompt: "8 TL'lik ürün için hangisi tam ödeme olur?", emoji: "💰", answer: "5 TL + 2 TL + 1 TL", options: ["5 TL + 2 TL + 1 TL", "5 TL + 1 TL", "2 TL + 2 TL", "10 TL + 1 TL"], explanation: "5 + 2 + 1 = 8 TL eder." },
+  { prompt: "12 TL'nin 5 TL'sini harcarsan kaç TL kalır?", emoji: "💰", answer: "7 TL", options: ["7 TL", "5 TL", "12 TL", "17 TL"], explanation: "Kalan parayı bulmak için çıkarırız: 12 − 5 = 7." },
 ];
 
 export const karsilastir: QuizQuestion[] = [
@@ -132,11 +166,15 @@ export const desenTamamla: QuizQuestion[] = [
 export const sekilSay: QuizQuestion[] = [
   { prompt: "🔺🔺🔺 kaç üçgen?", emoji: "🔺", answer: "3", options: ["3", "2", "4", "1"] },
   { prompt: "⬜⬜ kaç kare?", emoji: "⬜", answer: "2", options: ["2", "3", "1", "4"] },
+  { prompt: "⚫⚫⚫⚫ kaç daire?", emoji: "⚫", answer: "4", options: ["4", "3", "5", "2"] },
+  { prompt: "🔺⬜🔺⚫🔺 dizisinde kaç üçgen var?", emoji: "🔺", answer: "3", options: ["3", "2", "4", "5"] },
+  { prompt: "⬜⚫⬜⚫⬜⚫ dizisinde toplam kaç şekil var?", emoji: "🔷", answer: "6", options: ["6", "3", "4", "5"] },
+  { prompt: "🔺🔺⬜⬜⬜ dizisinde kareler üçgenlerden kaç tane fazladır?", emoji: "🔷", answer: "1", options: ["1", "2", "3", "5"], explanation: "3 kare ve 2 üçgen vardır; 3 − 2 = 1." },
 ];
 
 export const havaDurumu: QuizQuestion[] = [
-  { prompt: "☀️ Güneşli günde ne giyilir?", emoji: "☀️", answer: "İnce kıyafet", options: ["İnce kıyafet", "Kalın mont", "Yağmurluk", "Kayak tulumu"] },
-  { prompt: "🌧️ Yağmurda ne lazım?", emoji: "🌧️", answer: "Şemsiye", options: ["Şemsiye", "Güneş gözlüğü", "Şort", "Bere"] },
+  { prompt: "Hava sıcak ve güneşliyse hangi seçenek daha uygundur?", emoji: "☀️", answer: "İnce kıyafet ve güneşten korunma", options: ["İnce kıyafet ve güneşten korunma", "Kalın mont", "Yağmurluk", "Kayak tulumu"], explanation: "Kıyafet seçerken yalnız gökyüzüne değil sıcaklığa da bakarız; şapka ve gölge güneşten korunmaya yardım eder." },
+  { prompt: "Yağmurlu havada hangisi ıslanmamaya yardım eder?", emoji: "🌧️", answer: "Şemsiye veya yağmurluk", options: ["Şemsiye veya yağmurluk", "Güneş gözlüğü", "Şort", "Yün atkı"] },
   { prompt: "❄️ Kar yağınca hava?", emoji: "❄️", answer: "Soğuk", options: ["Soğuk", "Sıcak", "Ilık", "Rüzgarlı deniz"] },
 ];
 
@@ -147,9 +185,9 @@ export const gezegenler: QuizQuestion[] = [
 ];
 
 export const vucudumuz: QuizQuestion[] = [
-  { prompt: "Kan pompalayan organ?", emoji: "🫀", answer: "Kalp", options: ["Kalp", "Mide", "Beyin", "Ayak"] },
-  { prompt: "Nefes almak için?", emoji: "🫁", answer: "Akciğer", options: ["Akciğer", "Kulak", "Saç", "Tırnak"] },
-  { prompt: "Düşünmemizi sağlayan?", emoji: "🧠", answer: "Beyin", options: ["Beyin", "Diş", "Kol", "Diz"] },
+  { prompt: "Kanı vücudumuza pompalayan organ hangisidir?", emoji: "🫀", answer: "Kalp", options: ["Kalp", "Mide", "Beyin", "Ayak"], explanation: "Kalp kasılarak kanı damarlar boyunca pompalar." },
+  { prompt: "Havayla kan arasında oksijen ve karbondioksit alışverişi hangi organda gerçekleşir?", emoji: "🫁", answer: "Akciğer", options: ["Akciğer", "Kulak", "Saç", "Tırnak"], explanation: "Göğüs kafesi ve diyafram havanın hareketine yardım eder; gaz alışverişi akciğerlerde gerçekleşir." },
+  { prompt: "Düşünme, öğrenme ve vücudun pek çok işini yönetmede hangi organ görevlidir?", emoji: "🧠", answer: "Beyin", options: ["Beyin", "Diş", "Kol", "Diz"] },
 ];
 
 export const besinGruplari: QuizQuestion[] = [
@@ -159,19 +197,26 @@ export const besinGruplari: QuizQuestion[] = [
 ];
 
 export const bitkiBuyume: QuizQuestion[] = [
-  { prompt: "Tohum önce ne yapar?", emoji: "🌱", answer: "Filizlenir", options: ["Filizlenir", "Uçar", "Büyür", "Konuşur"] },
+  { prompt: "Uygun su, sıcaklık ve hava koşullarında tohumdan ilk kök çıkmaya başladığında bu olaya ne denir?", emoji: "🌱", answer: "Çimlenme", options: ["Çimlenme", "Tozlaşma", "Buharlaşma", "Solunum"], explanation: "Çimlenme, embriyonun büyümeye başlayıp ilk kökün tohumdan çıkmasıyla başlayan süreçtir." },
   { prompt: "Bitki kendi besinini üretirken hangilerini kullanır?", emoji: "🌱", answer: "Işık, su ve karbondioksit", options: ["Işık, su ve karbondioksit", "Yalnız toprak", "Taş ve plastik", "Yalnız rüzgâr"], hint: "Bu olaya fotosentez denir." },
+  { prompt: "Bitkinin topraktan su ve mineral almasına en çok hangi bölümü yardım eder?", emoji: "🌿", answer: "Kök", options: ["Kök", "Çiçek", "Meyve", "Tohum"], explanation: "Kökler bitkiyi toprağa bağlar; su ve çözünmüş minerallerin alınmasına yardım eder." },
+  { prompt: "Yapraklardaki küçük açıklıklar hangi alışverişte görevlidir?", emoji: "🍃", answer: "Gaz alışverişi", options: ["Gaz alışverişi", "Taş üretimi", "Ses çıkarma", "Toprağı kazma"], explanation: "Stoma denen açıklıklar karbondioksit, oksijen ve su buharı alışverişine yardım eder." },
+  { prompt: "Bir bitkinin büyümesini adil karşılaştırmak için hangisini yapmalısın?", emoji: "🧪", answer: "Tek bir koşulu değiştirip diğerlerini aynı tutmak", options: ["Tek bir koşulu değiştirip diğerlerini aynı tutmak", "Her saksıya farklı miktarda su, ışık ve toprak vermek", "Yalnız en uzun bitkiye bakmak", "Ölçüm yapmadan tahmin etmek"], explanation: "Kontrollü karşılaştırma, görülen farkın hangi koşuldan kaynaklandığını anlamayı kolaylaştırır." },
 ];
 
 export const hayvanlar: QuizQuestion[] = [
-  { prompt: "🦁 Aslan nerede yaşar?", emoji: "🦁", answer: "Kara", options: ["Kara", "Deniz", "Uzay", "Buzul"] },
-  { prompt: "🐟 Balık nerede yaşar?", emoji: "🐟", answer: "Su", options: ["Su", "Çöl", "Dağ", "Bulut"] },
-  { prompt: "🐦 Kuş nasıl hareket eder?", emoji: "🐦", answer: "Uçar", options: ["Uçar", "Yüzer", "Kazar", "Patlar"] },
+  { prompt: "🦁 Aslanın doğal yaşam alanlarından biri hangisidir?", emoji: "🦁", answer: "Savan", options: ["Savan", "Açık okyanus", "Uzay", "Kutup denizi"], explanation: "Aslanlar çoğunlukla Afrika'daki savan ve açık orman habitatlarında yaşar." },
+  { prompt: "🐟 Balıklar oksijeni çoğunlukla hangi ortamdan solungaçlarıyla alır?", emoji: "🐟", answer: "Sudan", options: ["Sudan", "Çöl kumundan", "Buluttan", "Uzaydan"] },
+  { prompt: "🐦 Birçok kuş havada ilerlemek için hangi hareketi kullanır?", emoji: "🐦", answer: "Kanat çırpar veya süzülür", options: ["Kanat çırpar veya süzülür", "Yalnız yüzer", "Toprağın altında kazar", "Hiç hareket etmez"], explanation: "Birçok kuş kanat çırparak ya da hava akımlarında süzülerek uçar; penguen gibi uçamayan kuşlar da vardır." },
 ];
 
 export const mevsimler: QuizQuestion[] = [
-  { prompt: "Yapraklar dökülür hangi mevsim?", emoji: "🍂", answer: "Sonbahar", options: ["Sonbahar", "Yaz", "İlkbahar", "Kış"] },
-  { prompt: "Kar yağar genelde?", emoji: "❄️", answer: "Kış", options: ["Kış", "Yaz", "İlkbahar", "Sonbahar"] },
+  { prompt: "Birçok yaprak döken ağacın yaprakları hangi mevsimde renk değiştirip dökülmeye başlar?", emoji: "🍂", answer: "Sonbahar", options: ["Sonbahar", "Yaz", "İlkbahar", "Kış"] },
+  { prompt: "Türkiye'nin birçok bölgesinde kar yağışı en sık hangi mevsimde görülür?", emoji: "❄️", answer: "Kış", options: ["Kış", "Yaz", "İlkbahar", "Sonbahar"] },
+  { prompt: "Kuzey Yarımküre'de gündüzler genellikle hangi mevsimde en uzundur?", emoji: "☀️", answer: "Yaz", options: ["Yaz", "Kış", "Sonbahar", "İlkbahar"], explanation: "Dünya'nın eksen eğikliği nedeniyle Kuzey Yarımküre yazın Güneş'e daha dönük kalır ve gündüzler uzar." },
+  { prompt: "Mevsimlerin oluşmasının temel nedeni hangisidir?", emoji: "🌍", answer: "Dünya'nın eksen eğikliği ve Güneş çevresindeki dolanımı", options: ["Dünya'nın eksen eğikliği ve Güneş çevresindeki dolanımı", "Dünya'nın yazın Güneş'e çok yaklaşması", "Ay'ın her ay biçim değiştirmesi", "Bulutların yön değiştirmesi"], explanation: "Mevsimleri belirleyen ana etken Dünya'nın eksen eğikliğidir; Güneş'e uzaklık temel neden değildir." },
+  { prompt: "Türkiye ilkbaharı yaşarken Güney Yarımküre'de hangi mevsim yaşanır?", emoji: "🌏", answer: "Sonbahar", options: ["Sonbahar", "İlkbahar", "Yaz", "Kış"], explanation: "İki yarımkürede mevsimler birbirine zıttır." },
+  { prompt: "Hava durumu ile mevsim arasındaki fark hangisidir?", emoji: "🌦️", answer: "Hava durumu kısa sürelidir; mevsim yıl içindeki genel örüntüdür", options: ["Hava durumu kısa sürelidir; mevsim yıl içindeki genel örüntüdür", "İkisi tamamen aynı şeydir", "Mevsim yalnız bir gün sürer", "Hava durumu her yıl hiç değişmez"], explanation: "Tek bir yağmurlu gün mevsimi değiştirmez; hava durumu kısa süreli koşulları anlatır." },
 ];
 
 export const suDongu: QuizQuestion[] = [

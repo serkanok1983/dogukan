@@ -204,6 +204,30 @@ export default async function EncyclopediaTopicPage({ params }: Props) {
           </div>
         </aside>
 
+        <aside className="parent-note">
+          <span aria-hidden>📚</span>
+          <div>
+            <small>İçerik şeffaflığı</small>
+            <details>
+              <summary>Yetişkinler için kaynak ve içerik notu</summary>
+              <p>
+                Bu sayfadaki açıklamalar çocukların yaşına uygun olacak biçimde
+                sadeleştirilmiştir. Son içerik gözden geçirme tarihi: {" "}
+                <time dateTime={topic.reviewedAt}>1 Ağustos 2026</time>.
+              </p>
+              <ul aria-label={`${topic.title} için yetişkin kaynakları`}>
+                {topic.sources.map((source) => (
+                  <li key={source.url}>
+                    <a href={source.url}>{source.title}</a>
+                    {" — "}
+                    {source.organization}
+                  </li>
+                ))}
+              </ul>
+            </details>
+          </div>
+        </aside>
+
         <nav className="topic-neighbors" aria-label="Diğer keşifler">
           {previous ? (
             <Link href={`/kesfet/${previous.slug}/`}>
