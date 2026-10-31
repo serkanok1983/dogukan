@@ -46,9 +46,9 @@ export function FruitSlice() {
   const running = useGameRunning();
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [score, setScore] = useState(0);
-  const [timeLeft, setTimeLeft] = useState(DURATION);
+  const [, setTimeLeft] = useState(DURATION);
   const [done, setDone] = useState(false);
-  const [combo, setCombo] = useState(0);
+  const [, setCombo] = useState(0);
   const [lives, setLives] = useState(3);
   const scoreGame = useGameScore(GAME_SLUG);
   const submitted = useRef(false);

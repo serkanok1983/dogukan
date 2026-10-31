@@ -28,18 +28,18 @@ describe("reduceProgress", () => {
   });
 
   it("run_end: oynama, en iyi skor, yıldız, bildirim ve gün kovası", () => {
-    const p = apply(fresh(), ev({ type: "run_end", slug: "super-ayi", score: 120, durationMs: 30_000, level: 3 }));
+    const p = apply(fresh(), ev({ type: "run_end", slug: "super-ayi", score: 120, durationMs: 30_000, level: 4 }));
     const a = p.activities["super-ayi"];
-    expect(a).toMatchObject({ plays: 1, best: 120, bestLevel: 3, stars: 2, ease: 0.7, seconds: 0 });
-    expect(p.inbox.map((n) => n.kind)).toEqual(["new_star"]);
+    expect(a).toMatchObject({ plays: 1, best: 120, bestLevel: 4, stars: 2, ease: 0.7, seconds: 0 });
+    expect(p.inbox.filter((n) => n.kind !== "sticker").map((n) => n.kind)).toEqual(["new_star"]);
     expect(p.days[today]?.plays["super-ayi"]).toEqual({ sec: 0, runs: 1, stars: 2 });
   });
 
   it("run_end: yıldız düşmez, yeni yıldız yalnızca artınca bildirilir", () => {
     const p = apply(
       fresh(),
-      ev({ type: "run_end", slug: "super-ayi", score: 300, durationMs: 1 }),
-      ev({ type: "run_end", slug: "super-ayi", score: 5, durationMs: 1 }),
+      ev({ type: "run_end", slug: "super-ayi", score: 300, durationMs: 1, level: 7 }),
+      ev({ type: "run_end", slug: "super-ayi", score: 5, durationMs: 1, level: 1 }),
     );
     expect(p.activities["super-ayi"]?.stars).toBe(3);
     expect(p.inbox.filter((n) => n.kind === "new_star")).toHaveLength(1);
@@ -188,7 +188,7 @@ describe("reduceProgress", () => {
   it("kozmetik: yıldız yetmezse alınmaz, sahip olunmayan takılmaz", () => {
     let p = apply(fresh(), ev({ type: "cosmetic_buy", cosmeticId: "sapka", price: 2 }));
     expect(p.rewards.cosmetics.owned).toEqual([]);
-    p = apply(p, ev({ type: "run_end", slug: "super-ayi", score: 300, durationMs: 1 }));
+    p = apply(p, ev({ type: "run_end", slug: "super-ayi", score: 300, durationMs: 1, level: 7 }));
     expect(totalStars(p)).toBe(3);
     p = apply(p, ev({ type: "cosmetic_equip", cosmeticId: "sapka" }));
     expect(p.rewards.cosmetics.equipped).toBeNull();

@@ -10,6 +10,7 @@ import { sounds } from "@/lib/sounds";
 import { useGameScore } from "@/hooks/useGameScore";
 import { ScoreHud } from "@/components/ScoreHud";
 import { randInt } from "@/lib/utils";
+import { canvasFont } from "@/lib/canvasFont";
 
 const W = 360;
 const H = 520;
@@ -37,7 +38,7 @@ export function TankBattle() {
   const running = useGameRunning();
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [score, setScore] = useState(0);
-  const [lives, setLives] = useState(3);
+  const [, setLives] = useState(3);
   const [over, setOver] = useState(false);
   const scoreGame = useGameScore(GAME_SLUG);
 
@@ -353,7 +354,7 @@ export function TankBattle() {
       fx.draw(ctx, W, H);
 
       ctx.fillStyle = "#fff";
-      ctx.font = "bold 14px var(--font-nunito), sans-serif";
+      ctx.font = canvasFont("bold 14px var(--font-nunito), sans-serif");
       ctx.fillText(`💥 ${scoreRef.current}`, 10, 22);
       ctx.fillText(`❤️ ${livesRef.current}`, W - 50, 22);
 

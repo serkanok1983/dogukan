@@ -1,10 +1,10 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { BubbleBg } from "@/components/BubbleBg";
 import { EncyclopediaTools } from "@/components/encyclopedia/EncyclopediaTools";
 import { InteractiveLab } from "@/components/encyclopedia/InteractiveLab";
 import { KnowledgeCheck } from "@/components/encyclopedia/KnowledgeCheck";
+import { TopicSources } from "@/components/encyclopedia/TopicSources";
 import { CATEGORIES, TOPICS, getTopic } from "@/lib/encyclopedia";
 
 type Props = { params: Promise<{ slug: string }> };
@@ -49,7 +49,6 @@ export default async function EncyclopediaTopicPage({ params }: Props) {
       <a className="encyclopedia-skip" href="#encyclopedia-main">
         Ana içeriğe geç
       </a>
-      <BubbleBg />
       <div className="encyclopedia-sky" aria-hidden>
         <span />
         <span />
@@ -215,15 +214,7 @@ export default async function EncyclopediaTopicPage({ params }: Props) {
                 sadeleştirilmiştir. Son içerik gözden geçirme tarihi: {" "}
                 <time dateTime={topic.reviewedAt}>1 Ağustos 2026</time>.
               </p>
-              <ul aria-label={`${topic.title} için yetişkin kaynakları`}>
-                {topic.sources.map((source) => (
-                  <li key={source.url}>
-                    <a href={source.url}>{source.title}</a>
-                    {" — "}
-                    {source.organization}
-                  </li>
-                ))}
-              </ul>
+              <TopicSources title={topic.title} sources={topic.sources} />
             </details>
           </div>
         </aside>

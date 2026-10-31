@@ -10,6 +10,7 @@ import { useGameScore } from "@/hooks/useGameScore";
 import { ScoreHud } from "@/components/ScoreHud";
 import { GameTouchBar } from "@/components/GameTouchBar";
 import { useCanvasFit } from "@/hooks/useCanvasFit";
+import { canvasFont } from "@/lib/canvasFont";
 
 const GAME_SLUG = "tetris";
 const GAME_W = 400;
@@ -120,7 +121,7 @@ export function Tetris() {
       ctx.fillStyle = "rgba(0,0,0,0.65)";
       ctx.fillRect(OFFSET_X, 0, BOARD_W, BOARD_H);
       ctx.fillStyle = "#fff";
-      ctx.font = "bold 28px var(--font-display), system-ui";
+      ctx.font = canvasFont("bold 28px var(--font-display), system-ui");
       ctx.textAlign = "center";
       ctx.fillText("Oyun Bitti", GAME_W / 2, BOARD_H / 2);
     }
@@ -128,7 +129,7 @@ export function Tetris() {
     fx.draw(ctx, GAME_W, GAME_H);
   }, []);
 
-  const clearLines = () => {
+  const clearLines = useCallback(() => {
     const board = boardRef.current;
     let cleared = 0;
     for (let r = ROWS - 1; r >= 0; r--) {
@@ -155,7 +156,7 @@ export function Tetris() {
       fx.popScore(GAME_W / 2, BOARD_H / 2, `+${pts}`);
       void scoreGame.checkMilestone(scoreRef.current);
     }
-  };
+  }, [scoreGame]);
 
   const spawn = useCallback(() => {
     pieceRef.current = randomPiece();
@@ -184,9 +185,9 @@ export function Tetris() {
     acelyaSounds.hit();
     spawn();
     draw();
-  }, [draw, spawn]);
+  }, [draw, spawn, clearLines]);
 
-  const tryMove = (dx: number, dy: number, matrix?: number[][]) => {
+  const tryMove = useCallback((dx: number, dy: number, matrix?: number[][]) => {
     const piece = pieceRef.current;
     if (!piece) return false;
     const m = matrix ?? piece.matrix;
@@ -196,20 +197,20 @@ export function Tetris() {
       return true;
     }
     return false;
-  };
+  }, []);
 
   const tick = useCallback(() => {
     if (overRef.current || !running) return;
     if (!tryMove(0, 1)) lock();
     else draw();
-  }, [running, draw, lock]);
+  }, [running, draw, lock, tryMove]);
 
-  const hardDrop = () => {
+  const hardDrop = useCallback(() => {
     while (tryMove(0, 1)) {
       /* drop */
     }
     lock();
-  };
+  }, [tryMove, lock]);
 
   const reset = useCallback(() => {
     boardRef.current = emptyBoard();
@@ -271,7 +272,7 @@ export function Tetris() {
     };
     document.addEventListener("keydown", onKey);
     return () => document.removeEventListener("keydown", onKey);
-  }, [running, draw, tick]);
+  }, [running, draw, tick, tryMove, hardDrop]);
 
   useEffect(() => {
     let raf = 0;
@@ -312,7 +313,7 @@ export function Tetris() {
       canvas.removeEventListener("touchstart", onStart);
       canvas.removeEventListener("touchend", onEnd);
     };
-  }, [draw]);
+  }, [draw, tryMove]);
 
   return (
     <div className="game-panel canvas-game acelya-game fullscreen-game">

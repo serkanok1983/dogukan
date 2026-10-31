@@ -6,6 +6,57 @@ import { sounds } from "@/lib/sounds";
 
 type Props = { mode: EncyclopediaTopic["lab"] };
 
+/**
+ * A stage is only the picture half of a lab, driven by one number (`preset`).
+ * `/kesfet/[slug]` composes stages with controls (`caption` on, adult text);
+ * Merak Kapsülleri render them bare through `LabStage` (`caption` off).
+ *
+ * Preset per mode: senses 0–4 (sense) · body 50–140 (beats/min) ·
+ * plant 0–100 (balance) · habitat 0–3 · weather −20…40 (°C) · water 0–3 (step) ·
+ * orbit 0–360 (°) · moon 0–7 (phase) · matter 0–100 (energy) ·
+ * light 10–85 (sun angle °, low = long shadow) · motion 2–88 (travel %) ·
+ * magnet 1–12 (distance) · number start×10+jump (34 = 3 + 4) · shape 0–3.
+ */
+export type StageProps = { preset: number; caption?: boolean };
+
+function stageA11y(caption: boolean) {
+  return caption ? ({ "aria-live": "polite" } as const) : ({ "aria-hidden": true } as const);
+}
+
+/** Bare stage for a capsule card. Animated stages start moving on mount. */
+export function LabStage({ mode, preset }: { mode: EncyclopediaTopic["lab"]; preset: number }) {
+  switch (mode) {
+    case "senses":
+      return <SensesStage preset={preset} />;
+    case "body":
+      return <BodyStage preset={preset} breathing breathSeconds={preset >= 100 ? 1.6 : 4} />;
+    case "plant":
+      return <PlantStage preset={preset} />;
+    case "habitat":
+      return <HabitatStage preset={preset} />;
+    case "weather":
+      return <WeatherStage preset={preset} />;
+    case "water":
+      return <WaterStage preset={preset} />;
+    case "orbit":
+      return <OrbitStage preset={preset} />;
+    case "moon":
+      return <MoonStage preset={preset} />;
+    case "matter":
+      return <MatterStage preset={preset} />;
+    case "light":
+      return <LightStage preset={preset} />;
+    case "motion":
+      return <MotionStage key={preset} preset={preset} moving />;
+    case "magnet":
+      return <MagnetStage preset={preset} />;
+    case "number":
+      return <NumberStage preset={preset} />;
+    case "shape":
+      return <ShapeStage preset={preset} />;
+  }
+}
+
 const SENSES = [
   { emoji: "👁️", name: "Görme", organ: "göz", clue: "Işığı, rengi, biçimi ve hareketi fark ederiz." },
   { emoji: "👂", name: "İşitme", organ: "kulak", clue: "Havadaki titreşimleri ses olarak algılarız." },
@@ -181,14 +232,9 @@ export function InteractiveLab({ mode }: Props) {
 }
 
 function SensesLab({ step, setStep }: { step: number; setStep: (step: number) => void }) {
-  const sense = SENSES[step] ?? SENSES[0];
   return (
     <div className="mini-lab-layout">
-      <div className="mini-lab-stage senses-stage" aria-live="polite">
-        <span className="lab-main-emoji" aria-hidden>{sense.emoji}</span>
-        <strong>{sense.name}</strong>
-        <p><b>{sense.organ[0]?.toLocaleUpperCase("tr")}{sense.organ.slice(1)}</b> ile {sense.clue.toLocaleLowerCase("tr")}</p>
-      </div>
+      <SensesStage preset={step} caption />
       <div className="mini-lab-controls">
         <p>Bir duyuya dokun. Beyin, farklı organlardan gelen bilgileri birlikte yorumlar.</p>
         <div className="choice-row">
@@ -210,6 +256,21 @@ function SensesLab({ step, setStep }: { step: number; setStep: (step: number) =>
   );
 }
 
+export function SensesStage({ preset, caption = false }: StageProps) {
+  const sense = SENSES[preset] ?? SENSES[0];
+  return (
+    <div className="mini-lab-stage senses-stage" {...stageA11y(caption)}>
+      <span className="lab-main-emoji" aria-hidden>{sense.emoji}</span>
+      {caption ? (
+        <>
+          <strong>{sense.name}</strong>
+          <p><b>{sense.organ[0]?.toLocaleUpperCase("tr")}{sense.organ.slice(1)}</b> ile {sense.clue.toLocaleLowerCase("tr")}</p>
+        </>
+      ) : null}
+    </div>
+  );
+}
+
 function BodyLab({
   rate,
   setRate,
@@ -221,21 +282,9 @@ function BodyLab({
   breathing: boolean;
   setBreathing: (active: boolean) => void;
 }) {
-  const tempo = Math.max(0.42, 60 / rate);
   return (
     <div className="mini-lab-layout">
-      <div className="mini-lab-stage body-stage" aria-live="polite">
-        <span
-          className="beating-heart"
-          style={{ "--beat-speed": `${tempo}s` } as React.CSSProperties}
-          aria-hidden
-        >
-          ❤️
-        </span>
-        <span className={`breathing-lungs ${breathing ? "is-breathing" : ""}`} aria-hidden>🫁</span>
-        <strong>Yaklaşık {rate} atım / dakika</strong>
-        <p>Kalp kanı pompalar; akciğerler havayla kan arasında gaz alışverişine yardım eder.</p>
-      </div>
+      <BodyStage preset={rate} breathing={breathing} caption />
       <div className="mini-lab-controls">
         <RangeControl label="Kalp modeli hızı" min={50} max={140} value={rate} unit=" atım/dk" onChange={setRate} />
         <button type="button" className="lab-action" onClick={() => { sounds.tap(); setBreathing(!breathing); }}>
@@ -243,6 +292,41 @@ function BodyLab({
         </button>
         <p className="observation-note">Koşarken kasların daha çok oksijen ve enerjiye ihtiyaç duyar; kalp ve soluk alıp verme genellikle hızlanır.</p>
       </div>
+    </div>
+  );
+}
+
+export function BodyStage({
+  preset,
+  breathing = false,
+  breathSeconds,
+  caption = false,
+}: StageProps & { breathing?: boolean; breathSeconds?: number }) {
+  const tempo = Math.max(0.42, 60 / preset);
+  return (
+    <div className="mini-lab-stage body-stage" {...stageA11y(caption)}>
+      <span
+        className="beating-heart"
+        style={{ "--beat-speed": `${tempo}s` } as React.CSSProperties}
+        aria-hidden
+      >
+        ❤️
+      </span>
+      <span
+        className={`breathing-lungs ${breathing ? "is-breathing" : ""}`}
+        style={breathSeconds ? { animationDuration: `${breathSeconds}s` } : undefined}
+        aria-hidden
+      >
+        🫁
+      </span>
+      {caption ? (
+        <>
+          <strong>Yaklaşık {preset} atım / dakika</strong>
+          <p>Kalp kanı pompalar; akciğerler havayla kan arasında gaz alışverişine yardım eder.</p>
+        </>
+      ) : (
+        <span className="cap-stage-badge" aria-hidden>{preset >= 100 ? "🐇" : "🐢"}</span>
+      )}
     </div>
   );
 }
@@ -259,15 +343,9 @@ function PlantLab({
   setWater: (value: number) => void;
 }) {
   const balance = 100 - Math.min(100, Math.abs(light - 65) + Math.abs(water - 55));
-  const state = balance > 72 ? ["🌻", "Dengeli koşullar"] : balance > 42 ? ["🌱", "Büyüme yavaş"] : ["🥀", "Koşullar uygun değil"];
   return (
     <div className="mini-lab-layout">
-      <div className="mini-lab-stage plant-stage" aria-live="polite">
-        <span className="plant-sun" aria-hidden>☀️</span>
-        <span className="lab-main-emoji plant-emoji" style={{ "--plant-size": `${0.8 + balance / 180}` } as React.CSSProperties} aria-hidden>{state[0]}</span>
-        <strong>{state[1]}</strong>
-        <p>Bitki; ışık enerjisi, su ve havadaki karbondioksiti kullanarak şeker üretir.</p>
-      </div>
+      <PlantStage preset={balance} caption />
       <div className="mini-lab-controls">
         <RangeControl label="Işık" min={0} max={100} value={light} unit="%" onChange={setLight} />
         <RangeControl label="Su" min={0} max={100} value={water} unit="%" onChange={setWater} />
@@ -277,16 +355,27 @@ function PlantLab({
   );
 }
 
+export function PlantStage({ preset, caption = false }: StageProps) {
+  const balance = Math.max(0, Math.min(100, preset));
+  const state = balance > 72 ? ["🌻", "Dengeli koşullar"] : balance > 42 ? ["🌱", "Büyüme yavaş"] : ["🥀", "Koşullar uygun değil"];
+  return (
+    <div className="mini-lab-stage plant-stage" {...stageA11y(caption)}>
+      <span className="plant-sun" aria-hidden>☀️</span>
+      <span className="lab-main-emoji plant-emoji" style={{ "--plant-size": `${0.8 + balance / 180}` } as React.CSSProperties} aria-hidden>{state[0]}</span>
+      {caption ? (
+        <>
+          <strong>{state[1]}</strong>
+          <p>Bitki; ışık enerjisi, su ve havadaki karbondioksiti kullanarak şeker üretir.</p>
+        </>
+      ) : null}
+    </div>
+  );
+}
+
 function HabitatLab({ step, setStep }: { step: number; setStep: (step: number) => void }) {
-  const habitat = HABITATS[step] ?? HABITATS[0];
   return (
     <div className="mini-lab-layout">
-      <div className="mini-lab-stage habitat-stage" aria-live="polite">
-        <span className="habitat-backdrop" aria-hidden>{habitat.emoji}</span>
-        <span className="habitat-animal" aria-hidden>{habitat.animal}</span>
-        <strong>{habitat.label}</strong>
-        <p>{habitat.fact}</p>
-      </div>
+      <HabitatStage preset={step} caption />
       <div className="mini-lab-controls">
         <p>Bir yaşam alanı seç ve canlının orada işine yarayan özelliğini düşün.</p>
         <div className="choice-row">
@@ -302,6 +391,22 @@ function HabitatLab({ step, setStep }: { step: number; setStep: (step: number) =
   );
 }
 
+export function HabitatStage({ preset, caption = false }: StageProps) {
+  const habitat = HABITATS[preset] ?? HABITATS[0];
+  return (
+    <div className="mini-lab-stage habitat-stage" {...stageA11y(caption)}>
+      <span className="habitat-backdrop" aria-hidden>{habitat.emoji}</span>
+      <span className="habitat-animal" aria-hidden>{habitat.animal}</span>
+      {caption ? (
+        <>
+          <strong>{habitat.label}</strong>
+          <p>{habitat.fact}</p>
+        </>
+      ) : null}
+    </div>
+  );
+}
+
 function WeatherLab({
   temperature,
   setTemperature,
@@ -313,21 +418,9 @@ function WeatherLab({
   wind: number;
   setWind: (value: number) => void;
 }) {
-  const symbol = wind > 65 ? "🌬️" : temperature <= 0 ? "❄️" : temperature > 28 ? "🌡️" : "🌤️";
-  const label = wind > 65
-    ? "Rüzgâr güçlü"
-    : temperature <= 0
-      ? "Donma noktası veya altı"
-      : temperature > 28
-        ? "Sıcaklık yüksek"
-        : "Sıcaklık ılıman";
   return (
     <div className="mini-lab-layout">
-      <div className="mini-lab-stage weather-stage" aria-live="polite">
-        <span className="lab-main-emoji" aria-hidden>{symbol}</span>
-        <strong>{label}: {temperature} °C</strong>
-        <p>Hava durumu; sıcaklık, rüzgâr, nem, basınç ve yağış gibi birlikte ölçülen özelliklerle anlatılır.</p>
-      </div>
+      <WeatherStage preset={temperature} wind={wind} caption />
       <div className="mini-lab-controls">
         <RangeControl label="Sıcaklık" min={-20} max={40} value={temperature} unit=" °C" onChange={setTemperature} />
         <RangeControl label="Rüzgâr modeli" min={0} max={100} value={wind} unit="%" onChange={setWind} />
@@ -337,15 +430,33 @@ function WeatherLab({
   );
 }
 
+export function WeatherStage({ preset, wind = 0, caption = false }: StageProps & { wind?: number }) {
+  const temperature = preset;
+  const symbol = wind > 65 ? "🌬️" : temperature <= 0 ? "❄️" : temperature > 28 ? "🌡️" : "🌤️";
+  const label = wind > 65
+    ? "Rüzgâr güçlü"
+    : temperature <= 0
+      ? "Donma noktası veya altı"
+      : temperature > 28
+        ? "Sıcaklık yüksek"
+        : "Sıcaklık ılıman";
+  return (
+    <div className="mini-lab-stage weather-stage" {...stageA11y(caption)}>
+      <span className="lab-main-emoji" aria-hidden>{symbol}</span>
+      {caption ? (
+        <>
+          <strong>{label}: {temperature} °C</strong>
+          <p>Hava durumu; sıcaklık, rüzgâr, nem, basınç ve yağış gibi birlikte ölçülen özelliklerle anlatılır.</p>
+        </>
+      ) : null}
+    </div>
+  );
+}
+
 function WaterLab({ step, setStep }: { step: number; setStep: (step: number) => void }) {
-  const current = WATER_STEPS[step] ?? WATER_STEPS[0];
   return (
     <div className="mini-lab-layout">
-      <div className={`mini-lab-stage water-stage water-step-${step}`} aria-live="polite">
-        <span className="lab-main-emoji" aria-hidden>{current.emoji}</span>
-        <strong>{current.title}</strong>
-        <p>{current.text}</p>
-      </div>
+      <WaterStage preset={step} caption />
       <div className="mini-lab-controls">
         <div className="step-track" aria-label={`Su döngüsü: ${step + 1}. aşama`}>
           {WATER_STEPS.map((item, index) => (
@@ -360,18 +471,25 @@ function WaterLab({ step, setStep }: { step: number; setStep: (step: number) => 
   );
 }
 
+export function WaterStage({ preset, caption = false }: StageProps) {
+  const current = WATER_STEPS[preset] ?? WATER_STEPS[0];
+  return (
+    <div className={`mini-lab-stage water-stage water-step-${preset}`} {...stageA11y(caption)}>
+      <span className="lab-main-emoji" aria-hidden>{current.emoji}</span>
+      {caption ? (
+        <>
+          <strong>{current.title}</strong>
+          <p>{current.text}</p>
+        </>
+      ) : null}
+    </div>
+  );
+}
+
 function OrbitLab({ angle, setAngle }: { angle: number; setAngle: (value: number) => void }) {
-  const localHour = Math.round((angle / 360) * 24) % 24;
-  const daylight = localHour >= 6 && localHour < 18;
   return (
     <div className="mini-lab-layout">
-      <div className="mini-lab-stage orbit-stage" aria-live="polite">
-        <span className="model-sun" aria-hidden>☀️</span>
-        <span className="model-rays" aria-hidden>→ → →</span>
-        <span className="model-earth" style={{ "--earth-angle": `${angle}deg` } as React.CSSProperties} aria-hidden>🌍</span>
-        <strong>{daylight ? "Modelde gündüz" : "Modelde gece"} · yaklaşık {String(localHour).padStart(2, "0")}:00</strong>
-        <p>Dünya kendi ekseni çevresinde döndükçe bulunduğumuz yer sırayla Güneş’e dönük ve ters tarafta kalır.</p>
-      </div>
+      <OrbitStage preset={angle} caption />
       <div className="mini-lab-controls">
         <RangeControl label="Dünya’yı döndür" min={0} max={360} value={Math.round(angle)} unit="°" onChange={setAngle} />
         <p className="observation-note">Gece, Güneş’in sönmesi değildir. Dünya’nın Güneş’e dönük olmayan tarafında bulunuruz.</p>
@@ -380,15 +498,29 @@ function OrbitLab({ angle, setAngle }: { angle: number; setAngle: (value: number
   );
 }
 
+export function OrbitStage({ preset, caption = false }: StageProps) {
+  const angle = preset;
+  const localHour = Math.round((angle / 360) * 24) % 24;
+  const daylight = localHour >= 6 && localHour < 18;
+  return (
+    <div className="mini-lab-stage orbit-stage" {...stageA11y(caption)}>
+      <span className="model-sun" aria-hidden>☀️</span>
+      <span className="model-rays" aria-hidden>→ → →</span>
+      <span className="model-earth" style={{ "--earth-angle": `${angle}deg` } as React.CSSProperties} aria-hidden>🌍</span>
+      {caption ? (
+        <>
+          <strong>{daylight ? "Modelde gündüz" : "Modelde gece"} · yaklaşık {String(localHour).padStart(2, "0")}:00</strong>
+          <p>Dünya kendi ekseni çevresinde döndükçe bulunduğumuz yer sırayla Güneş’e dönük ve ters tarafta kalır.</p>
+        </>
+      ) : null}
+    </div>
+  );
+}
+
 function MoonLab({ step, setStep }: { step: number; setStep: (step: number) => void }) {
-  const phase = MOON_PHASES[step] ?? MOON_PHASES[0];
   return (
     <div className="mini-lab-layout">
-      <div className="mini-lab-stage moon-stage" aria-live="polite">
-        <span className="lab-main-emoji moon-emoji" aria-hidden>{phase[0]}</span>
-        <strong>{phase[1]}</strong>
-        <p>{phase[2]}</p>
-      </div>
+      <MoonStage preset={step} caption />
       <div className="mini-lab-controls">
         <label className="lab-range">
           <span>Ay’ın yörüngesindeki görünüm<output>{step + 1} / 8</output></span>
@@ -400,19 +532,25 @@ function MoonLab({ step, setStep }: { step: number; setStep: (step: number) => v
   );
 }
 
+export function MoonStage({ preset, caption = false }: StageProps) {
+  const phase = MOON_PHASES[preset] ?? MOON_PHASES[0];
+  return (
+    <div className="mini-lab-stage moon-stage" {...stageA11y(caption)}>
+      <span className="lab-main-emoji moon-emoji" aria-hidden>{phase[0]}</span>
+      {caption ? (
+        <>
+          <strong>{phase[1]}</strong>
+          <p>{phase[2]}</p>
+        </>
+      ) : null}
+    </div>
+  );
+}
+
 function MatterLab({ energy, setEnergy }: { energy: number; setEnergy: (value: number) => void }) {
-  const state = energy < 34 ? "Katı" : energy < 68 ? "Sıvı" : "Gaz";
-  const energyLabel = energy < 34 ? "düşük enerji" : energy < 68 ? "orta enerji" : "yüksek enerji";
-  const particleCount = 18;
   return (
     <div className="mini-lab-layout">
-      <div className={`mini-lab-stage matter-stage state-${state.toLocaleLowerCase("tr")}`} aria-live="polite">
-        <div className="particle-box" style={{ "--matter-energy": Math.max(0.2, energy / 45) } as React.CSSProperties} aria-hidden>
-          {Array.from({ length: particleCount }, (_, index) => <i key={index} />)}
-        </div>
-        <strong>{state} tanecik modeli · {energyLabel}</strong>
-        <p>{state === "Katı" ? "Tanecikler birbirine yakın konumlarda titreşir." : state === "Sıvı" ? "Tanecikler yakın kalır ama birbirlerinin yanından geçebilir." : "Tanecikler birbirinden uzakta ve daha serbest hareket eder."}</p>
-      </div>
+      <MatterStage preset={energy} caption />
       <div className="mini-lab-controls">
         <RangeControl label="Taneciklerin enerji düzeyi" min={0} max={100} value={energy} unit="%" onChange={setEnergy} />
         <p className="observation-note">Bu, gerçek bir sıcaklık ölçeği değil tanecik davranışını anlatan basit bir modeldir; gerçek tanecikler gözle görülemeyecek kadar küçüktür.</p>
@@ -421,22 +559,53 @@ function MatterLab({ energy, setEnergy }: { energy: number; setEnergy: (value: n
   );
 }
 
+export function MatterStage({ preset, caption = false }: StageProps) {
+  const energy = preset;
+  const state = energy < 34 ? "Katı" : energy < 68 ? "Sıvı" : "Gaz";
+  const energyLabel = energy < 34 ? "düşük enerji" : energy < 68 ? "orta enerji" : "yüksek enerji";
+  const particleCount = 18;
+  return (
+    <div className={`mini-lab-stage matter-stage state-${state.toLocaleLowerCase("tr")}`} {...stageA11y(caption)}>
+      <div className="particle-box" style={{ "--matter-energy": Math.max(0.2, energy / 45) } as React.CSSProperties} aria-hidden>
+        {Array.from({ length: particleCount }, (_, index) => <i key={index} />)}
+      </div>
+      {caption ? (
+        <>
+          <strong>{state} tanecik modeli · {energyLabel}</strong>
+          <p>{state === "Katı" ? "Tanecikler birbirine yakın konumlarda titreşir." : state === "Sıvı" ? "Tanecikler yakın kalır ama birbirlerinin yanından geçebilir." : "Tanecikler birbirinden uzakta ve daha serbest hareket eder."}</p>
+        </>
+      ) : null}
+    </div>
+  );
+}
+
 function LightLab({ angle, setAngle }: { angle: number; setAngle: (value: number) => void }) {
   const safeAngle = Math.max(10, Math.min(90, angle));
-  const shadow = Math.round(220 / Math.tan((safeAngle * Math.PI) / 180));
   return (
     <div className="mini-lab-layout">
-      <div className="mini-lab-stage shadow-stage" style={{ "--light-angle": `${safeAngle - 50}deg`, "--shadow-length": `${Math.min(190, shadow)}px` } as React.CSSProperties} aria-live="polite">
-        <span className="shadow-sun" aria-hidden>☀️</span>
-        <span className="shadow-object" aria-hidden>🌳</span>
-        <span className="cast-shadow" aria-hidden />
-        <strong>{safeAngle < 35 ? "Uzun gölge" : safeAngle > 65 ? "Kısa gölge" : "Orta uzunlukta gölge"}</strong>
-        <p>Işık daha alçak bir açıyla geldiğinde cisim arkasındaki gölge genellikle uzar.</p>
-      </div>
+      <LightStage preset={safeAngle} caption />
       <div className="mini-lab-controls">
         <RangeControl label="Işığın geliş açısı" min={10} max={85} value={safeAngle} unit="°" onChange={setAngle} />
         <p className="observation-note">Gölge, ışığın bir cisim tarafından engellendiği bölgede oluşur; gölge kendi başına bir madde değildir.</p>
       </div>
+    </div>
+  );
+}
+
+export function LightStage({ preset, caption = false }: StageProps) {
+  const safeAngle = Math.max(10, Math.min(90, preset));
+  const shadow = Math.round(220 / Math.tan((safeAngle * Math.PI) / 180));
+  return (
+    <div className="mini-lab-stage shadow-stage" style={{ "--light-angle": `${safeAngle - 50}deg`, "--shadow-length": `${Math.min(190, shadow)}px` } as React.CSSProperties} {...stageA11y(caption)}>
+      <span className="shadow-sun" aria-hidden>☀️</span>
+      <span className="shadow-object" aria-hidden>🌳</span>
+      <span className="cast-shadow" aria-hidden />
+      {caption ? (
+        <>
+          <strong>{safeAngle < 35 ? "Uzun gölge" : safeAngle > 65 ? "Kısa gölge" : "Orta uzunlukta gölge"}</strong>
+          <p>Işık daha alçak bir açıyla geldiğinde cisim arkasındaki gölge genellikle uzar.</p>
+        </>
+      ) : null}
     </div>
   );
 }
@@ -459,13 +628,7 @@ function MotionLab({
   const distance = useMemo(() => Math.max(2, Math.round(push * (1.15 - friction / 110))), [friction, push]);
   return (
     <div className="mini-lab-layout">
-      <div className="mini-lab-stage motion-stage" aria-live="polite">
-        <div className="motion-track" aria-hidden>
-          <span className={active ? "rolling-ball is-moving" : "rolling-ball"} style={{ "--travel": `${Math.min(88, distance)}%` } as React.CSSProperties}>⚽</span>
-        </div>
-        <strong>Model uzaklığı: {distance} adım</strong>
-        <p>Daha güçlü bir itme hareketi artırabilir; yüzeyle etkileşim olan sürtünme ise hareketi azaltabilir.</p>
-      </div>
+      <MotionStage preset={distance} moving={active} caption />
       <div className="mini-lab-controls">
         <RangeControl label="İtme" min={10} max={100} value={push} unit="%" onChange={(next) => { setActive(false); setPush(next); }} />
         <RangeControl label="Sürtünme" min={0} max={100} value={friction} unit="%" onChange={(next) => { setActive(false); setFriction(next); }} />
@@ -477,20 +640,48 @@ function MotionLab({
   );
 }
 
+export function MotionStage({ preset, moving = false, caption = false }: StageProps & { moving?: boolean }) {
+  const distance = preset;
+  return (
+    <div className="mini-lab-stage motion-stage" {...stageA11y(caption)}>
+      <div className="motion-track" aria-hidden>
+        <span className={moving ? "rolling-ball is-moving" : "rolling-ball"} style={{ "--travel": `${Math.min(88, distance)}%` } as React.CSSProperties}>⚽</span>
+      </div>
+      {caption ? (
+        <>
+          <strong>Model uzaklığı: {distance} adım</strong>
+          <p>Daha güçlü bir itme hareketi artırabilir; yüzeyle etkileşim olan sürtünme ise hareketi azaltabilir.</p>
+        </>
+      ) : null}
+    </div>
+  );
+}
+
 function MagnetLab({ distance, setDistance }: { distance: number; setDistance: (value: number) => void }) {
-  const clips = Math.max(0, 6 - Math.floor(distance / 2));
   return (
     <div className="mini-lab-layout">
-      <div className="mini-lab-stage magnet-stage" aria-live="polite">
-        <span className="model-magnet" style={{ "--magnet-gap": `${distance * 8}px` } as React.CSSProperties} aria-hidden>🧲</span>
-        <span className="paperclips" aria-hidden>{Array.from({ length: clips }, () => "📎").join("") || "· · ·"}</span>
-        <strong>{clips ? `${clips} ataş modele yaklaştı` : "Bu model uzaklığında hareket yok"}</strong>
-        <p>Mıknatısın etkisi uzaklık arttıkça genellikle zayıflar. Her metal de mıknatısa güçlü biçimde çekilmez.</p>
-      </div>
+      <MagnetStage preset={distance} caption />
       <div className="mini-lab-controls">
         <RangeControl label="Mıknatıs–ataş uzaklığı" min={1} max={12} value={distance} unit=" adım" onChange={setDistance} />
         <p className="observation-note">Ev deneyi için yalnız sıradan mıknatıs ve ataş kullan; mıknatısı elektronik cihazlardan uzak tut.</p>
       </div>
+    </div>
+  );
+}
+
+export function MagnetStage({ preset, caption = false }: StageProps) {
+  const distance = Math.max(1, Math.min(12, preset));
+  const clips = Math.max(0, 6 - Math.floor(distance / 2));
+  return (
+    <div className="mini-lab-stage magnet-stage" {...stageA11y(caption)}>
+      <span className="model-magnet" style={{ "--magnet-gap": `${distance * 8}px` } as React.CSSProperties} aria-hidden>🧲</span>
+      <span className="paperclips" aria-hidden>{Array.from({ length: clips }, () => "📎").join("") || "· · ·"}</span>
+      {caption ? (
+        <>
+          <strong>{clips ? `${clips} ataş modele yaklaştı` : "Bu model uzaklığında hareket yok"}</strong>
+          <p>Mıknatısın etkisi uzaklık arttıkça genellikle zayıflar. Her metal de mıknatısa güçlü biçimde çekilmez.</p>
+        </>
+      ) : null}
     </div>
   );
 }
@@ -506,42 +697,9 @@ function NumberLab({
   jump: number;
   setJump: (value: number) => void;
 }) {
-  const result = start + jump;
-
   return (
     <div className="mini-lab-layout">
-      <div className="mini-lab-stage number-stage" aria-live="polite">
-        <strong className="number-equation">
-          {start} + {jump} = {result}
-        </strong>
-        <p>
-          {jump === 0
-            ? `${start} sayısından sıfır adım ilerleyince yine ${start} sayısında kalırsın.`
-            : `${start} sayısından başlayıp ${jump} eşit adım sağa gidince ${result} sayısına ulaşırsın.`}
-        </p>
-        <div className="number-line-scroll" aria-hidden>
-          <div className="number-track">
-            {Array.from({ length: 16 }, (_, point) => {
-              const className = [
-                point === start ? "is-start" : "",
-                point === result ? "is-result" : "",
-                point > start && point < result ? "is-path" : "",
-              ].filter(Boolean).join(" ");
-
-              return (
-                <span className={className} key={point}>
-                  <i />
-                  <b>{point}</b>
-                </span>
-              );
-            })}
-          </div>
-        </div>
-        <div className="number-legend" aria-hidden>
-          <span><i className="start-dot" />Başlangıç</span>
-          <span><i className="result-dot" />Sonuç</span>
-        </div>
-      </div>
+      <NumberStage preset={start * 10 + jump} caption />
       <div className="mini-lab-controls">
         <RangeControl
           label="Başlangıç sayısı"
@@ -567,6 +725,51 @@ function NumberLab({
   );
 }
 
+export function NumberStage({ preset, caption = false }: StageProps) {
+  const start = Math.floor(preset / 10);
+  const jump = preset % 10;
+  const result = start + jump;
+
+  return (
+    <div className="mini-lab-stage number-stage" {...stageA11y(caption)}>
+      <strong className="number-equation">
+        {start} + {jump} = {result}
+      </strong>
+      {caption ? (
+        <p>
+          {jump === 0
+            ? `${start} sayısından sıfır adım ilerleyince yine ${start} sayısında kalırsın.`
+            : `${start} sayısından başlayıp ${jump} eşit adım sağa gidince ${result} sayısına ulaşırsın.`}
+        </p>
+      ) : null}
+      <div className="number-line-scroll" aria-hidden>
+        <div className="number-track">
+          {Array.from({ length: 16 }, (_, point) => {
+            const className = [
+              point === start ? "is-start" : "",
+              point === result ? "is-result" : "",
+              point > start && point < result ? "is-path" : "",
+            ].filter(Boolean).join(" ");
+
+            return (
+              <span className={className} key={point}>
+                <i />
+                <b>{point}</b>
+              </span>
+            );
+          })}
+        </div>
+      </div>
+      {caption ? (
+        <div className="number-legend" aria-hidden>
+          <span><i className="start-dot" />Başlangıç</span>
+          <span><i className="result-dot" />Sonuç</span>
+        </div>
+      ) : null}
+    </div>
+  );
+}
+
 function ShapeLab({
   step,
   setStep,
@@ -578,31 +781,9 @@ function ShapeLab({
   showSymmetry: boolean;
   setShowSymmetry: (value: boolean) => void;
 }) {
-  const shape = SHAPES[step] ?? SHAPES[0];
-
   return (
     <div className="mini-lab-layout">
-      <div className="mini-lab-stage shape-stage" aria-live="polite">
-        <div className={`shape-model shape-${shape.id}`} aria-hidden>
-          <span>{shape.symbol}</span>
-          {showSymmetry ? <i className="shape-symmetry-axis" /> : null}
-        </div>
-        <strong>{shape.name}</strong>
-        <p>
-          {shape.sides}, {shape.corners}; {shape.symmetry}.
-        </p>
-        <div className="shape-pattern" aria-hidden>
-          <span>{shape.symbol}</span>
-          <span>★</span>
-          <span>{shape.symbol}</span>
-          <span>★</span>
-          <span className="pattern-answer">?</span>
-        </div>
-        <p>
-          Tekrar eden birim “{shape.name}–yıldız”. Sıradaki parça:{" "}
-          <b>{shape.name}</b>.
-        </p>
-      </div>
+      <ShapeStage preset={step} symmetry={showSymmetry} caption />
       <div className="mini-lab-controls">
         <p>
           Şekli değiştir; kenar ve köşe özelliklerini karşılaştır. Çizgi
@@ -641,6 +822,40 @@ function ShapeLab({
           döndürmek kenar ve köşe sayılarını değiştirmez.
         </p>
       </div>
+    </div>
+  );
+}
+
+export function ShapeStage({ preset, symmetry = false, caption = false }: StageProps & { symmetry?: boolean }) {
+  const shape = SHAPES[preset] ?? SHAPES[0];
+
+  return (
+    <div className="mini-lab-stage shape-stage" {...stageA11y(caption)}>
+      <div className={`shape-model shape-${shape.id}`} aria-hidden>
+        <span>{shape.symbol}</span>
+        {symmetry ? <i className="shape-symmetry-axis" /> : null}
+      </div>
+      {caption ? (
+        <>
+          <strong>{shape.name}</strong>
+          <p>
+            {shape.sides}, {shape.corners}; {shape.symmetry}.
+          </p>
+        </>
+      ) : null}
+      <div className="shape-pattern" aria-hidden>
+        <span>{shape.symbol}</span>
+        <span>★</span>
+        <span>{shape.symbol}</span>
+        <span>★</span>
+        <span className="pattern-answer">?</span>
+      </div>
+      {caption ? (
+        <p>
+          Tekrar eden birim “{shape.name}–yıldız”. Sıradaki parça:{" "}
+          <b>{shape.name}</b>.
+        </p>
+      ) : null}
     </div>
   );
 }

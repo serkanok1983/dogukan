@@ -1,0 +1,543 @@
+/* İyi oluş katmanı (S6). Önek: wb-. Belirteçler: src/styles/tokens.css. */
+
+/* Akşam modu: yalnızca harita kabına uygulanır, oyun tuvallerine asla (CONTRACT §14). */
+.is-evening {
+  filter: var(--evening-filter);
+}
+
+/* --- kaplama iskeleti ---------------------------------------------------- */
+
+.wb-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-wellbeing, 400);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 18px;
+  padding: calc(24px + var(--safe-top, 0px)) calc(20px + var(--safe-x, 0px))
+    calc(24px + var(--safe-bottom, 0px));
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  text-align: center;
+  color: var(--ink, #173f5f);
+  font-family: var(--font-baloo, system-ui), system-ui, sans-serif;
+  touch-action: manipulation;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+.wb-mola {
+  background: linear-gradient(180deg, #d9f7ef 0%, #b8ecf5 100%);
+}
+
+.wb-limit {
+  background: linear-gradient(180deg, #ffe7c7 0%, #f6d1e6 100%);
+}
+
+.wb-night {
+  color: #fdf6e3;
+  background: radial-gradient(circle at 50% 20%, #23395d 0%, #0d1b33 70%);
+}
+
+.wb-grace {
+  background: linear-gradient(180deg, #fff6d6 0%, #ffe39a 100%);
+}
+
+.wb-coplay {
+  background: linear-gradient(180deg, #ffe9d6 0%, #ffd1a8 100%);
+}
+
+.wb-kicker {
+  margin: 0;
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--soft-ink, #4a6b82);
+}
+
+.wb-title {
+  max-width: 22ch;
+  margin: 0;
+  font-size: clamp(26px, 7vw, 34px);
+  line-height: 1.2;
+  font-weight: 700;
+}
+
+.wb-caption {
+  max-width: 24ch;
+  margin: 0;
+  font-size: clamp(22px, 6vw, 28px);
+  line-height: 1.3;
+  font-weight: 600;
+}
+
+.wb-hint {
+  margin: 0;
+  padding: 8px 16px;
+  font-size: 22px;
+  font-weight: 700;
+  background: #fff;
+  border-radius: 999px;
+  box-shadow: 0 4px 12px rgba(23, 63, 95, 0.12);
+}
+
+.wb-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  justify-content: center;
+}
+
+/* --- düğmeler (≥ 64 px) ------------------------------------------------------ */
+
+.wb-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-width: 64px;
+  min-height: 64px;
+  padding: 0 22px;
+  font: inherit;
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--ink, #173f5f);
+  text-decoration: none;
+  background: #fff;
+  border: 3px solid rgba(23, 63, 95, 0.12);
+  border-radius: 20px;
+  box-shadow: 0 6px 14px rgba(23, 63, 95, 0.14);
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+.wb-btn:focus-visible,
+.wb-gear:focus-visible,
+.wb-badge:focus-visible,
+.wb-tomorrow:focus-visible,
+.wb-mission-text:focus-visible,
+.wb-stars-row:focus-visible {
+  outline: 4px solid #0ea5e9;
+  outline-offset: 3px;
+}
+
+.wb-btn-primary {
+  min-width: 180px;
+  color: #fff;
+  background: #22a06b;
+  border-color: #1b8a5b;
+}
+
+.wb-btn-ghost {
+  background: rgba(255, 255, 255, 0.7);
+}
+
+.wb-night .wb-btn {
+  color: var(--ink, #173f5f);
+}
+
+.wb-gear {
+  position: absolute;
+  top: calc(10px + var(--safe-top, 0px));
+  right: calc(10px + var(--safe-x, 0px));
+  width: 64px;
+  height: 64px;
+  font-size: 26px;
+  line-height: 1;
+  background: rgba(255, 255, 255, 0.35);
+  border: 0;
+  border-radius: 50%;
+  opacity: 0.7;
+  cursor: pointer;
+}
+
+.wb-parent-sheet {
+  position: fixed;
+  left: 50%;
+  bottom: calc(16px + var(--safe-bottom, 0px));
+  z-index: calc(var(--z-wellbeing, 400) + 10);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: min(92vw, 360px);
+  padding: 18px;
+  color: var(--ink, #173f5f);
+  background: #fff;
+  border-radius: 24px;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.25);
+  transform: translateX(-50%);
+}
+
+.wb-parent-title {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--soft-ink, #4a6b82);
+}
+
+/* --- mola halkası ------------------------------------------------------------ */
+
+.wb-ring-wrap {
+  position: relative;
+  width: min(72vw, 280px);
+  aspect-ratio: 1;
+}
+
+.wb-ring {
+  width: 100%;
+  height: 100%;
+  transform: rotate(-90deg);
+}
+
+.wb-ring-track,
+.wb-ring-fill {
+  fill: none;
+  stroke-width: 14;
+}
+
+.wb-ring-track {
+  stroke: rgba(255, 255, 255, 0.8);
+}
+
+.wb-ring-fill {
+  stroke: #22a06b;
+  stroke-linecap: round;
+}
+
+.wb-ring-bear {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+}
+
+.wb-ring-left {
+  position: absolute;
+  left: 50%;
+  bottom: 12%;
+  min-width: 56px;
+  padding: 2px 12px;
+  font-size: 22px;
+  font-weight: 700;
+  background: #fff;
+  border-radius: 999px;
+  transform: translateX(-50%);
+}
+
+/* --- sınır / gece ---------------------------------------------------------------- */
+
+.wb-bear-sleep {
+  position: relative;
+  display: grid;
+  place-items: center;
+}
+
+.wb-zzz {
+  position: absolute;
+  top: -10px;
+  right: -26px;
+  font-size: 34px;
+}
+
+.wb-stars-row,
+.wb-tomorrow,
+.wb-mission-text {
+  font: inherit;
+  color: inherit;
+  border: 0;
+  cursor: pointer;
+}
+
+.wb-stars-row {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px;
+  min-height: 56px;
+  padding: 10px 16px;
+  font-size: 26px;
+  background: rgba(255, 255, 255, 0.75);
+  border-radius: 20px;
+}
+
+.wb-star-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.wb-tomorrow {
+  min-height: 56px;
+  padding: 10px 18px;
+  font-size: 22px;
+  font-weight: 600;
+  background: rgba(255, 255, 255, 0.6);
+  border-radius: 18px;
+}
+
+.wb-mission {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: min(92vw, 420px);
+  padding: 12px;
+  background: #fff;
+  border-radius: 22px;
+  box-shadow: 0 8px 18px rgba(23, 63, 95, 0.12);
+}
+
+.wb-mission-text {
+  flex: 1;
+  min-height: 64px;
+  font-size: 22px;
+  font-weight: 600;
+  text-align: left;
+  background: transparent;
+}
+
+.wb-bell {
+  flex: 0 0 auto;
+  font-size: 30px;
+}
+
+.wb-sky {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.wb-twinkle {
+  position: absolute;
+  font-size: 22px;
+  color: #ffe9a8;
+  opacity: 0.8;
+}
+
+.wb-twinkle-0 { top: 9%; left: 12%; }
+.wb-twinkle-1 { top: 16%; left: 78%; }
+.wb-twinkle-2 { top: 30%; left: 30%; }
+.wb-twinkle-3 { top: 8%; left: 55%; }
+.wb-twinkle-4 { top: 62%; left: 86%; }
+.wb-twinkle-5 { top: 74%; left: 10%; }
+.wb-twinkle-6 { top: 40%; left: 90%; }
+
+/* --- birlikte oyun / tanışma ------------------------------------------------------ */
+
+.wb-bell-big {
+  margin: 0;
+  font-size: 72px;
+  line-height: 1;
+}
+
+.wb-adult-card {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  align-items: center;
+  width: min(92vw, 380px);
+  padding: 18px;
+  background: #fff;
+  border: 3px dashed rgba(23, 63, 95, 0.2);
+  border-radius: 22px;
+}
+
+.wb-adult-note {
+  margin: 0;
+  font-family: var(--font-nunito, system-ui), system-ui, sans-serif;
+  font-size: 16px;
+  color: var(--soft-ink, #4a6b82);
+}
+
+.wb-grace-scene {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.wb-point {
+  font-size: 40px;
+}
+
+/* --- geri sayım rozeti ------------------------------------------------------------- */
+
+.wb-badge {
+  position: fixed;
+  top: calc(10px + var(--safe-top, 0px));
+  left: 50%;
+  z-index: var(--z-wellbeing, 400);
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 56px;
+  padding: 0 18px 0 12px;
+  font-family: var(--font-baloo, system-ui), system-ui, sans-serif;
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--ink, #173f5f);
+  background: #fff7e0;
+  border: 3px solid var(--honey, #f6b93b);
+  border-radius: 999px;
+  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.15);
+  transform: translateX(-50%);
+  cursor: pointer;
+}
+
+.wb-badge-warn1 {
+  background: #ffb547;
+  border-color: #e08a00;
+}
+
+.wb-badge-bear {
+  font-size: 28px;
+}
+
+/* --- bal kavanozu -------------------------------------------------------------------- */
+
+.wb-jar {
+  --jar-w: 56px;
+  --jar-cell: 14px;
+  position: relative;
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  vertical-align: middle;
+}
+
+.wb-jar-sm {
+  --jar-w: 38px;
+  --jar-cell: 9px;
+}
+
+.wb-jar-lid {
+  width: calc(var(--jar-w) * 0.7);
+  height: calc(var(--jar-cell) * 0.7);
+  background: #b7791f;
+  border-radius: 4px 4px 2px 2px;
+}
+
+.wb-jar-body {
+  display: flex;
+  flex-wrap: wrap-reverse;
+  align-content: flex-start;
+  justify-content: center;
+  gap: 2px;
+  width: var(--jar-w);
+  min-height: calc(var(--jar-cell) * 5 + 12px);
+  padding: 4px 3px;
+  background: rgba(255, 255, 255, 0.7);
+  border: 3px solid rgba(183, 121, 31, 0.6);
+  border-radius: 10px 10px 16px 16px;
+  box-sizing: border-box;
+}
+
+.wb-cell {
+  width: var(--jar-cell);
+  height: var(--jar-cell);
+  background: rgba(246, 185, 59, 0.18);
+  clip-path: polygon(25% 5%, 75% 5%, 100% 50%, 75% 95%, 25% 95%, 0 50%);
+}
+
+.wb-cell.is-full {
+  background: var(--honey, #f6b93b);
+}
+
+.wb-jar.is-empty .wb-jar-body {
+  border-color: rgba(23, 63, 95, 0.25);
+}
+
+/* --- hareket (yalnızca hareket azaltma istenmiyorsa) ------------------------------------ */
+
+@media (prefers-reduced-motion: no-preference) {
+  .wb-overlay {
+    animation: wb-fade-in 0.35s ease-out;
+  }
+
+  .wb-ring-fill {
+    transition: stroke-dashoffset 1s linear;
+  }
+
+  .wb-bear-jump {
+    animation: wb-jump 0.9s ease-in-out infinite;
+  }
+
+  .wb-bear-stretch {
+    animation: wb-stretch 2.4s ease-in-out infinite;
+  }
+
+  .wb-bear-wave {
+    animation: wb-sway 1.8s ease-in-out infinite;
+  }
+
+  .wb-zzz {
+    animation: wb-float 3s ease-in-out infinite;
+  }
+
+  .wb-twinkle {
+    animation: wb-twinkle 4s ease-in-out infinite;
+  }
+
+  .wb-twinkle-1,
+  .wb-twinkle-4 {
+    animation-delay: 1.3s;
+  }
+
+  .wb-twinkle-2,
+  .wb-twinkle-5 {
+    animation-delay: 2.6s;
+  }
+
+  .wb-bell-big {
+    animation: wb-ring-bell 0.6s ease-in-out 3;
+  }
+
+  .wb-jar-wobble {
+    animation: wb-wobble 0.7s ease-in-out 2;
+  }
+
+  .wb-badge-warn5 .wb-badge-bear {
+    animation: wb-float 2.5s ease-in-out infinite;
+  }
+}
+
+@keyframes wb-fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes wb-jump {
+  0%, 100% { transform: translateY(0); }
+  45% { transform: translateY(-18px); }
+}
+
+@keyframes wb-stretch {
+  0%, 100% { transform: scaleY(1); }
+  50% { transform: scaleY(1.08); }
+}
+
+@keyframes wb-sway {
+  0%, 100% { transform: rotate(-4deg); }
+  50% { transform: rotate(4deg); }
+}
+
+@keyframes wb-float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-6px); }
+}
+
+@keyframes wb-twinkle {
+  0%, 100% { opacity: 0.35; }
+  50% { opacity: 1; }
+}
+
+@keyframes wb-ring-bell {
+  0%, 100% { transform: rotate(0); }
+  25% { transform: rotate(-14deg); }
+  75% { transform: rotate(14deg); }
+}
+
+@keyframes wb-wobble {
+  0%, 100% { transform: rotate(0); }
+  25% { transform: rotate(-8deg); }
+  75% { transform: rotate(8deg); }
+}

@@ -104,7 +104,7 @@ export const ACTIVITY_INFO: Readonly<Record<string, ActivityInfo>> = {
   "mantik-eslestir": a("sekil", L, "tr.sozcuk"),
   grupla: a("sekil", L, "fen.siniflama"),
   "fark-bul": a("sekil", L, "ef.dikkat"),
-  "dur-git": a("sekil", L, "ef.ketleme", { isNew: true, hidden: true }),
+  "dur-git": a("sekil", L, "ef.ketleme", { isNew: true }),
   // merak
   "guvenli-yol": a("merak", L, "hb.guvenli", { exercise: true, isNew: true }),
   "dinozor-kazi": a("merak", L, "fen.gozlem"),

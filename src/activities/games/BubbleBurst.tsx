@@ -31,9 +31,9 @@ export function BubbleBurst() {
   const running = useGameRunning();
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [score, setScore] = useState(0);
-  const [timeLeft, setTimeLeft] = useState(ROUND);
+  const [, setTimeLeft] = useState(ROUND);
   const [done, setDone] = useState(false);
-  const [combo, setCombo] = useState(0);
+  const [, setCombo] = useState(0);
   const scoreGame = useGameScore(GAME_SLUG);
   const submitted = useRef(false);
 

@@ -32,13 +32,19 @@ export function SymmetryGame() {
     }
   };
 
+  const restart = () => {
+    setIdx(0);
+    setScore(0);
+    setFinished(false);
+  };
+
   if (finished) {
     return (
       <div className="game-panel result-panel">
         <div className="result-emoji">🪞</div>
         <h2>Simetri ustası!</h2>
         <p className="result-score">{score} / {LEVELS.length}</p>
-        <button type="button" className="btn-primary" onClick={() => window.location.reload()}>
+        <button type="button" className="btn-primary" onClick={restart}>
           Tekrar
         </button>
       </div>

@@ -29,6 +29,10 @@ export type Settings = {
   firstLaunchDone: boolean;
   firstBreakDone: boolean;
   updatedAt: number;
+  /** S6 (ek, isteğe bağlı): tanışma ipucunun gösterildiği gün (bir kez gösterilir). */
+  graceHintDay?: DayKey;
+  /** S6 (ek, isteğe bağlı): /bilgi ilk kurulum listesi, madde id → tamam. */
+  parentChecklist?: Record<string, boolean>;
 };
 
 export const DEFAULT_SETTINGS: Settings = Object.freeze({
@@ -57,12 +61,36 @@ export const DEFAULT_SETTINGS: Settings = Object.freeze({
 
 export const COMPANION_NAMES = ["Bal", "Pati", "Fıstık", "Kaptan"] as const;
 
+export const BREAK_EVERY_OPTIONS = [15, 20, 25, 30] as const;
+export const BREAK_SECONDS_MIN = 30;
+export const BREAK_SECONDS_MAX = 45;
+
 const EVENT = "dogukan:settings";
 let cached: Settings | null = null;
 
+/** Bozuk veya aralık dışı değerleri güvenli değerlere çeker (mola halkası 30–45 sn, K13). */
+function sanitize(s: Settings): Settings {
+  const breakSeconds = Number.isFinite(s.breakSeconds)
+    ? Math.min(
+        BREAK_SECONDS_MAX,
+        Math.max(BREAK_SECONDS_MIN, Math.round(s.breakSeconds)),
+      )
+    : DEFAULT_SETTINGS.breakSeconds;
+  const breakEveryMinutes = (BREAK_EVERY_OPTIONS as readonly number[]).includes(
+    s.breakEveryMinutes,
+  )
+    ? s.breakEveryMinutes
+    : DEFAULT_SETTINGS.breakEveryMinutes;
+  if (breakSeconds === s.breakSeconds && breakEveryMinutes === s.breakEveryMinutes)
+    return s;
+  return { ...s, breakSeconds, breakEveryMinutes };
+}
+
 function load(): Settings {
   const raw = readJSON<Partial<Settings> | null>(KEYS.settings, null);
-  return raw && typeof raw === "object" ? { ...DEFAULT_SETTINGS, ...raw } : DEFAULT_SETTINGS;
+  return raw && typeof raw === "object"
+    ? sanitize({ ...DEFAULT_SETTINGS, ...raw })
+    : DEFAULT_SETTINGS;
 }
 
 export function getSettings(): Settings {
@@ -72,7 +100,11 @@ export function getSettings(): Settings {
 }
 
 export function updateSettings(patch: Partial<Settings>): Settings {
-  const next: Settings = { ...getSettings(), ...patch, updatedAt: Date.now() };
+  const next: Settings = sanitize({
+    ...getSettings(),
+    ...patch,
+    updatedAt: Date.now(),
+  });
   cached = next;
   writeJSON(KEYS.settings, next);
   if (typeof window !== "undefined") {

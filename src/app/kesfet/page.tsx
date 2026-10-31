@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { BubbleBg } from "@/components/BubbleBg";
 import {
   EncyclopediaHub,
   type EncyclopediaTopicSummary,
@@ -31,7 +30,6 @@ export default function KesfetPage() {
       <a className="encyclopedia-skip" href="#encyclopedia-main">
         Ana içeriğe geç
       </a>
-      <BubbleBg />
       <div className="encyclopedia-sky" aria-hidden>
         <span />
         <span />

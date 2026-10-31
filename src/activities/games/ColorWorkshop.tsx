@@ -64,7 +64,7 @@ export function ColorWorkshop() {
     const correct = level.answer;
     const fakes = getFakeOptions(correct, 3);
     return shuffle([correct, ...fakes]);
-  }, [round, level.answer]);
+  }, [level]);
 
   const pick = (name: string) => {
     if (feedback !== "idle") return;

@@ -22,25 +22,6 @@ const LEVELS: Level[] = [
   { target: [1, 3], steps: ["1 sağ", "3 aşağı"], emoji: "💍" },
 ];
 
-function getDisplayGrid(target: [number, number]): string[][] {
-  const grid: string[][] = Array.from({ length: GRID }, () => Array(GRID).fill("⬜"));
-  // Draw path
-  let cx = 0, cy = 0;
-  grid[cy][cx] = "🐻";
-  for (const step of LEVELS.flatMap((l) => l.steps)) {
-    const parts = step.split(" ");
-    const count = Number(parts[0]);
-    const dir = parts[1];
-    for (let i = 0; i < count; i++) {
-      if (dir === "sağ") cx = Math.min(GRID - 1, cx + 1);
-      else if (dir === "sol") cx = Math.max(0, cx - 1);
-      else if (dir === "aşağı") cy = Math.min(GRID - 1, cy + 1);
-      else if (dir === "yukarı") cy = Math.max(0, cy - 1);
-    }
-  }
-  return grid;
-}
-
 export function TreasureMap() {
   const [round, setRound] = useState(0);
   const [playerPos, setPlayerPos] = useState<[number, number]>([0, 0]);
@@ -56,7 +37,7 @@ export function TreasureMap() {
     const expected = level.steps[stepsDone];
     if (!expected) return;
 
-    const [countStr, expDir] = expected.split(" ");
+    const [, expDir] = expected.split(" ");
     if (dir !== expDir) {
       sounds.wrong();
       setFeedback("bad");

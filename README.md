@@ -20,6 +20,22 @@ npm run build
 
 Serkan ❤️ Doğukan
 
+## Geliştirme
+
+Node 22 (`.nvmrc`). CI yok; kapı ve yayın yerelde yapılır.
+
+| Komut               | Ne yapar                                                                                                       |
+| ------------------- | -------------------------------------------------------------------------------------------------------------- |
+| `npm run dev`       | geliştirme sunucusu                                                                                            |
+| `npm test`          | Vitest birim ve bütünlük testleri                                                                              |
+| `npm run check`     | tek kalite kapısı: lint (0 uyarı) → `tsc` → `vitest` → `build:pages` → `verify-out` (`-- --quick`: derlemesiz) |
+| `npm run deploy`    | `check` + `out/`'u `gh-pages` dalına iter (`-- --dry-run`: itmeden listeler); bkz. `docs/RELEASE.md`           |
+| `npm run serve-out` | `out/`'u `http://localhost:4173/dogukan/` adresinde sunar                                                      |
+| `npm run e2e`       | Playwright duman testi (isteğe bağlı, engelleyici değil)                                                       |
+
+Gizli değerler `.env.local`'a yazılır (örnek: `.env.example`; hepsi isteğe
+bağlı). Firebase konsol adımları: `docs/ROLLOUT.md`.
+
 ## Geliştirme planı
 
 Yeniden tasarım çalışması sürüyor. Kaldığımız yer, alınan kararlar ve sıradaki

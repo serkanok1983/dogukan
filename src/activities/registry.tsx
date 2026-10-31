@@ -1,75 +1,73 @@
 "use client";
 
 import dynamic from "next/dynamic";
+import { GameSkeleton } from "@/components/game/GameSkeleton";
 import { QuizGame } from "./shared/QuizGame";
-import { CountGame } from "./shared/CountGame";
-import { OrderGame } from "./shared/OrderGame";
 import { ExplorePanel, type ExploreItem } from "./shared/ExplorePanel";
 import { ShapeDraw } from "./shared/ShapeDraw";
 import { SymmetryGame } from "./shared/SymmetryGame";
 import { TangramLite } from "./shared/TangramLite";
 import * as Q from "./data/quizData";
 
-const MemoryGame = dynamic(() => import("./games/MemoryGame").then((m) => m.MemoryGame), { ssr: false });
-const SnakeGame = dynamic(() => import("./games/SnakeGame").then((m) => m.SnakeGame), { ssr: false });
-const StarCatch = dynamic(() => import("./games/StarCatch").then((m) => m.StarCatch), { ssr: false });
-const MazeGame = dynamic(() => import("./games/MazeGame").then((m) => m.MazeGame), { ssr: false });
-const BalloonPop = dynamic(() => import("./games/BalloonPop").then((m) => m.BalloonPop), { ssr: false });
-const SlidingPuzzle = dynamic(() => import("./games/SlidingPuzzle").then((m) => m.SlidingPuzzle), { ssr: false });
-const ColorRace = dynamic(() => import("./games/ColorRace").then((m) => m.ColorRace), { ssr: false });
-const SpaceDefense = dynamic(() => import("./games/SpaceDefense").then((m) => m.SpaceDefense), { ssr: false });
-const PlatformJump = dynamic(() => import("./games/PlatformJump").then((m) => m.PlatformJump), { ssr: false });
-const LaneRacer = dynamic(() => import("./games/LaneRacer").then((m) => m.LaneRacer), { ssr: false });
-const BubbleBurst = dynamic(() => import("./games/BubbleBurst").then((m) => m.BubbleBurst), { ssr: false });
-const RunnerDash = dynamic(() => import("./games/RunnerDash").then((m) => m.RunnerDash), { ssr: false });
-const TankBattle = dynamic(() => import("./games/TankBattle").then((m) => m.TankBattle), { ssr: false });
-const SuperBear = dynamic(() => import("./games/SuperBear").then((m) => m.SuperBear), { ssr: false });
-const FlappyBird = dynamic(() => import("./games/FlappyBird").then((m) => m.FlappyBird), { ssr: false });
+const MemoryGame = dynamic(() => import("./games/MemoryGame").then((m) => m.MemoryGame), { ssr: false, loading: GameSkeleton });
+const SnakeGame = dynamic(() => import("./games/SnakeGame").then((m) => m.SnakeGame), { ssr: false, loading: GameSkeleton });
+const StarCatch = dynamic(() => import("./games/StarCatch").then((m) => m.StarCatch), { ssr: false, loading: GameSkeleton });
+const MazeGame = dynamic(() => import("./games/MazeGame").then((m) => m.MazeGame), { ssr: false, loading: GameSkeleton });
+const BalloonPop = dynamic(() => import("./games/BalloonPop").then((m) => m.BalloonPop), { ssr: false, loading: GameSkeleton });
+const SlidingPuzzle = dynamic(() => import("./games/SlidingPuzzle").then((m) => m.SlidingPuzzle), { ssr: false, loading: GameSkeleton });
+const ColorRace = dynamic(() => import("./games/ColorRace").then((m) => m.ColorRace), { ssr: false, loading: GameSkeleton });
+const SpaceDefense = dynamic(() => import("./games/SpaceDefense").then((m) => m.SpaceDefense), { ssr: false, loading: GameSkeleton });
+const PlatformJump = dynamic(() => import("./games/PlatformJump").then((m) => m.PlatformJump), { ssr: false, loading: GameSkeleton });
+const LaneRacer = dynamic(() => import("./games/LaneRacer").then((m) => m.LaneRacer), { ssr: false, loading: GameSkeleton });
+const BubbleBurst = dynamic(() => import("./games/BubbleBurst").then((m) => m.BubbleBurst), { ssr: false, loading: GameSkeleton });
+const RunnerDash = dynamic(() => import("./games/RunnerDash").then((m) => m.RunnerDash), { ssr: false, loading: GameSkeleton });
+const TankBattle = dynamic(() => import("./games/TankBattle").then((m) => m.TankBattle), { ssr: false, loading: GameSkeleton });
+const SuperBear = dynamic(() => import("./games/SuperBear").then((m) => m.SuperBear), { ssr: false, loading: GameSkeleton });
+const FlappyBird = dynamic(() => import("./games/FlappyBird").then((m) => m.FlappyBird), { ssr: false, loading: GameSkeleton });
 const FightingArena = dynamic(
   () => import("./games/FightingArena").then((m) => m.FightingArena),
-  { ssr: false },
+  { ssr: false, loading: GameSkeleton },
 );
-const Tetris = dynamic(() => import("./games/Tetris").then((m) => m.Tetris), { ssr: false });
-const Pong = dynamic(() => import("./games/Pong").then((m) => m.Pong), { ssr: false });
-const Asteroids = dynamic(() => import("./games/Asteroids").then((m) => m.Asteroids), { ssr: false });
-const Breakout = dynamic(() => import("./games/Breakout").then((m) => m.Breakout), { ssr: false });
-const PinballCadet = dynamic(() => import("./games/PinballCadet").then((m) => m.PinballCadet), { ssr: false });
-const WhackMole = dynamic(() => import("./games/WhackMole").then((m) => m.WhackMole), { ssr: false });
+const Tetris = dynamic(() => import("./games/Tetris").then((m) => m.Tetris), { ssr: false, loading: GameSkeleton });
+const Pong = dynamic(() => import("./games/Pong").then((m) => m.Pong), { ssr: false, loading: GameSkeleton });
+const Asteroids = dynamic(() => import("./games/Asteroids").then((m) => m.Asteroids), { ssr: false, loading: GameSkeleton });
+const Breakout = dynamic(() => import("./games/Breakout").then((m) => m.Breakout), { ssr: false, loading: GameSkeleton });
+const PinballCadet = dynamic(() => import("./games/PinballCadet").then((m) => m.PinballCadet), { ssr: false, loading: GameSkeleton });
+const WhackMole = dynamic(() => import("./games/WhackMole").then((m) => m.WhackMole), { ssr: false, loading: GameSkeleton });
 
 // Faz 1 yeni etkinlikler (CONTRACT §5, §11)
-const BlockWorld = dynamic(() => import("./games/blocks/BlockWorld").then((m) => m.BlockWorld), { ssr: false });
-const DurGit = dynamic(() => import("./games/DurGit").then((m) => m.DurGit), { ssr: false });
+const BlockWorld = dynamic(() => import("./games/blocks/BlockWorld").then((m) => m.BlockWorld), { ssr: false, loading: GameSkeleton });
+const DurGit = dynamic(() => import("./games/DurGit").then((m) => m.DurGit), { ssr: false, loading: GameSkeleton });
 const ExerciseSession = dynamic(
   () => import("./engine/ExerciseSession").then((m) => m.ExerciseSession),
-  { ssr: false },
+  { ssr: false, loading: GameSkeleton },
 );
 
 // Yeni oyunlar
-const ColorWorkshop = dynamic(() => import("./games/ColorWorkshop").then((m) => m.ColorWorkshop), { ssr: false });
-const LetterTrace = dynamic(() => import("./games/LetterTrace").then((m) => m.LetterTrace), { ssr: false });
-const FruitSlice = dynamic(() => import("./games/FruitSlice").then((m) => m.FruitSlice), { ssr: false });
-const TreasureMap = dynamic(() => import("./games/TreasureMap").then((m) => m.TreasureMap), { ssr: false });
-const RainCatcher = dynamic(() => import("./games/RainCatcher").then((m) => m.RainCatcher), { ssr: false });
-const AlienInvasion = dynamic(() => import("./games/AlienInvasion").then((m) => m.AlienInvasion), { ssr: false });
-const DinoDig = dynamic(() => import("./games/DinoDig").then((m) => m.DinoDig), { ssr: false });
-const RoyalMatch = dynamic(() => import("./games/RoyalMatch").then((m) => m.RoyalMatch), { ssr: false });
+const ColorWorkshop = dynamic(() => import("./games/ColorWorkshop").then((m) => m.ColorWorkshop), { ssr: false, loading: GameSkeleton });
+const FruitSlice = dynamic(() => import("./games/FruitSlice").then((m) => m.FruitSlice), { ssr: false, loading: GameSkeleton });
+const TreasureMap = dynamic(() => import("./games/TreasureMap").then((m) => m.TreasureMap), { ssr: false, loading: GameSkeleton });
+const RainCatcher = dynamic(() => import("./games/RainCatcher").then((m) => m.RainCatcher), { ssr: false, loading: GameSkeleton });
+const AlienInvasion = dynamic(() => import("./games/AlienInvasion").then((m) => m.AlienInvasion), { ssr: false, loading: GameSkeleton });
+const DinoDig = dynamic(() => import("./games/DinoDig").then((m) => m.DinoDig), { ssr: false, loading: GameSkeleton });
+const RoyalMatch = dynamic(() => import("./games/RoyalMatch").then((m) => m.RoyalMatch), { ssr: false, loading: GameSkeleton });
 
 const GEZEGENLER: ExploreItem[] = [
-  { id: "mercury", emoji: "🩶", title: "1 · Merkür", fact: "Güneş'e en yakın gezegendir. Atmosferi çok ince olduğu için gündüz ve gece sıcaklıkları çok farklıdır." },
-  { id: "venus", emoji: "🟡", title: "2 · Venüs", fact: "Kalın karbondioksit atmosferinin oluşturduğu güçlü sera etkisi nedeniyle Güneş sisteminin en sıcak gezegenidir." },
-  { id: "earth", emoji: "🌍", title: "3 · Dünya", fact: "Üzerinde sıvı suyun ve canlı yaşamının bulunduğunu kesin olarak bildiğimiz tek gezegendir." },
-  { id: "mars", emoji: "🔴", title: "4 · Mars", fact: "Demir mineralleri yüzeyine kızıl rengini verir. Dev volkanları ve kutup buzları vardır." },
-  { id: "jupiter", emoji: "🟤", title: "5 · Jüpiter", fact: "Güneş sisteminin en büyük gezegenidir. Büyük Kırmızı Leke, çok uzun süredir gözlenen dev bir fırtınadır." },
-  { id: "saturn", emoji: "🪐", title: "6 · Satürn", fact: "Buz ve kaya parçalarından oluşan geniş halka sistemiyle tanınan bir gaz devidir." },
-  { id: "uranus", emoji: "🩵", title: "7 · Uranüs", fact: "Bir buz devidir ve dönme ekseni neredeyse yana yatıktır." },
-  { id: "neptune", emoji: "🔵", title: "8 · Neptün", fact: "Güneş'e en uzak gezegendir. Atmosferinde çok hızlı rüzgârlar gözlenir." },
+  { id: "mercury", emoji: "🩶", title: "1 · Merkür", fact: "Güneş'e en yakın gezegen. Gündüzü çok sıcak, gecesi çok soğuk." },
+  { id: "venus", emoji: "🟡", title: "2 · Venüs", fact: "En sıcak gezegen. Kalın bulutlar onu battaniye gibi sarar." },
+  { id: "earth", emoji: "🌍", title: "3 · Dünya", fact: "Bizim evimiz. Suyu, havası ve canlıları var." },
+  { id: "mars", emoji: "🔴", title: "4 · Mars", fact: "Kırmızı gezegen. Toprağı pas rengindedir." },
+  { id: "jupiter", emoji: "🟤", title: "5 · Jüpiter", fact: "En büyük gezegen. Üstünde kocaman bir fırtına var." },
+  { id: "saturn", emoji: "🪐", title: "6 · Satürn", fact: "Çevresinde buz ve taştan halkalar var." },
+  { id: "uranus", emoji: "🩵", title: "7 · Uranüs", fact: "Buz gibi soğuk. Yan yatmış gibi döner." },
+  { id: "neptune", emoji: "🔵", title: "8 · Neptün", fact: "Güneş'e en uzak gezegen. Rüzgârı çok hızlı eser." },
 ];
 
 const HAYVANLAR: ExploreItem[] = [
-  { id: "aslan", emoji: "🦁", title: "Aslan", fact: "Çoğunlukla Afrika'nın savan ve otlaklarında yaşayan, gruplar hâlinde bulunabilen etçil bir memelidir." },
+  { id: "aslan", emoji: "🦁", title: "Aslan", fact: "Afrika'da yaşar. Ailesiyle birlikte dolaşır." },
   { id: "balik", emoji: "🐟", title: "Balık", fact: "Suda solungaçla nefes alır." },
   { id: "kus", emoji: "🐦", title: "Kuş", fact: "Kanatları ve tüyleri vardır. Çoğu uçar." },
-  { id: "ari", emoji: "🐝", title: "Arı", fact: "Bazı arı türleri çiçeklerden topladığı nektardan bal üretir; çiçeklerin tozlaşmasına da yardım eder." },
+  { id: "ari", emoji: "🐝", title: "Arı", fact: "Çiçeklerden bal yapar. Çiçeklere de yardım eder." },
 ];
 
 export const ACTIVITY_MAP: Record<string, () => React.ReactNode> = {
@@ -98,18 +96,18 @@ export const ACTIVITY_MAP: Record<string, () => React.ReactNode> = {
   "hizli-matematik": () => <QuizGame questions={Q.hizliMatematik} />,
   "kelime-avcisi": () => <QuizGame questions={Q.kelimeAvcisi} />,
   "hedef-vur": () => <QuizGame questions={Q.hedefVur} />,
-  "harf-tanima": () => <QuizGame questions={Q.harfTania} />,
+  "harf-tanima": () => <ExerciseSession slug="harf-tanima" skill="tr.ses-harf" />,
   "hece-birlestir": () => <QuizGame questions={Q.heceBirlestir} />,
-  "kelime-okuma": () => <QuizGame questions={Q.kelimeOkuma} />,
+  "kelime-okuma": () => <ExerciseSession slug="kelime-okuma" skill="tr.kelime" />,
   "sesli-harf": () => <QuizGame questions={Q.sesliHarf} />,
   "cumle-kur": () => <QuizGame questions={Q.cumleKur} />,
   "alfabe-sirasi": () => <QuizGame questions={Q.alfabeSirasi} />,
   "benzer-kelime": () => <QuizGame questions={Q.benzerKelime} />,
   "bosluk-doldur": () => <QuizGame questions={Q.boslukDoldur} />,
-  "sayma-oyunu": () => <CountGame />,
-  "toplama-oyunu": () => <QuizGame questions={Q.toplama} />,
-  "cikarma-oyunu": () => <QuizGame questions={Q.cikarma} />,
-  "sayi-sirasi": () => <OrderGame items={[3, 7, 1, 9, 5]} />,
+  "sayma-oyunu": () => <ExerciseSession slug="sayma-oyunu" skill="mat.sayma" />,
+  "toplama-oyunu": () => <ExerciseSession slug="toplama-oyunu" skill="mat.toplama" />,
+  "cikarma-oyunu": () => <ExerciseSession slug="cikarma-oyunu" skill="mat.cikarma" />,
+  "sayi-sirasi": () => <ExerciseSession slug="sayi-sirasi" skill="mat.sira" />,
   "cift-tek": () => <QuizGame questions={Q.ciftTek} />,
   "onluk-birlik": () => <QuizGame questions={Q.onlukBirlik} />,
   "saat-ogren": () => <QuizGame questions={Q.saatOgren} />,
@@ -118,7 +116,7 @@ export const ACTIVITY_MAP: Record<string, () => React.ReactNode> = {
   "sekil-tani": () => <QuizGame questions={Q.sekilTani} />,
   "sekil-ciz": () => <ShapeDraw />,
   simetri: () => <SymmetryGame />,
-  "desen-tamamla": () => <QuizGame questions={Q.desenTamamla} />,
+  "desen-tamamla": () => <ExerciseSession slug="desen-tamamla" skill="mat.oruntu" />,
   "sekil-say": () => <QuizGame questions={Q.sekilSay} />,
   tangram: () => <TangramLite />,
   "hava-durumu": () => <QuizGame questions={Q.havaDurumu} />,
@@ -129,14 +127,14 @@ export const ACTIVITY_MAP: Record<string, () => React.ReactNode> = {
   hayvanlar: () => <ExplorePanel items={HAYVANLAR} title="Hayvanlar Alemi" />,
   mevsimler: () => <QuizGame questions={Q.mevsimler} />,
   "su-dongu": () => <QuizGame questions={Q.suDongu} />,
-  "sira-bul": () => <QuizGame questions={Q.siraBul} />,
+  "sira-bul": () => <ExerciseSession slug="sira-bul" skill="mat.oruntu" />,
   "boyut-sirala": () => <QuizGame questions={Q.boyutSirala} />,
   "mantik-eslestir": () => <QuizGame questions={Q.mantikEslestir} />,
   "fark-bul": () => <QuizGame questions={Q.farkBul} />,
   grupla: () => <QuizGame questions={Q.grupla} />,
   // Yeni oyunlar
   "renk-atolyesi": () => <ColorWorkshop />,
-  "harf-yazma": () => <LetterTrace />,
+  "harf-yazma": () => <ExerciseSession slug="harf-yazma" skill="tr.harf-yaz" />,
   "meyve-bicagi": () => <FruitSlice />,
   "hazine-haritasi": () => <TreasureMap />,
   "yagmur-damlasi": () => <RainCatcher />,

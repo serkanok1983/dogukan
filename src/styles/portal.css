@@ -1,0 +1,223 @@
+/* Erişilebilirlik yardımcıları ve Merak portalı (ansiklopedinin geri kalanı encyclopedia.css'te). globals.css'ten bölündü (S8). Sınıf adları değiştirilmez (CONTRACT §14). */
+
+/* ─────────────────────────────────────────────────────────────
+   Merak Ansiklopedisi
+   ───────────────────────────────────────────────────────────── */
+
+.sr-only {
+  position: absolute !important;
+  width: 1px !important;
+  height: 1px !important;
+  padding: 0 !important;
+  margin: -1px !important;
+  overflow: hidden !important;
+  clip: rect(0, 0, 0, 0) !important;
+  white-space: nowrap !important;
+  border: 0 !important;
+}
+
+:where(a, button, input, select, textarea):focus-visible {
+  outline: 4px solid #f97316;
+  outline-offset: 3px;
+}
+
+.merak-portal {
+  --portal-ink: #173f5f;
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(150px, 0.42fr) minmax(0, 1fr);
+  min-height: 180px;
+  overflow: hidden;
+  margin: 0 0 1.25rem;
+  color: var(--portal-ink);
+  background:
+    radial-gradient(circle at 15% 15%, rgba(255, 255, 255, 0.92) 0 4%, transparent 4.5%),
+    radial-gradient(circle at 84% 22%, rgba(255, 255, 255, 0.72) 0 3%, transparent 3.5%),
+    linear-gradient(118deg, #fff4bd 0 43%, #d9f7f1 43% 100%);
+  border: 3px solid #fff;
+  border-radius: 26px;
+  box-shadow: 0 14px 34px rgba(24, 74, 114, 0.18);
+  text-decoration: none;
+  isolation: isolate;
+  transition: transform 180ms ease, box-shadow 180ms ease;
+}
+
+.merak-portal::after {
+  content: "";
+  position: absolute;
+  inset: auto -4rem -5rem auto;
+  width: 13rem;
+  aspect-ratio: 1;
+  border: 2px dashed rgba(23, 63, 95, 0.14);
+  border-radius: 50%;
+  z-index: -1;
+}
+
+@media (hover: hover) {
+  .merak-portal:hover {
+    transform: translateY(-4px) rotate(-0.25deg);
+    box-shadow: 0 20px 42px rgba(24, 74, 114, 0.24);
+  }
+}
+
+.merak-portal-visual {
+  position: relative;
+  display: grid;
+  place-items: center;
+  min-height: 180px;
+}
+
+.merak-portal-visual > span {
+  display: grid;
+  place-items: center;
+  width: 88px;
+  aspect-ratio: 1;
+  color: #fff;
+  background: #ef476f;
+  border: 7px solid rgba(255, 255, 255, 0.88);
+  border-radius: 34% 66% 57% 43% / 48% 42% 58% 52%;
+  font-family: var(--font-display);
+  font-size: 3.7rem;
+  line-height: 1;
+  box-shadow: 0 12px 24px rgba(239, 71, 111, 0.25);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .merak-portal-visual > span {
+    animation: portalQuestion 4s ease-in-out infinite;
+  }
+}
+
+.merak-portal-visual i {
+  position: absolute;
+  display: grid;
+  place-items: center;
+  width: 43px;
+  height: 43px;
+  background: #fff;
+  border-radius: 50%;
+  box-shadow: 0 7px 16px rgba(23, 63, 95, 0.14);
+  font-size: 1.3rem;
+  font-style: normal;
+}
+
+.merak-portal-visual i:nth-of-type(1) {
+  left: 12%;
+  top: 18%;
+  transform: rotate(-10deg);
+}
+
+.merak-portal-visual i:nth-of-type(2) {
+  right: 10%;
+  top: 13%;
+  transform: rotate(9deg);
+}
+
+.merak-portal-visual i:nth-of-type(3) {
+  right: 14%;
+  bottom: 11%;
+  transform: rotate(-6deg);
+}
+
+.merak-portal-copy {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 1.35rem 1.5rem 1.35rem 0.5rem;
+}
+
+.merak-portal-copy small {
+  color: #0f766e;
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.merak-portal-copy strong {
+  margin: 0.15rem 0 0.25rem;
+  font-family: var(--font-display);
+  font-size: clamp(1.35rem, 4vw, 2rem);
+  line-height: 1.05;
+}
+
+.merak-portal-copy > span {
+  max-width: 54ch;
+  color: #41647d;
+  font-size: 0.86rem;
+  line-height: 1.5;
+}
+
+.merak-portal-copy b {
+  margin-top: 0.75rem;
+  padding: 0.42rem 0.72rem;
+  color: #fff;
+  background: var(--portal-ink);
+  border-radius: 999px;
+  font-size: 0.76rem;
+}
+
+/* Topic article */
+
+/* Reusable mini laboratory */
+
+/* Early mathematics labs */
+
+/* Mission, glossary and assessment */
+
+@media (max-width: 620px) {
+  .merak-portal {
+    grid-template-columns: 116px minmax(0, 1fr);
+    min-height: 158px;
+  }
+
+  .merak-portal-visual {
+    min-height: 158px;
+  }
+
+  .merak-portal-visual > span {
+    width: 66px;
+    border-width: 5px;
+    font-size: 2.7rem;
+  }
+
+  .merak-portal-visual i {
+    width: 34px;
+    height: 34px;
+    font-size: 1rem;
+  }
+
+  .merak-portal-copy {
+    padding: 1rem 0.8rem 1rem 0;
+  }
+
+  .merak-portal-copy > span {
+    font-size: 0.75rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .merak-portal *,
+  .merak-portal *::before,
+  .merak-portal *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+
+  .merak-portal:hover {
+    transform: none;
+  }
+}
+
+@keyframes portalQuestion {
+  0%,
+  100% {
+    transform: translateY(0) rotate(-2deg);
+  }
+  50% {
+    transform: translateY(-8px) rotate(2deg);
+  }
+}

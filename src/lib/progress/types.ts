@@ -115,6 +115,8 @@ export type Progress = {
     cosmetics: { owned: CosmeticId[]; equipped: CosmeticId | null };
     starsSpent: number;
     streak: { count: number; lastDay: DayKey | null; freezeUsedWeek: string | null };
+    /** S5 (ek alan): günün üç görevinin tamamlandığı günler (çıkartma tetikleyicisi). */
+    questDays?: DayKey[];
   };
   quests: { day: DayKey | null; items: QuestState[] };
   inbox: Notice[];

@@ -1,0 +1,519 @@
+/* Tam ekran tuval oyunları, dokunmatik çubuk, eski bilgi sayfası. globals.css'ten bölündü (S8). Sınıf adları değiştirilmez (CONTRACT §14). */
+
+/* Tank game mobile */
+
+.tank-game .tank-canvas {
+  max-height: min(52vh, 480px);
+}
+
+.tank-mobile-pad {
+  display: flex;
+  gap: 0.5rem;
+  justify-content: center;
+  margin-top: 0.75rem;
+  padding: 0 0.5rem;
+}
+
+.tank-btn {
+  flex: 1;
+  max-width: 100px;
+  min-height: 52px;
+  font-size: 1.35rem;
+  font-weight: 700;
+  border: 3px solid #e2e8f0;
+  border-radius: 14px;
+  background: #fff;
+  touch-action: manipulation;
+  user-select: none;
+}
+
+.tank-btn.tank-fire {
+  max-width: 120px;
+  background: linear-gradient(180deg, #fef08a, #f97316);
+  border-color: #ea580c;
+  font-size: 1.5rem;
+}
+
+/* Açelya-style touch controls */
+
+.game-touch-bar {
+  display: none;
+  flex-shrink: 0;
+  gap: 8px;
+  padding: 8px 12px max(12px, env(safe-area-inset-bottom));
+  justify-content: center;
+  align-items: center;
+  flex-wrap: wrap;
+  touch-action: manipulation;
+}
+
+.game-touch-bar.is-visible {
+  display: flex;
+}
+
+@media (pointer: coarse), (max-width: 768px) {
+  .game-touch-bar.is-visible {
+    display: flex;
+  }
+}
+
+.game-touch-bar.layout-tetris.is-visible {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  max-width: 360px;
+  margin: 0 auto;
+}
+
+.game-touch-bar.layout-snake.is-visible {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  max-width: 280px;
+  margin: 0 auto;
+}
+
+.game-touch-bar.layout-snake button:nth-child(1) {
+  grid-column: 2;
+}
+
+.game-touch-bar.layout-snake button:nth-child(2) {
+  grid-column: 1;
+  grid-row: 2;
+}
+
+.game-touch-bar.layout-snake button:nth-child(3) {
+  grid-column: 3;
+  grid-row: 2;
+}
+
+.game-touch-bar.layout-snake button:nth-child(4) {
+  grid-column: 2;
+  grid-row: 3;
+}
+
+.game-touch-bar button {
+  min-width: 52px;
+  min-height: 52px;
+  padding: 10px 14px;
+  font-size: 1.25rem;
+  font-weight: 700;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.95);
+  color: #1e40af;
+  border: 2px solid #e2e8f0;
+  cursor: pointer;
+  user-select: none;
+  touch-action: manipulation;
+}
+
+.game-touch-bar button:active {
+  background: #dbeafe;
+  transform: scale(0.94);
+}
+
+.game-touch-bar button.touch-fire {
+  background: linear-gradient(180deg, #fecaca, #f87171);
+  border-color: #ef4444;
+  min-width: 64px;
+}
+
+.fullscreen-game.acelya-game {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  width: 100%;
+}
+
+.acelya-hud {
+  flex-shrink: 0;
+}
+
+.acelya-game-stage {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 8px;
+}
+
+.fullscreen-game .game-canvas {
+  max-width: 100%;
+  max-height: none;
+  display: block;
+}
+
+.pong-game {
+  position: relative;
+}
+
+.pong-stars {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 0;
+  pointer-events: none;
+  background: #000;
+}
+
+.pong-game .acelya-hud,
+.pong-game .acelya-game-stage,
+.pong-game .game-touch-bar,
+.pong-game .game-over {
+  position: relative;
+  z-index: 1;
+}
+
+.pong-canvas {
+  background: rgba(0, 0, 0, 0.35);
+}
+
+.menu-header-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.btn-info {
+  text-decoration: none;
+}
+
+.shell-info {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 1rem;
+  max-height: 100dvh;
+  overflow-y: auto;
+}
+
+.info-page {
+  background: rgba(255, 255, 255, 0.94);
+  border-radius: var(--radius);
+  padding: 1.25rem;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
+}
+
+.info-header h1 {
+  margin: 0.5rem 0 0.25rem;
+  font-size: 1.35rem;
+}
+
+.info-sub {
+  margin: 0;
+  color: #64748b;
+  font-size: 0.9rem;
+}
+
+.info-section {
+  margin-top: 1.25rem;
+}
+
+.info-section h2 {
+  margin: 0 0 0.5rem;
+  font-size: 1.05rem;
+}
+
+.info-day-group h3 {
+  margin: 0.75rem 0 0.35rem;
+  font-size: 0.92rem;
+  color: #475569;
+}
+
+.info-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.info-list li {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  padding: 0.45rem 0;
+  border-bottom: 1px solid #f1f5f9;
+  font-size: 0.88rem;
+}
+
+.info-list time {
+  color: #64748b;
+  font-size: 0.8rem;
+}
+
+.info-visit-label {
+  font-weight: 600;
+}
+
+.info-visit-slug {
+  font-weight: 400;
+  color: #94a3b8;
+}
+
+.info-empty,
+.info-loading,
+.info-warn {
+  color: #64748b;
+  font-size: 0.9rem;
+}
+
+.info-warn {
+  color: #b45309;
+  background: #fffbeb;
+  padding: 0.75rem;
+  border-radius: 8px;
+}
+
+.activity-main .fullscreen-game {
+  min-height: min(72dvh, calc(100dvh - 120px));
+}
+
+.flappy-canvas {
+  background: linear-gradient(180deg, #7dd3fc, #bae6fd);
+  cursor: pointer;
+}
+
+.flappy-game .game-touch-bar {
+  grid-template-columns: 1fr;
+}
+
+.fighting-game {
+  background: linear-gradient(180deg, #1e1b4b, #312e81);
+}
+
+.fighting-canvas {
+  background: #1e1b4b;
+  border-color: #fde047;
+  max-width: 100%;
+}
+
+.fighting-game .game-touch-bar.layout-fighting {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 6px;
+}
+
+.fight-char-select {
+  text-align: center;
+  padding: 0.75rem;
+  margin-bottom: 0.5rem;
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: var(--radius-sm);
+}
+
+.fight-char-select p {
+  margin: 0 0 0.6rem;
+  color: #fde047;
+  font-weight: 700;
+}
+
+.fight-char-btns {
+  display: flex;
+  gap: 0.5rem;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.fight-char-btn {
+  min-width: 120px;
+}
+
+.fight-char-serkan {
+  background: linear-gradient(180deg, #fb923c, #ea580c);
+  border-color: #c2410c;
+}
+
+.fighting-game .game-touch-bar.layout-fighting .touch-fire {
+  grid-column: span 1;
+}
+
+.super-bear-game {
+  background: linear-gradient(180deg, #ecfdf5, #f0fdf4);
+}
+
+.super-bear-hud {
+  flex-shrink: 0;
+}
+
+.super-bear-canvas {
+  background: #87ceeb;
+  border-color: #65a30d;
+}
+
+.super-bear-victory {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: max(16px, env(safe-area-inset-top)) 16px max(16px, env(safe-area-inset-bottom));
+  background: rgba(15, 23, 42, 0.55);
+  animation: superBearVictoryFade 0.4s ease-out both;
+}
+
+.super-bear-victory-card {
+  text-align: center;
+  max-width: min(92vw, 380px);
+  padding: 28px 22px 22px;
+  border-radius: 20px;
+  background: linear-gradient(165deg, #fef3c7, #fde68a);
+  border: 3px solid #d97706;
+  box-shadow: 0 22px 48px rgba(0, 0, 0, 0.35);
+  animation: superBearVictoryPop 0.55s cubic-bezier(0.34, 1.45, 0.64, 1) 0.06s both;
+}
+
+.super-bear-victory-card h2 {
+  margin: 0 0 10px;
+  font-size: 1.5rem;
+  color: #92400e;
+}
+
+.super-bear-victory-card p {
+  margin: 0 0 18px;
+  color: #78350f;
+  line-height: 1.45;
+}
+
+.super-bear-victory-emoji {
+  margin: 0 0 6px;
+  font-size: clamp(2.5rem, 10vw, 3.25rem);
+  line-height: 1;
+  display: block;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .super-bear-victory-emoji {
+    animation: superBearVictoryBounce 1.1s ease-in-out infinite;
+  }
+}
+
+@keyframes superBearVictoryFade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes superBearVictoryPop {
+  from {
+    opacity: 0;
+    transform: scale(0.88) translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+@keyframes superBearVictoryBounce {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-6px);
+  }
+}
+
+.tetris-canvas {
+  background: #0a0a14;
+}
+
+/* Asteroids — Açelya asteroids.html ile aynı tam ekran düzen */
+
+.activity-main:has(.asteroids-game) {
+  max-width: none;
+  margin: 0;
+  padding: 0;
+  width: 100%;
+}
+
+.asteroids-game {
+  display: flex;
+  flex-direction: column;
+  min-height: calc(100dvh - 52px);
+  width: 100%;
+  background: #000;
+  color: #fff;
+  touch-action: none;
+}
+
+.asteroids-hud {
+  flex-shrink: 0;
+  padding: max(8px, env(safe-area-inset-top)) 12px 8px;
+  text-align: center;
+}
+
+.asteroids-title {
+  margin: 0 0 4px;
+  font-size: clamp(1rem, 4vw, 1.5rem);
+  font-weight: 600;
+  color: #fff;
+}
+
+.asteroids-hint {
+  margin: 0;
+  font-size: clamp(0.7rem, 2.8vw, 0.8rem);
+  opacity: 0.65;
+  color: #e2e8f0;
+}
+
+.asteroids-rival {
+  margin: 6px 0 0;
+  font-size: 0.75rem;
+  opacity: 0.85;
+  color: #cbd5e1;
+}
+
+.asteroids-waiting {
+  color: #fbbf24 !important;
+  margin: 6px 0 0;
+}
+
+.asteroids-stage {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 10px 10px;
+}
+
+.asteroids-canvas {
+  display: block;
+  flex-shrink: 0;
+  width: auto;
+  height: auto;
+  max-width: 100%;
+  background: #000;
+  border-radius: 4px;
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.12);
+  touch-action: none;
+}
+
+.asteroids-game .game-touch-bar {
+  flex-shrink: 0;
+  background: rgba(10, 10, 20, 0.95);
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.pong-game .game-canvas {
+  background: rgba(0, 0, 0, 0.35);
+}
+
+@media (max-width: 480px) {
+  .card-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .num-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .memory-grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}

@@ -30,8 +30,18 @@ function rand(rng: () => number, min: number, max: number) {
   return min + Math.floor(rng() * (max - min + 1));
 }
 
-/** level: 1..MAX_LEVELS — zorluk artar */
-export function buildProceduralLevel(level: number): {
+/** Zorluk ölçeği varsayılanı (ActivityStats.ease başlangıcı). */
+export const DEFAULT_EASE = 0.7;
+
+/**
+ * level: 1..MAX_LEVELS — zorluk artar.
+ * ease: 0.6–1.0 (MASTER_PLAN §3.5). Kurt/arı sayısı ve düşman hızı `ease` ile
+ * ölçeklenir; platform düzeni aynı tohumla aynı kalır (deterministik).
+ */
+export function buildProceduralLevel(
+  level: number,
+  ease: number = DEFAULT_EASE,
+): {
   plats: Plat[];
   enemies: Enemy[];
   pickups: Pickup[];
@@ -40,7 +50,8 @@ export function buildProceduralLevel(level: number): {
 } {
   const rng = mulberry32(level * 9773 + 42);
   const L = Math.min(level, MAX_LEVELS);
-  const spdMul = 1 + (L - 1) * 0.022;
+  const e = Math.min(1, Math.max(0.6, Number.isFinite(ease) ? ease : DEFAULT_EASE));
+  const spdMul = (1 + (L - 1) * 0.022) * e;
   const gapTight = Math.min(18, 8 + Math.floor(L / 12));
   const levelW = 1200 + L * 28 + Math.floor(L / 10) * 40;
   const goalX = levelW - 100;
@@ -80,8 +91,8 @@ export function buildProceduralLevel(level: number): {
   plats.push({ x: goalX - 200, y: GROUND_Y, w: 320, h: 72, kind: "grass" });
 
   const enemies: Enemy[] = [];
-  const nWolves = 2 + Math.floor(L / 7) + Math.floor(L / 25);
-  const nBees = 1 + Math.floor(L / 12) + Math.floor(L / 40);
+  const nWolves = Math.max(1, Math.round((2 + L / 7 + L / 25) * e));
+  const nBees = Math.round((1 + L / 12 + L / 40) * e);
 
   for (let i = 0; i < nWolves; i++) {
     const x = rand(rng, 400, Math.max(450, goalX - 200));

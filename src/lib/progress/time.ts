@@ -119,6 +119,7 @@ export function emptyProgress(player: PlayerId, now: number = Date.now()): Progr
       cosmetics: { owned: [], equipped: null },
       starsSpent: 0,
       streak: { count: 0, lastDay: null, freezeUsedWeek: null },
+      questDays: [],
     },
     quests: { day: null, items: [] },
     inbox: [],

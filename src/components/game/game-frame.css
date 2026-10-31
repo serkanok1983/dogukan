@@ -1,0 +1,534 @@
+/* Oyun çerçevesi (S4): üst çubuk, StartCard, duraklatma, toast, başparmak kontrolleri.
+   Önek: gf-. Belirteçler: src/styles/tokens.css. Tuvalin üstünde backdrop-filter yok. */
+
+/* ---------- Sayfa ve üst çubuk ---------- */
+
+.gf-topbar {
+  position: sticky;
+  top: 0;
+  z-index: 200;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  height: calc(48px + var(--safe-top));
+  padding: var(--safe-top) max(8px, var(--safe-x)) 0;
+  background: #ffffff;
+  border-bottom: 2px solid #e2eef6;
+  box-sizing: border-box;
+}
+
+.gf-pause-btn {
+  display: grid;
+  place-items: center;
+  width: var(--kid-tap);
+  height: var(--kid-tap);
+  margin: -4px 0;
+  padding: 0;
+  font-size: 1.6rem;
+  line-height: 1;
+  color: var(--ink, #173f5f);
+  background: #f1f7fb;
+  border: 3px solid #d6e6f1;
+  border-radius: 16px;
+  cursor: pointer;
+  touch-action: manipulation;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.gf-pause-btn:disabled {
+  opacity: 0.4;
+}
+
+.gf-pause-btn:active {
+  transform: scale(0.94);
+}
+
+.gf-topbar-emoji {
+  font-size: 1.6rem;
+  line-height: 1;
+}
+
+/* RewardSheet açıkken oyunun kendi bitiş blokları gizlenir (CONTRACT §4). */
+.gf-sheet-open .game-over,
+.gf-sheet-open .result-panel,
+.gf-sheet-open .super-bear-victory {
+  display: none !important;
+}
+
+/* ---------- Ortak büyük düğmeler ---------- */
+
+.gf-btn,
+.gf-start-go {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  min-height: var(--kid-touch);
+  padding: 0 28px;
+  font: inherit;
+  font-size: 1.5rem;
+  font-weight: 800;
+  border: 0;
+  border-radius: 22px;
+  cursor: pointer;
+  touch-action: manipulation;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.gf-btn:active,
+.gf-start-go:active {
+  transform: scale(0.96);
+}
+
+/* ---------- StartCard ---------- */
+
+.gf-start {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-intro);
+  display: grid;
+  place-items: center;
+  padding: calc(16px + var(--safe-top)) max(16px, var(--safe-x))
+    calc(16px + var(--safe-bottom));
+  overflow-y: auto;
+  background: linear-gradient(180deg, #bde8ff 0%, #fff4d6 100%);
+}
+
+.gf-start-sleep {
+  background: linear-gradient(180deg, #2b3a67 0%, #6c5b9e 100%);
+}
+
+.gf-start-map {
+  position: absolute;
+  top: calc(12px + var(--safe-top));
+  left: max(12px, var(--safe-x));
+  display: grid;
+  place-items: center;
+  width: var(--kid-tap);
+  height: var(--kid-tap);
+  font-size: 1.6rem;
+  background: #ffffff;
+  border: 3px solid rgba(23, 63, 95, 0.12);
+  border-radius: 18px;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+.gf-start-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+  width: min(100%, 420px);
+  text-align: center;
+}
+
+.gf-start-emoji {
+  font-size: clamp(96px, 32vw, 160px);
+  line-height: 1.1;
+}
+
+.gf-start-line {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  color: var(--ink, #173f5f);
+  background: rgba(255, 255, 255, 0.9);
+  border-radius: 22px;
+}
+
+.gf-start-line p {
+  margin: 0;
+  font-size: max(var(--kid-font), 1.3rem);
+  font-weight: 800;
+  line-height: 1.3;
+}
+
+.gf-start-go {
+  width: 100%;
+  min-height: 96px;
+  font-size: 2rem;
+  color: #ffffff;
+  background: linear-gradient(180deg, #34d399, #059669);
+  box-shadow: 0 8px 0 #047857;
+}
+
+.gf-start-go-map {
+  color: var(--ink, #173f5f);
+  background: #ffffff;
+  box-shadow: 0 8px 0 rgba(23, 63, 95, 0.2);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .gf-start-emoji {
+    animation: gf-bob 2.4s ease-in-out infinite;
+  }
+  .gf-start-sleep .gf-start-emoji {
+    animation-duration: 4s;
+  }
+}
+
+@keyframes gf-bob {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-8px);
+  }
+}
+
+/* ---------- Duraklatma ---------- */
+
+.gf-pause {
+  position: fixed;
+  inset: 0;
+  z-index: calc(var(--z-sheet) + 50);
+  display: grid;
+  place-items: center;
+  padding: calc(16px + var(--safe-top)) max(16px, var(--safe-x))
+    calc(16px + var(--safe-bottom));
+  background: rgba(15, 35, 55, 0.72);
+}
+
+.gf-pause-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 18px;
+  width: min(100%, 400px);
+  padding: 24px 20px;
+  background: #ffffff;
+  border-radius: 28px;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.3);
+}
+
+.gf-pause-icon {
+  font-size: 64px;
+  line-height: 1;
+}
+
+.gf-pause-ask {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.gf-pause-ask p {
+  margin: 0;
+  font-size: 1.6rem;
+  font-weight: 800;
+  color: var(--ink, #173f5f);
+}
+
+.gf-pause-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+  width: 100%;
+}
+
+.gf-btn-yes {
+  color: var(--ink, #173f5f);
+  background: #eef4f8;
+  box-shadow: 0 6px 0 #c9d9e4;
+}
+
+.gf-btn-go {
+  min-height: 96px;
+  color: #ffffff;
+  background: linear-gradient(180deg, #34d399, #059669);
+  box-shadow: 0 6px 0 #047857;
+}
+
+.gf-count {
+  font-size: clamp(120px, 40vw, 200px);
+  font-weight: 900;
+  line-height: 1;
+  color: #ffffff;
+  text-shadow: 0 6px 0 rgba(0, 0, 0, 0.25);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .gf-count {
+    animation: gf-pop 0.9s var(--ease-pop) both;
+  }
+}
+
+@keyframes gf-pop {
+  0% {
+    opacity: 0;
+    transform: scale(0.4);
+  }
+  30% {
+    opacity: 1;
+    transform: scale(1.1);
+  }
+  100% {
+    opacity: 0.85;
+    transform: scale(1);
+  }
+}
+
+/* ---------- Toast (bloklamaz) ---------- */
+
+.gf-toast {
+  position: fixed;
+  top: calc(60px + var(--safe-top));
+  left: 50%;
+  z-index: var(--z-toast);
+  max-width: min(90vw, 420px);
+  padding: 10px 20px;
+  font-size: max(var(--kid-font), 1.1rem);
+  font-weight: 800;
+  color: #713f12;
+  text-align: center;
+  background: #fef3c7;
+  border: 3px solid #fbbf24;
+  border-radius: 999px;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.18);
+  transform: translateX(-50%);
+  pointer-events: none;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .gf-toast {
+    animation: gf-toast 1.6s ease both;
+  }
+}
+
+@keyframes gf-toast {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, -12px) scale(0.9);
+  }
+  12%,
+  80% {
+    opacity: 1;
+    transform: translate(-50%, 0) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -8px) scale(0.98);
+  }
+}
+
+/* ---------- İkon skor göstergesi ---------- */
+
+.score-hud.gf-score-hud {
+  gap: 0.4rem 1.1rem;
+  padding: 0.3rem 0.9rem;
+  font-size: max(var(--kid-font), 1.15rem);
+  font-weight: 800;
+}
+
+/* ---------- Amiral oyunlara özel ince ayarlar ---------- */
+
+/* Balon Patlat: 2×2 dev balonlar (cevap seçeneği ≥ 96 px) */
+.gf-balloons .round-label {
+  font-size: 1.4rem;
+  letter-spacing: 2px;
+}
+
+.gf-balloons-left {
+  color: #94a3b8;
+}
+
+.gf-balloons-ask {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.gf-balloons-ask .count-prompt {
+  margin: 0;
+  font-size: 2.4rem;
+}
+
+.gf-balloons .balloon-sky {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  place-items: center;
+  gap: 16px;
+  height: auto;
+  min-height: 300px;
+  padding: 20px 12px 28px;
+}
+
+.gf-balloons .balloon {
+  position: relative;
+  bottom: auto;
+  width: 104px;
+  height: 124px;
+  touch-action: manipulation;
+}
+
+.gf-balloons .balloon-num {
+  font-size: 2.4rem;
+}
+
+.gf-balloons .balloon.gf-popped {
+  opacity: 0;
+  transform: scale(1.4);
+  transition:
+    opacity 0.3s ease,
+    transform 0.3s ease;
+}
+
+/* Hafıza kartları */
+.gf-memory-levels {
+  display: grid;
+  gap: 14px;
+  max-width: 360px;
+  margin: 0 auto;
+}
+
+.option-btn.gf-memory-level {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  min-height: 96px;
+  font-size: 1.6rem;
+}
+
+.gf-memory-level-emoji {
+  font-size: 3rem;
+  line-height: 1;
+}
+
+.gf-memory-back {
+  min-height: var(--kid-tap);
+  margin-top: 12px;
+  font-size: 1.3rem;
+}
+
+/* ---------- Başparmak bölgeli dokunmatik çubuk ----------
+   Eski .game-touch-bar / .layout-* kuralları (src/styles/arcade.css) daha yüksek
+   özgüllükle ezilir; sınıf adları korunur (CONTRACT §14). */
+
+.game-touch-bar.gf-touchbar.gf-touchbar.is-visible {
+  position: sticky;
+  bottom: 0;
+  z-index: 5;
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 12px;
+  max-width: none;
+  margin: 8px 0 0;
+  padding: 8px max(8px, var(--safe-x)) max(10px, var(--safe-bottom));
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+}
+
+.game-touch-bar.gf-touchbar .gf-zone {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 10px;
+  touch-action: none;
+}
+
+.game-touch-bar.gf-touchbar .gf-zone-left {
+  justify-content: flex-start;
+}
+
+.game-touch-bar.gf-touchbar .gf-zone-right {
+  justify-content: flex-end;
+}
+
+.game-touch-bar.gf-touchbar .gf-zone-full {
+  flex: 1;
+}
+
+.game-touch-bar.gf-touchbar.gf-touchbar button.gf-touch-btn {
+  display: grid;
+  place-items: center;
+  width: var(--kid-touch);
+  min-width: var(--kid-touch);
+  height: var(--kid-touch);
+  min-height: var(--kid-touch);
+  padding: 0;
+  font-size: 2rem;
+  line-height: 1;
+  color: var(--ink, #173f5f);
+  background: #ffffff;
+  border: 3px solid #cfe0ec;
+  border-radius: 22px;
+  box-shadow: 0 5px 0 #b9cfde;
+  touch-action: none;
+  grid-column: auto;
+  grid-row: auto;
+}
+
+.game-touch-bar.gf-touchbar.gf-touchbar button.gf-touch-btn:active {
+  background: #e0f2fe;
+  box-shadow: 0 2px 0 #b9cfde;
+  transform: translateY(3px);
+}
+
+.game-touch-bar.gf-touchbar.gf-touchbar button.gf-touch-btn.touch-fire {
+  color: #ffffff;
+  background: linear-gradient(180deg, #fb7185, #e11d48);
+  border-color: #be123c;
+  box-shadow: 0 5px 0 #9f1239;
+}
+
+.game-touch-bar.gf-touchbar.gf-touchbar .gf-zone-full button.gf-touch-btn {
+  width: 100%;
+  height: 96px;
+  font-size: 2.6rem;
+}
+
+/* Yön haçı (Yılan) */
+.game-touch-bar.gf-touchbar .gf-zone.gf-dpad {
+  display: grid;
+  grid-template-columns: repeat(3, var(--kid-touch));
+  grid-template-rows: repeat(3, var(--kid-touch));
+  gap: 4px;
+  margin: 0 auto;
+}
+
+.game-touch-bar.gf-touchbar .gf-dpad button.gf-key-up.gf-touch-btn {
+  grid-column: 2;
+  grid-row: 1;
+}
+
+.game-touch-bar.gf-touchbar .gf-dpad button.gf-key-left.gf-touch-btn {
+  grid-column: 1;
+  grid-row: 2;
+}
+
+.game-touch-bar.gf-touchbar .gf-dpad button.gf-key-right.gf-touch-btn {
+  grid-column: 3;
+  grid-row: 2;
+}
+
+.game-touch-bar.gf-touchbar .gf-dpad button.gf-key-down.gf-touch-btn {
+  grid-column: 2;
+  grid-row: 3;
+}
+
+.game-touch-bar.gf-touchbar .gf-dpad + .gf-zone-right:empty {
+  display: none;
+}
+
+/* Dövüş: iki küme de 2 sütun (dar telefonlarda sığsın) */
+.game-touch-bar.gf-touchbar.layout-fighting .gf-zone {
+  display: grid;
+  grid-template-columns: repeat(2, var(--kid-touch));
+}
+
+/* Tetris ve diğer çok düğmeli düzenler dar ekranda sarar */
+.game-touch-bar.gf-touchbar.layout-tetris .gf-zone-left {
+  max-width: calc(var(--kid-touch) * 2 + 10px);
+}

@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useEffectEvent, useRef, useState } from "react";
 import { spawnBurst, updateParticles, drawParticles, type Particle } from "@/lib/particles";
 import { createGameJuice } from "@/lib/gameJuice";
 import { useGameActive, useGameBoot } from "@/lib/gameSession";
@@ -9,6 +9,7 @@ import { sounds } from "@/lib/sounds";
 import { randInt } from "@/lib/utils";
 import { useGameScore } from "@/hooks/useGameScore";
 import { ScoreHud } from "@/components/ScoreHud";
+import { canvasFont } from "@/lib/canvasFont";
 
 const GAME_SLUG = "royal-match";
 
@@ -74,11 +75,11 @@ export function RoyalMatch() {
   const running = useGameRunning();
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [score, setScore] = useState(0);
-  const [movesLeft, setMovesLeft] = useState(MOVE_LIMIT);
+  const [, setMovesLeft] = useState(MOVE_LIMIT);
   const [done, setDone] = useState(false);
-  const [combo, setCombo] = useState(0);
+  const [, setCombo] = useState(0);
   const [message, setMessage] = useState("");
-  const [selected, setSelected] = useState<[number, number] | null>(null);
+  const [, setSelected] = useState<[number, number] | null>(null);
   const scoreGame = useGameScore(GAME_SLUG);
   const submitted = useRef(false);
 
@@ -206,7 +207,8 @@ export function RoyalMatch() {
 
   const clearMessage = () => { messageRef.current = ""; setMessage(""); };
 
-  const trySwap = useCallback(async (r1: number, c1: number, r2: number, c2: number) => {
+  // Yalnızca efektin dinleyicilerinden çağrılır; her zaman en güncel kapanışları görür.
+  const trySwap = useEffectEvent(async (r1: number, c1: number, r2: number, c2: number) => {
     if (swapping.current || settling.current) return;
     swapping.current = true;
     const grid = gridRef.current;
@@ -263,7 +265,7 @@ export function RoyalMatch() {
     swapping.current = false;
     selectedRef.current = null;
     setSelected(null);
-  }, [scoreGame]);
+  });
 
   /* ── pointer / drag ─────────────────────────── */
   const cellFromXY = (clientX: number, clientY: number): [number, number] | null => {
@@ -482,11 +484,11 @@ export function RoyalMatch() {
 
       // HUD
       ctx2.fillStyle = "#f8fafc";
-      ctx2.font = "bold 15px var(--font-nunito), system-ui, sans-serif";
+      ctx2.font = canvasFont("bold 15px var(--font-nunito), system-ui, sans-serif");
       ctx2.textAlign = "left";
       ctx2.fillText(`💎 ${scoreRef.current}`, 8, 22);
 
-      ctx2.font = "bold 13px var(--font-nunito), system-ui, sans-serif";
+      ctx2.font = canvasFont("bold 13px var(--font-nunito), system-ui, sans-serif");
       ctx2.textAlign = "right";
       const moveColor = movesLeftRef.current <= 5 ? "#ef4444" : "#fbbf24";
       ctx2.fillStyle = moveColor;
@@ -494,14 +496,14 @@ export function RoyalMatch() {
 
       if (comboRef.current >= 2) {
         ctx2.fillStyle = "#f97316";
-        ctx2.font = "bold 14px var(--font-nunito), system-ui, sans-serif";
+        ctx2.font = canvasFont("bold 14px var(--font-nunito), system-ui, sans-serif");
         ctx2.textAlign = "center";
         ctx2.fillText(`🔥 Combo x${comboRef.current}`, W / 2, 22);
       }
 
       if (messageRef.current) {
         ctx2.fillStyle = "#fef08a";
-        ctx2.font = "bold 16px var(--font-nunito), system-ui, sans-serif";
+        ctx2.font = canvasFont("bold 16px var(--font-nunito), system-ui, sans-serif");
         ctx2.textAlign = "center";
         ctx2.fillText(messageRef.current, W / 2, H - 8);
       }
@@ -518,7 +520,7 @@ export function RoyalMatch() {
       canvas.removeEventListener("mouseup", handleUp);
       canvas.removeEventListener("touchend", handleUp);
     };
-  }, [running, done, trySwap, scoreGame]);
+  }, [running, done, scoreGame]);
 
   return (
     <div className="game-panel canvas-game">

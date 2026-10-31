@@ -5,6 +5,9 @@ import { ActivityClient } from "./ActivityClient";
 
 type Props = { params: Promise<{ slug: string }> };
 
+// Yalnızca generateStaticParams'taki slug'lar vardır; gerisi 404 (statik export).
+export const dynamicParams = false;
+
 export function generateStaticParams() {
   return MENU.flatMap((cat) => cat.items.map((item) => ({ slug: item.slug })));
 }

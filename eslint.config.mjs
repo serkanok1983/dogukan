@@ -12,6 +12,11 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Plan belgeleri ve çalışma betikleri uygulama kodu değildir.
+    "docs/**",
+    // Playwright çıktıları.
+    "test-results/**",
+    "playwright-report/**",
   ]),
 ]);
 

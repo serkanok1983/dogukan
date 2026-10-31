@@ -9,6 +9,7 @@ import { useGameScore } from "@/hooks/useGameScore";
 import { ScoreHud } from "@/components/ScoreHud";
 import { GameTouchBar } from "@/components/GameTouchBar";
 import { useCanvasFit } from "@/hooks/useCanvasFit";
+import { canvasFont } from "@/lib/canvasFont";
 
 const GAME_SLUG = "pinball-space-cadet";
 const W = 900;
@@ -38,7 +39,7 @@ export function PinballCadet() {
   const juiceRef = useRef(createGameJuice());
   const scoreGame = useGameScore(GAME_SLUG);
   const [score, setScore] = useState(0);
-  const [lives, setLives] = useState(3);
+  const [, setLives] = useState(3);
   const [over, setOver] = useState(false);
   const submitted = useRef(false);
   const scoreRef = useRef(0);
@@ -270,7 +271,7 @@ export function PinballCadet() {
       fx.draw(ctx, W, H);
 
       ctx.fillStyle = "#fff";
-      ctx.font = "bold 14px var(--font-nunito), sans-serif";
+      ctx.font = canvasFont("bold 14px var(--font-nunito), sans-serif");
       ctx.textAlign = "left";
       ctx.fillText(`Can: ${livesRef.current}`, 16, 24);
       ctx.fillText("← / → flipper · Space launch", 16, H - 14);

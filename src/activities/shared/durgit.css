@@ -1,0 +1,167 @@
+/* Dur-Git (S3). Sınıf öneki: dg- */
+
+.dg-panel {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+.dg-text {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin: 0;
+  font-size: 22px;
+  font-weight: 700;
+  text-align: center;
+}
+
+.dg-rule {
+  display: flex;
+  gap: 24px;
+}
+
+.dg-rule-item {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 120px;
+  min-height: 96px;
+  border-radius: 24px;
+  font-size: 44px;
+}
+
+.dg-ok {
+  background: #d8f5e1;
+}
+
+.dg-no {
+  background: #fde2e2;
+}
+
+.dg-big {
+  min-width: 200px;
+  min-height: 72px;
+  font-size: 24px;
+}
+
+.dg-score-big {
+  margin: 0;
+  font-size: 64px;
+  font-weight: 800;
+}
+
+.dg-hud {
+  display: flex;
+  gap: 12px;
+}
+
+.dg-chip {
+  display: inline-flex;
+  align-items: center;
+  min-height: 56px;
+  padding: 0 18px;
+  border-radius: 28px;
+  background: #fff;
+  box-shadow: 0 2px 6px rgb(0 0 0 / 12%);
+  font-size: 24px;
+  font-weight: 800;
+}
+
+.dg-timebar {
+  width: 100%;
+  height: 10px;
+  border-radius: 5px;
+  background: #e2e8f0;
+  overflow: hidden;
+}
+
+.dg-timebar-fill {
+  height: 100%;
+  background: #4cc9f0;
+  transition: width 0.1s linear;
+}
+
+.dg-banner.is-red {
+  color: #c1121f;
+}
+
+.dg-pond {
+  position: relative;
+  width: 100%;
+  height: min(60vh, 460px);
+  min-height: 360px;
+  overflow: hidden;
+  border-radius: 24px;
+  background: linear-gradient(180deg, #8ee3ff 0%, #3aa0d8 100%);
+  touch-action: manipulation;
+}
+
+.dg-creature {
+  position: absolute;
+  left: -110px;
+  width: 96px;
+  height: 96px;
+  padding: 0;
+  border: 4px solid #fff;
+  border-radius: 50%;
+  font-size: 52px;
+  line-height: 1;
+  cursor: pointer;
+  animation-timing-function: linear;
+  animation-fill-mode: forwards;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.dg-creature > span {
+  display: inline-block;
+}
+
+.dg-ltr {
+  animation-name: dg-swim-ltr;
+}
+
+.dg-ltr > span {
+  transform: scaleX(-1);
+}
+
+.dg-rtl {
+  animation-name: dg-swim-rtl;
+}
+
+.dg-kirmizi {
+  background: #ff6b6b;
+}
+
+.dg-mavi {
+  background: #4361ee;
+}
+
+.dg-shark {
+  background: #64748b;
+}
+
+.dg-pond.is-paused .dg-creature {
+  animation-play-state: paused;
+}
+
+@keyframes dg-swim-ltr {
+  from {
+    left: -110px;
+  }
+  to {
+    left: 100%;
+  }
+}
+
+@keyframes dg-swim-rtl {
+  from {
+    left: 100%;
+  }
+  to {
+    left: -110px;
+  }
+}

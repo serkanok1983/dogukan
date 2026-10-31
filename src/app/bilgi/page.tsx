@@ -1,36 +1,21 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { BubbleBg } from "@/components/BubbleBg";
-import { ParentInfoScreen } from "@/components/ParentInfoScreen";
-import { getPlayerId, isLoggedIn } from "@/lib/auth";
+import { ParentGate } from "@/components/auth/ParentGate";
+import { ParentDashboard } from "@/components/parent/ParentDashboard";
+import { useParentMode, useSession } from "@/lib/auth";
 
+/** Ebeveyn paneli: ParentGate (aritmetik → PIN) geçilmeden hiçbir veri gösterilmez. */
 export default function BilgiPage() {
   const router = useRouter();
-  const [ready, setReady] = useState(false);
-
-  useEffect(() => {
-    if (!isLoggedIn()) {
-      router.replace("/");
-      return;
-    }
-    if (getPlayerId() !== "serkan") {
-      router.replace("/");
-      return;
-    }
-    setReady(true);
-  }, [router]);
+  const { ready } = useSession();
+  const parent = useParentMode();
 
   if (!ready) return null;
-
-  return (
-    <>
-      <BubbleBg />
-      <div className="sky-gradient" aria-hidden />
-      <div className="shell shell-info">
-        <ParentInfoScreen />
-      </div>
-    </>
-  );
+  if (!parent) {
+    return (
+      <ParentGate onPass={() => undefined} onCancel={() => router.replace("/")} />
+    );
+  }
+  return <ParentDashboard />;
 }

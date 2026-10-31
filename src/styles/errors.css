@@ -1,0 +1,92 @@
+/* Hata, 404 ve çevrimdışı kartları (S8, önek err-). Metin ≥ 18 px, düğmeler ≥ 72 px. */
+
+.err-page {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100dvh;
+  padding: max(16px, var(--safe-top)) max(16px, var(--safe-x)) max(16px, var(--safe-bottom));
+}
+
+.err-card {
+  width: min(440px, 100%);
+  padding: 1.75rem 1.25rem;
+  color: var(--ink);
+  font-size: var(--kid-font);
+  text-align: center;
+  background: #fff;
+  border: 3px solid #fff;
+  border-radius: 28px;
+  box-shadow: var(--shadow);
+}
+
+.err-card-game {
+  margin: 1rem auto;
+}
+
+.err-card-emoji {
+  font-size: 4.5rem;
+  line-height: 1;
+}
+
+.err-card-title {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  margin: 0.75rem 0 0.5rem;
+}
+
+.err-card-title h2 {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 1.75rem;
+  line-height: 1.15;
+}
+
+.err-card-note {
+  margin: 0 0 0.5rem;
+  color: var(--soft-ink);
+  font-size: var(--kid-font);
+}
+
+.err-card-actions {
+  display: grid;
+  gap: 0.85rem;
+  margin-top: 1rem;
+}
+
+.err-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: var(--kid-touch);
+  padding: 0 1.25rem;
+  font: inherit;
+  font-family: var(--font-display);
+  font-size: 1.5rem;
+  font-weight: 700;
+  text-decoration: none;
+  border: none;
+  border-radius: 999px;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+.err-btn-retry {
+  min-height: 88px;
+  color: #fff;
+  background: linear-gradient(135deg, var(--accent), #ff8fab);
+  box-shadow: 0 8px 24px rgba(255, 107, 157, 0.4);
+}
+
+.err-btn-home {
+  color: var(--ink);
+  background: #e0f2fe;
+}
+
+.err-btn:active {
+  transform: scale(0.98);
+}

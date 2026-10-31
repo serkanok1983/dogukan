@@ -61,8 +61,10 @@ export function Asteroids() {
 
   const runningRef = useRef(running);
   const activeRef = useRef(active);
-  runningRef.current = running;
-  activeRef.current = active;
+  useEffect(() => {
+    runningRef.current = running;
+    activeRef.current = active;
+  }, [running, active]);
 
   useAsteroidsCanvasFit(canvasRef, hudRef);
 
@@ -78,31 +80,34 @@ export function Asteroids() {
     setHighScore: () => {},
   });
 
-  hooksRef.current = {
-    onScore: (s) => {
-      scoreRef.current = s;
-      setScore(s);
-      if (s > 0 && s % 200 < 50) void scoreGame.checkMilestone(s);
-    },
-    onGameOver: (s) => {
-      scoreRef.current = s;
-      setScore(s);
-      if (!submitted.current) {
-        submitted.current = true;
-        void scoreGame.submitFinal(s);
-      }
-    },
-    onNewGame: () => {
-      submitted.current = false;
-      scoreRef.current = 0;
-      setScore(0);
-      scoreGame.resetMilestones();
-    },
-    getHighScore: () => bestRef.current,
-    setHighScore: (n) => {
-      bestRef.current = n;
-    },
-  };
+  // Motor köprüsü her render'dan sonra en güncel kapanışlara bağlanır (render sırasında ref yazılmaz).
+  useEffect(() => {
+    hooksRef.current = {
+      onScore: (s) => {
+        scoreRef.current = s;
+        setScore(s);
+        if (s > 0 && s % 200 < 50) void scoreGame.checkMilestone(s);
+      },
+      onGameOver: (s) => {
+        scoreRef.current = s;
+        setScore(s);
+        if (!submitted.current) {
+          submitted.current = true;
+          void scoreGame.submitFinal(s);
+        }
+      },
+      onNewGame: () => {
+        submitted.current = false;
+        scoreRef.current = 0;
+        setScore(0);
+        scoreGame.resetMilestones();
+      },
+      getHighScore: () => bestRef.current,
+      setHighScore: (n) => {
+        bestRef.current = n;
+      },
+    };
+  });
 
   const bridgeRef = useRef<AsteroidsHooks>({
     onScore: (s) => hooksRef.current.onScore(s),

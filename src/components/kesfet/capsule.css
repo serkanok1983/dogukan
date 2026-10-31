@@ -1,0 +1,412 @@
+/* Merak Kapsülleri (S7). Prefix: cap-. Tokens: src/styles/tokens.css. */
+
+.cap-feed {
+  --topic-color: var(--world-merak);
+  position: fixed;
+  inset: 0;
+  z-index: 10;
+  color: var(--ink, #173f5f);
+  font-family: var(--font-nunito, system-ui), system-ui, sans-serif;
+  font-size: var(--kid-font);
+  background:
+    radial-gradient(circle at 20% 0, color-mix(in srgb, var(--topic-color) 22%, transparent), transparent 45%),
+    linear-gradient(180deg, color-mix(in srgb, var(--topic-color) 10%, #fffdf5), #fffdf5);
+}
+
+.cap-scroller {
+  height: 100%;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scroll-snap-type: y mandatory;
+  -webkit-overflow-scrolling: touch;
+}
+
+.cap-card {
+  position: relative;
+  display: grid;
+  grid-template-rows: minmax(0, 1fr) auto auto;
+  justify-items: center;
+  align-items: center;
+  gap: 0.75rem;
+  height: 100vh;
+  height: 100dvh;
+  padding: calc(var(--safe-top) + 72px) calc(var(--safe-x) + 40px) calc(var(--safe-bottom) + 20px)
+    calc(var(--safe-x) + 20px);
+  scroll-snap-align: start;
+  scroll-snap-stop: always;
+  overflow: hidden;
+}
+
+/* ── visual ─────────────────────────────────────────────── */
+
+.cap-visual {
+  display: grid;
+  place-items: center;
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+}
+
+.cap-visual-emoji span {
+  font-size: clamp(5rem, 30vw, 10rem);
+  line-height: 1;
+  letter-spacing: 0.04em;
+  text-align: center;
+}
+
+.cap-visual-lab .mini-lab-stage {
+  width: min(100%, 520px);
+  min-height: min(40dvh, 320px);
+}
+
+.cap-stage-badge {
+  margin-top: 0.4rem;
+  font-size: 2.6rem;
+  line-height: 1;
+}
+
+/* ── words ──────────────────────────────────────────────── */
+
+.cap-say {
+  max-width: 22ch;
+  margin: 0;
+  font-family: var(--font-display, var(--font-baloo, system-ui)), system-ui, sans-serif;
+  font-size: clamp(1.6rem, 6.5vw, 2.4rem);
+  font-weight: 700;
+  line-height: 1.2;
+  text-align: center;
+}
+
+.cap-say-word {
+  font-size: clamp(3rem, 16vw, 5.5rem);
+  letter-spacing: 0.06em;
+}
+
+.cap-prompt {
+  margin: 0;
+  color: var(--soft-ink, #4a6b82);
+  font-size: 1.25rem;
+  font-weight: 700;
+  text-align: center;
+}
+
+/* ── tap area ───────────────────────────────────────────── */
+
+.cap-tap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+  width: 100%;
+  min-height: 200px;
+}
+
+.cap-start,
+.cap-action,
+.cap-map {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  min-height: var(--kid-touch);
+  padding: 0 1.6rem;
+  color: #fff;
+  font: inherit;
+  font-size: 1.4rem;
+  font-weight: 800;
+  text-decoration: none;
+  background: var(--topic-color);
+  border: 0;
+  border-radius: 999px;
+  box-shadow: 0 8px 0 color-mix(in srgb, var(--topic-color) 60%, #173f5f);
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+.cap-start {
+  min-width: 220px;
+  font-size: 1.8rem;
+}
+
+.cap-choices {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(96px, 1fr));
+  gap: 0.75rem;
+  width: min(100%, 460px);
+}
+
+.cap-choice {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.25rem;
+  min-width: var(--kid-tile);
+  min-height: var(--kid-tile);
+  padding: 0.5rem;
+  color: inherit;
+  font: inherit;
+  font-weight: 800;
+  background: #fff;
+  border: 3px solid rgba(23, 63, 95, 0.14);
+  border-radius: 22px;
+  box-shadow: 0 6px 0 rgba(23, 63, 95, 0.1);
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+.cap-choice:disabled {
+  cursor: default;
+}
+
+.cap-choice-emoji {
+  font-size: 2.6rem;
+  line-height: 1;
+}
+
+.cap-choice-label {
+  font-size: var(--kid-font);
+}
+
+.cap-choice.is-picked {
+  border-color: var(--topic-color);
+  background: color-mix(in srgb, var(--topic-color) 14%, #fff);
+}
+
+.cap-choice.is-answer {
+  border-color: #22a35a;
+  background: #e9f9ef;
+}
+
+.cap-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.75rem;
+}
+
+.cap-call {
+  background: var(--world-baba);
+  box-shadow: 0 8px 0 color-mix(in srgb, var(--world-baba) 60%, #173f5f);
+}
+
+.cap-done {
+  background: #22a35a;
+  box-shadow: 0 8px 0 #157a40;
+}
+
+.cap-feedback {
+  max-width: 26ch;
+  margin: 0;
+  font-size: 1.3rem;
+  font-weight: 700;
+  text-align: center;
+}
+
+.cap-feedback.is-yes {
+  color: #157a40;
+}
+
+.cap-feedback.is-look {
+  color: #9a5b00;
+}
+
+.cap-next {
+  display: grid;
+  place-items: center;
+  width: 80px;
+  height: 80px;
+  color: #fff;
+  font-size: 2rem;
+  background: var(--topic-color);
+  border: 0;
+  border-radius: 50%;
+  box-shadow: 0 8px 0 color-mix(in srgb, var(--topic-color) 60%, #173f5f);
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+.cap-listening {
+  display: grid;
+  place-items: center;
+  width: var(--kid-touch);
+  height: var(--kid-touch);
+  font-size: 2.2rem;
+}
+
+/* ── chrome: exit, replay, dot rail ─────────────────────── */
+
+.cap-exit,
+.cap-replay {
+  position: absolute;
+  top: calc(var(--safe-top) + 10px);
+  z-index: 2;
+  display: grid;
+  place-items: center;
+  width: var(--kid-tap);
+  height: var(--kid-tap);
+  padding: 0;
+  font-size: 1.6rem;
+  text-decoration: none;
+  background: #fff;
+  border: 3px solid rgba(23, 63, 95, 0.12);
+  border-radius: 50%;
+  box-shadow: 0 4px 10px rgba(23, 63, 95, 0.12);
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+.cap-exit {
+  left: calc(var(--safe-x) + 12px);
+}
+
+.cap-replay {
+  right: calc(var(--safe-x) + 12px);
+}
+
+.cap-rail {
+  position: absolute;
+  top: 50%;
+  right: calc(var(--safe-x) + 12px);
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  transform: translateY(-50%);
+  pointer-events: none;
+}
+
+.cap-rail li {
+  width: 12px;
+  height: 12px;
+  background: rgba(23, 63, 95, 0.16);
+  border-radius: 50%;
+}
+
+.cap-rail li.is-done {
+  background: color-mix(in srgb, var(--topic-color) 55%, #fff);
+}
+
+.cap-rail li.is-current {
+  background: var(--topic-color);
+  transform: scale(1.4);
+}
+
+/* ── end / tomorrow screens ─────────────────────────────── */
+
+.cap-end {
+  display: grid;
+  place-items: center;
+  padding: calc(var(--safe-top) + 20px) calc(var(--safe-x) + 20px) calc(var(--safe-bottom) + 20px);
+}
+
+.cap-end-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  max-width: 460px;
+  text-align: center;
+}
+
+.cap-end-emoji {
+  font-size: clamp(5rem, 28vw, 8rem);
+  line-height: 1;
+}
+
+.cap-end-title {
+  margin: 0;
+  font-family: var(--font-display, var(--font-baloo, system-ui)), system-ui, sans-serif;
+  font-size: clamp(2rem, 8vw, 3rem);
+}
+
+.cap-end-mission {
+  margin: 0;
+  font-size: 1.4rem;
+  font-weight: 700;
+}
+
+.cap-end-honey {
+  margin: 0;
+  color: #9a5b00;
+  font-size: 2rem;
+  font-weight: 800;
+}
+
+.cap-end-actions {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.cap-preview {
+  filter: saturate(0.6);
+  opacity: 0.85;
+}
+
+.cap-start:focus-visible,
+.cap-action:focus-visible,
+.cap-map:focus-visible,
+.cap-choice:focus-visible,
+.cap-next:focus-visible,
+.cap-exit:focus-visible,
+.cap-replay:focus-visible {
+  outline: 4px solid #0ea5e9;
+  outline-offset: 3px;
+}
+
+@media (hover: hover) {
+  .cap-choice:not(:disabled):hover,
+  .cap-next:hover,
+  .cap-start:hover {
+    transform: translateY(-2px);
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .cap-scroller {
+    scroll-behavior: smooth;
+  }
+
+  .cap-choice,
+  .cap-next,
+  .cap-start {
+    transition: transform 160ms var(--ease-pop), background-color 160ms ease;
+  }
+
+  .cap-listening span {
+    animation: capListen 1.2s ease-in-out infinite;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cap-feed *,
+  .cap-feed *::before,
+  .cap-feed *::after {
+    animation: none !important;
+    transition: none !important;
+  }
+}
+
+@keyframes capListen {
+  50% {
+    transform: scale(1.15);
+  }
+}
+
+@media (max-height: 640px) {
+  .cap-card {
+    padding-top: calc(var(--safe-top) + 64px);
+  }
+
+  .cap-visual-lab .mini-lab-stage {
+    min-height: 200px;
+  }
+
+  .cap-tap {
+    min-height: 160px;
+  }
+}

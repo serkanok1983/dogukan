@@ -18,6 +18,11 @@ export function TangramLite() {
 
   const done = placed.length >= PIECES.length;
 
+  const restart = () => {
+    setPlaced([]);
+    setPool([...PIECES]);
+  };
+
   return (
     <div className="game-panel">
       <p className="round-label">Parçaları ev şekline yerleştir</p>
@@ -41,7 +46,7 @@ export function TangramLite() {
       ) : (
         <div className="result-panel inner">
           <h2>Harika! 🏠</h2>
-          <button type="button" className="btn-primary" onClick={() => window.location.reload()}>
+          <button type="button" className="btn-primary" onClick={restart}>
             Tekrar
           </button>
         </div>

@@ -15,6 +15,12 @@ export function OrderGame({ items, label = "Küçükten büyüğe sırala" }: Pr
   const [pool, setPool] = useState(() => shuffle(items));
   const [done, setDone] = useState(false);
 
+  const restart = () => {
+    setPicked([]);
+    setPool(shuffle(items));
+    setDone(false);
+  };
+
   const tap = (item: number | string) => {
     const expected = sorted[picked.length];
     if (item === expected) {
@@ -36,7 +42,7 @@ export function OrderGame({ items, label = "Küçükten büyüğe sırala" }: Pr
       <div className="game-panel result-panel">
         <div className="result-emoji">📊</div>
         <h2>Doğru sıra!</h2>
-        <button type="button" className="btn-primary" onClick={() => window.location.reload()}>
+        <button type="button" className="btn-primary" onClick={restart}>
           Tekrar
         </button>
       </div>

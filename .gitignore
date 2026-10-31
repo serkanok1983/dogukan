@@ -32,6 +32,15 @@ yarn-error.log*
 
 # env files (can opt-in for committing if needed)
 .env*
+!.env.example
+
+# firebase (gerçek proje kimliği; örnek: .firebaserc.example)
+.firebaserc
+.firebase/
+
+# playwright
+/test-results/
+/playwright-report/
 
 # vercel
 .vercel

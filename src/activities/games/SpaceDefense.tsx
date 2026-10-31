@@ -25,7 +25,7 @@ export function SpaceDefense() {
   const running = useGameRunning();
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [score, setScore] = useState(0);
-  const [lives, setLives] = useState(3);
+  const [, setLives] = useState(3);
   const [wave, setWave] = useState(1);
   const [over, setOver] = useState(false);
   const scoreGame = useGameScore(GAME_SLUG);

@@ -2,6 +2,12 @@ import { child, get, onValue, set, type Unsubscribe } from "firebase/database";
 import type { PlayerId } from "./auth";
 import { getPlayerDisplayName, getRivalId } from "./auth";
 import { isFirebaseConfigured, leaderboardRef, leaderboardRootRef } from "./firebase";
+import { getSettings } from "./settings";
+
+/** Rakip (baba) metinleri yalnızca ebeveyn `settings.rivalVisible` açtıysa (CONTRACT §4). */
+function rivalAllowed(opt?: boolean): boolean {
+  return opt ?? getSettings().rivalVisible;
+}
 
 export type ScoreBoard = Record<string, number>;
 
@@ -126,8 +132,14 @@ function buildCelebrateMessage(
   score: number,
   isNewRecord: boolean,
   beatRival: boolean,
+  rivalVisible: boolean,
 ): { celebrate: boolean; message: string } {
   const rival = getRivalId(player);
+  if (!rivalVisible) {
+    return isNewRecord
+      ? { celebrate: true, message: `🏆 Yeni rekor: ${score}!` }
+      : { celebrate: false, message: "" };
+  }
   if (isNewRecord && beatRival) {
     return {
       celebrate: true,
@@ -153,6 +165,7 @@ export async function recordScore(
   gameSlug: string,
   player: PlayerId,
   score: number,
+  opts?: { rivalVisible?: boolean },
 ): Promise<ScoreResult> {
   const scores = await fetchGameScores(gameSlug);
   const prev = scores[player];
@@ -176,7 +189,13 @@ export async function recordScore(
     }
   }
 
-  const { celebrate, message } = buildCelebrateMessage(player, score, isNewRecord, beatRival);
+  const { celebrate, message } = buildCelebrateMessage(
+    player,
+    score,
+    isNewRecord,
+    beatRival,
+    rivalAllowed(opts?.rivalVisible),
+  );
   return { score, isNewRecord, beatRival, celebrate, message };
 }
 
@@ -185,7 +204,9 @@ export async function checkLiveMilestone(
   player: PlayerId,
   currentScore: number,
   lastCelebrated: number,
-): Promise<{ celebrate: boolean; message: string; mark: number }> {
+  opts?: { rivalVisible?: boolean },
+): Promise<LiveMilestone> {
+  const showRival = rivalAllowed(opts?.rivalVisible);
   const scores = await fetchGameScores(gameSlug);
   const prev = scores[player];
   const rival = getRivalId(player);
@@ -196,13 +217,15 @@ export async function checkLiveMilestone(
       celebrate: true,
       message: `Aferin ${getPlayerDisplayName(player)}! Eski rekorunu geçiyorsun! 🚀`,
       mark: currentScore,
+      kind: "record",
     };
   }
-  if (rivalScore > 0 && currentScore > rivalScore && lastCelebrated < rivalScore + 1) {
+  if (showRival && rivalScore > 0 && currentScore > rivalScore && lastCelebrated < rivalScore + 1) {
     return {
       celebrate: true,
       message: `Vay be ${getPlayerDisplayName(player)}! ${getPlayerDisplayName(rival)}'ı geçtin! 🏆`,
       mark: currentScore,
+      kind: "rival",
     };
   }
   const milestones = [500, 1000, 2500, 5000, 10000];
@@ -212,11 +235,20 @@ export async function checkLiveMilestone(
         celebrate: true,
         message: `Aferin ${getPlayerDisplayName(player)}! ${m} puan! ⭐`,
         mark: m,
+        kind: "mark",
       };
     }
   }
-  return { celebrate: false, message: "", mark: lastCelebrated };
+  return { celebrate: false, message: "", mark: lastCelebrated, kind: null };
 }
+
+export type LiveMilestone = {
+  celebrate: boolean;
+  message: string;
+  mark: number;
+  /** S5 (ek): kutlamanın türü; çağıran kendi metnini seçebilsin diye. */
+  kind: "record" | "rival" | "mark" | null;
+};
 
 export function getAllLeaderboards(): Record<PlayerId, ScoreBoard> {
   return {

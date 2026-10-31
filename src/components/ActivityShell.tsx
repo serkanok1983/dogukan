@@ -1,13 +1,22 @@
 "use client";
 
-import Link from "next/link";
+import "./game/game-frame.css";
+import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { BubbleBg } from "./BubbleBg";
-import { IntroModal } from "./IntroModal";
-import { ActivityKnowledgePanel } from "./ActivityKnowledgePanel";
+import { GameFrame } from "./game/GameFrame";
+import { StartCard } from "./game/StartCard";
 import { findActivity } from "@/lib/menu";
-import { GameSessionProvider } from "@/lib/gameSession";
+import { getActivityInfo } from "@/lib/worlds";
+import { GameSessionProvider, useRestartRegistry } from "@/lib/gameSession";
 import { CelebrationProvider } from "@/components/CelebrationProvider";
+import { RewardSheet } from "@/components/progress/RewardSheet";
+import { HoneyGate } from "@/components/progress/HoneyGate";
+import { NoticeToaster } from "@/components/progress/NoticeToaster";
+import { useLastRunResult } from "@/components/progress/useRunResult";
+import { useWellbeing } from "@/hooks/useWellbeing";
+import { VOICE } from "@/content/voice";
+import { sounds } from "@/lib/sounds";
+import { unlockAudio } from "@/lib/speech";
 import type { ActivityLearning } from "@/lib/activityLearning.types";
 
 type Props = {
@@ -17,100 +26,103 @@ type Props = {
   learning: ActivityLearning;
 };
 
-const GUIDE_PREFERENCE_VERSION = "v2";
-
-function guidePreferenceKey(slug: string) {
-  return `dogukan-guide:${GUIDE_PREFERENCE_VERSION}:${slug}`;
-}
-
-function shouldShowGuide(slug: string): boolean {
-  try {
-    const currentKey = guidePreferenceKey(slug);
-    if (localStorage.getItem(currentKey) === "1") return false;
-
-    // Önceki sürümdeki tercihi kaybetmeden yeni, sürümlü anahtara taşı.
-    const legacyKey = `dogukan-guide-${slug}`;
-    if (localStorage.getItem(legacyKey) === "1") {
-      localStorage.setItem(currentKey, "1");
-      localStorage.removeItem(legacyKey);
-      return false;
-    }
-  } catch {
-    // Depolama kapalıysa yardım kartını göstermek güvenli ve anlaşılır varsayımdır.
-  }
-
-  return true;
-}
-
-function rememberGuidePreference(slug: string) {
-  try {
-    localStorage.setItem(guidePreferenceKey(slug), "1");
-  } catch {
-    // Gizli gezinme veya kapalı depolama, etkinliğin kullanılmasını engellememeli.
-  }
-}
-
+/**
+ * Etkinlik kabuğu (CONTRACT §10.3, MASTER_PLAN §2.5). Sahibi S4.
+ *
+ * StartCard → GameFrame (⏸ üst çubuk, duraklatma, iki dokunuşla çıkış) →
+ * amiral oyunlarda RewardSheet. Bilgi paneli ve 💡/ℹ️ çocuğa gösterilmez
+ * (veriler /bilgi'de).
+ */
 export function ActivityShell({ slug, title, children, learning }: Props) {
-  const [showHelp, setShowHelp] = useState<boolean | null>(null);
+  const router = useRouter();
+  const info = getActivityInfo(slug);
   const meta = findActivity(slug);
+  const wellbeing = useWellbeing();
   const guide = learning.guide;
+  const emoji = meta?.emoji ?? "🎮";
+  const isArcade = info?.kind === "arcade";
+
+  // Egzersiz oturumlarında StartCard atlanır.
+  const [started, setStarted] = useState(info?.exercise === true);
+
+  const registry = useRestartRegistry();
+  const { result, dismiss } = useLastRunResult(slug);
+  const sheetOpen = registry.has && result !== null;
 
   useEffect(() => {
-    // İstemci depolaması SSR sırasında okunamaz; ilk tarayıcı eşitlemesi bilinçli olarak burada yapılır.
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    setShowHelp(shouldShowGuide(slug));
-  }, [slug]);
+    sounds.setMasterGain(wellbeing.evening ? 0.5 : 1);
+  }, [wellbeing.evening]);
 
-  const dismissHelp = (neverAgain: boolean) => {
-    if (neverAgain) rememberGuidePreference(slug);
-    setShowHelp(false);
+  const goMap = () => router.push("/");
+
+  const start = () => {
+    unlockAudio();
+    sounds.unlock();
+    setStarted(true);
   };
 
-  return (
-    <div className="activity-page">
-      <BubbleBg />
-      <div className="sky-gradient" aria-hidden />
-      <header className="activity-topbar">
-        <Link href="/" className="back-btn">
-          ← Ana sayfa
-        </Link>
-        <span className="activity-title">{title}</span>
-        <div className="activity-topbar-actions">
-          <a
-            href="#oyunun-fikri"
-            className="knowledge-jump-btn"
-            title="Oyunun keşif kartı"
-            aria-label="Bu oyunda keşfedilen fikre git"
-          >
-            💡
-          </a>
-          <button
-            type="button"
-            className="help-btn"
-            onClick={() => setShowHelp(true)}
-            title="Nasıl oynanır?"
-            aria-label="Nasıl oynanır bilgisini aç"
-            aria-expanded={showHelp === true}
-          >
-            ℹ️
-          </button>
-        </div>
-      </header>
-      <main className="activity-main">
-        <CelebrationProvider>
-          <GameSessionProvider active={showHelp === false}>{children}</GameSessionProvider>
-        </CelebrationProvider>
-      </main>
-      <ActivityKnowledgePanel title={title} learning={learning} />
-      {showHelp && (
-        <IntroModal
+  const restart = () => {
+    sounds.unlock();
+    dismiss();
+    registry.restart();
+  };
+
+  let gate: React.ReactNode = null;
+  if (!started) {
+    if (isArcade && wellbeing.evening) {
+      gate = (
+        <StartCard
+          emoji="😴"
+          line={VOICE.eveningTile}
           title={title}
-          emoji={meta?.emoji ?? "🎮"}
-          guide={guide}
-          onStart={() => dismissHelp(false)}
-          onNever={() => dismissHelp(true)}
+          variant="sleep"
+          onMap={goMap}
         />
+      );
+    } else if (isArcade && wellbeing.jarEmpty) {
+      gate = (
+        <StartCard emoji="🍯" line={VOICE.jarEmpty} title={title} onMap={goMap}>
+          <HoneyGate onFilled={start} onMap={goMap} />
+        </StartCard>
+      );
+    } else {
+      gate = (
+        <StartCard
+          emoji={emoji}
+          line={guide.short ?? guide.intro}
+          title={title}
+          onStart={start}
+          onMap={goMap}
+        />
+      );
+    }
+  }
+
+  return (
+    <div className={`activity-page gf-page${sheetOpen ? " gf-sheet-open" : ""}`}>
+      <div className="sky-gradient" aria-hidden />
+      <CelebrationProvider>
+        <GameSessionProvider
+          active={started && !wellbeing.blocking && !sheetOpen}
+          registry={registry}
+        >
+          <GameFrame
+            slug={slug}
+            kind={info?.kind ?? "learning"}
+            title={title}
+            emoji={emoji}
+            started={started}
+            onExit={goMap}
+          >
+            {children}
+          </GameFrame>
+        </GameSessionProvider>
+      </CelebrationProvider>
+      {sheetOpen && result && (
+        <RewardSheet slug={slug} result={result} onRestart={restart} onMap={goMap} />
       )}
+      {gate}
+      <NoticeToaster />
     </div>
   );
 }

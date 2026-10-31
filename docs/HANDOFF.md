@@ -4,7 +4,7 @@
 > Claude Code (cloud) üzerinde çalıştı; iş başka bir IDE'de, API kredisi ile
 > devam edecek. Buradaki her şey repodadır; dış bir dosyaya bağımlılık yoktur.
 
-Son güncelleme: 2026-10-31 (çekirdek paket C0 tamamlandı) · Dal: `claude/zealous-bell-8149v6`
+Son güncelleme: 2026-10-31 (Faz 1 paketleri S1–S9 birleştirildi) · Dal: `claude/zealous-bell-8149v6`
 
 > **Güncel durum:** Adım B (sentez) tamamlandı. Sentezde HANDOFF §4'teki
 > uzlaşmalara eklenen/değiştirilen kararlar: kapsül rotası `/kesfet/[slug]/kapsul/`
@@ -19,7 +19,14 @@ Son güncelleme: 2026-10-31 (çekirdek paket C0 tamamlandı) · Dal: `claude/zea
 > haptics, rng, mastery kuralları gerçek; diğer paketlerin arayüzleri imzası
 > sabit saplamalar (`// STUB (C0) — owner: Sx`). Vitest kuruldu (55 test).
 > 4 yeni slug sayfası çalışıyor (saplama kartları). Taslaktan sapmalar:
-> `CONTRACT.md` »C0 implementation notes«. **Sıradaki: Adım D (paralel paketler).**
+> `CONTRACT.md` »C0 implementation notes«.
+>
+> **Adım D tamamlandı (S1–S9 birleştirildi):** `npm run check` yeşil (lint 0 uyarı,
+> tsc, 624 test, build 106 sayfa, verify-out: dış bağlantı yok, gzip bütçeleri içinde);
+> `npm run e2e` 6/6 (Chrome, 390×844: duman + çocuğun ilk açılış akışı, sıfır konsol
+> hatası). Entegrasyon notları: `CONTRACT.md` »Integration notes«. **Sıradaki: Adım E'nin
+> kalanı — gerçek telefonda deneme (iOS/Android TTS, PWA kurulumu), bağımsız
+> inceleme, sonra `npm run deploy`.**
 
 ---
 
@@ -70,7 +77,7 @@ Ortam notları: Node 22, `npm ci` çalışıyor, npm registry erişilebilir (vit
 | Tasarım (4 bakış açısı)      | ✅     | `docs/plan/proposals/*.md` (game-designer, pedagogy, mobile-production, parent-wellbeing)                                                                           |
 | Hakem (3 puanlayıcı)         | ⚠️ 2/3 | `docs/plan/judgements/judge-1.md` (çocuk/oyun tasarımcısı gözü), `judge-2.md` (eğitimci/baba gözü). **Hakem 3 (staff engineer / uygulanabilirlik gözü) çalışmadı.** |
 | Sentez (ana plan + sözleşme) | ✅     | `docs/plan/MASTER_PLAN.md` (Türkçe; tüm çatışma kararları §7) ve `docs/plan/CONTRACT.md` (İngilizce; arayüzler, dosya sahipliği §12, paket kabul ölçütleri §13)     |
-| Uygulama                     | ⏳     | C0 (çekirdek) ✅ — **sıradaki iş Adım D: S1–S9 paralel paketler**                                                                                                   |
+| Uygulama                     | ✅     | C0 + S1–S9 birleşti; kapı yeşil — **sıradaki: gerçek cihaz denemesi, inceleme, elle yayın**                                                                         |
 
 ### Hakemlerin puanları (10 üzerinden; sıra: engagement / learning / feasibility / wellbeing)
 
@@ -130,7 +137,7 @@ Girdi: `docs/plan/maps/*`, `docs/plan/proposals/*`, `docs/plan/judgements/*` —
 
 Kapsam ve kabul ölçütleri: `CONTRACT.md §11–§13 (C0)`. Gerçek uygulamalar: store, olay veriyolu, reducer'lar, zaman, settings, skills, worlds, speech, haptics, rng, mastery kuralları; diğer her şey için imzası sabit saplamalar (§11) ve mevcut dosyalara küçük ekler (shim). Vitest altyapısı da C0'da kurulur (reducer/merge testleri için). Bitmeden paralel paketler başlamaz.
 
-### Adım D — Paralel paketler (9 ajan, **ayrık dosya sahipliği**) ← SIRADAKİ
+### Adım D — Paralel paketler (9 ajan, **ayrık dosya sahipliği**) ✅ TAMAMLANDI
 
 Hakemlerin birleştirdiği akış tablosu (judge-1 §4.14 ve judge-2 §4.17 — sentez tek tabloya indirecek):
 Kesinleşmiş liste ve dosya sahipliği `CONTRACT.md §12`'de: S1 Kabuk/giriş · S2 Egzersiz motoru + konuşma · S3 İçerik ve katalog sahibi · S4 Oyun altyapısı/his + 14 lint hatası · S5 İlerleme · S6 İyi oluş + ebeveyn paneli · S7 Merak Kapsülleri · S8 Üretim/entegrasyon · S9 Blok Dünyası.
@@ -139,7 +146,8 @@ Entegrasyon sırası: S8'in `<Activity/>` + `npm run check` betiği (CI yok) ve 
 
 ### Adım E — Doğrulama
 
-`npm run lint` (0 hata, hedef 0 uyarı), `npx tsc --noEmit`, `npm test`, `npm run build`, `verify-out`; 69 etkinliğin tamamı çalışır durumda; mobil viewport'ta (390×844) Playwright smoke. Ardından adversarial review (her bulgu için "çürüt" denemesi), düzeltme, commit, push.
+✅ `npm run check` (lint 0 uyarı → tsc → vitest → build → sw-manifest → verify-out) ve `npm run e2e` yeşil; 73 etkinlik sayfası üretiliyor.
+⏳ Kalan: gerçek telefonda deneme (iOS Safari / Android Chrome TTS, PWA kurulumu, çevrimdışı), bağımsız inceleme (her bulgu için "çürüt" denemesi), düzeltme, `npm run deploy` (bkz. `docs/RELEASE.md`).
 
 ### Kesin kurallar
 

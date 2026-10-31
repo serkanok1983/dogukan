@@ -1,0 +1,62 @@
+{
+  "rules": {
+    ".read": false,
+    ".write": false,
+
+    "leaderboard": {
+      ".read": "auth != null",
+      "$slug": {
+        "$player": {
+          ".write": "auth != null && $slug.matches(/^[a-z0-9-]{1,40}$/) && ($player === 'dogukan' || $player === 'serkan')",
+          ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 100000000"
+        }
+      }
+    },
+
+    "activity": {
+      "dogukan": {
+        ".read": "auth != null",
+        "logins": {
+          "$id": {
+            ".write": "auth != null && !data.exists()",
+            ".validate": "newData.hasChildren(['at', 'iso']) && newData.child('at').isNumber() && newData.child('iso').isString() && newData.child('iso').val().length <= 40"
+          }
+        },
+        "visits": {
+          "$id": {
+            ".write": "auth != null && !data.exists()",
+            ".validate": "newData.hasChildren(['at', 'iso', 'slug', 'title']) && newData.child('at').isNumber() && newData.child('iso').isString() && newData.child('iso').val().length <= 40 && newData.child('slug').isString() && newData.child('slug').val().matches(/^[a-z0-9-]{1,40}$/) && newData.child('title').isString() && newData.child('title').val().length <= 80"
+          }
+        }
+      }
+    },
+
+    "users": {
+      "$player": {
+        ".read": "auth != null && ($player === 'dogukan' || $player === 'serkan')",
+        "days": {
+          "$day": {
+            ".write": "auth != null && ($player === 'dogukan' || $player === 'serkan') && $day.matches(/^[0-9]{4}-[0-9]{2}-[0-9]{2}$/)",
+            ".validate": "newData.hasChildren(['totalSec']) && newData.child('totalSec').isNumber() && newData.child('totalSec').val() >= 0 && newData.child('totalSec').val() <= 86400 && !newData.hasChild('plays')"
+          }
+        },
+        "gallery": {
+          "$index": {
+            ".write": "auth != null && ($player === 'dogukan' || $player === 'serkan') && $index.matches(/^[0-4]$/)",
+            ".validate": "newData.hasChildren(['name', 'thumb', 'sharedAt']) && newData.child('name').isString() && newData.child('name').val().length <= 40 && newData.child('thumb').isString() && newData.child('thumb').val().beginsWith('data:image/') && newData.child('thumb').val().length <= 28000 && newData.child('sharedAt').isNumber()"
+          }
+        }
+      }
+    },
+
+    "errors": {
+      "$player": {
+        ".read": "auth != null && ($player === 'dogukan' || $player === 'serkan')",
+        "$id": {
+          ".write": "auth != null && ($player === 'dogukan' || $player === 'serkan') && !data.exists()",
+          ".validate": "newData.hasChildren(['at', 'message']) && newData.child('at').isNumber() && newData.child('message').isString() && newData.child('message').val().length <= 300 && (!newData.hasChild('slug') || (newData.child('slug').isString() && newData.child('slug').val().length <= 40)) && (!newData.hasChild('ua') || (newData.child('ua').isString() && newData.child('ua').val().length <= 160)) && (!newData.hasChild('buildId') || (newData.child('buildId').isString() && newData.child('buildId').val().length <= 40))"
+        }
+      }
+    }
+  }
+}

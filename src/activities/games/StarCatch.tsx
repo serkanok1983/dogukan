@@ -6,7 +6,7 @@ import { createGameJuice } from "@/lib/gameJuice";
 import { useGameActive, useGameBoot } from "@/lib/gameSession";
 import { useGameRunning } from "@/hooks/useGameRunning";
 import { sounds } from "@/lib/sounds";
-import { randInt, pickRandom } from "@/lib/utils";
+import { pickRandom } from "@/lib/utils";
 import { useGameScore } from "@/hooks/useGameScore";
 import { ScoreHud } from "@/components/ScoreHud";
 
@@ -35,7 +35,7 @@ export function StarCatch() {
   const running = useGameRunning();
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [score, setScore] = useState(0);
-  const [timeLeft, setTimeLeft] = useState(DURATION);
+  const [, setTimeLeft] = useState(DURATION);
   const [done, setDone] = useState(false);
   const [combo, setCombo] = useState(0);
   const scoreGame = useGameScore(GAME_SLUG);

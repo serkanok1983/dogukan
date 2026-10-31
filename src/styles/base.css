@@ -1,0 +1,83 @@
+/* Temel: renk değişkenleri, sıfırlama, gövde, kabuk. globals.css'ten bölündü (S8). Sınıf adları değiştirilmez (CONTRACT §14). */
+
+:root {
+  --bg-sky: #4facfe;
+  --bg-sky-2: #00f2fe;
+  --bg-deep: #1a3a5c;
+  --bg-card: rgba(255, 255, 255, 0.92);
+  --border: rgba(255, 255, 255, 0.35);
+  --text: #1e293b;
+  --text-muted: #64748b;
+  --accent: #ff6b9d;
+  --accent-2: #4ecdc4;
+  --accent-3: #ffd93d;
+  --accent-4: #a78bfa;
+  --danger: #ef4444;
+  --success: #22c55e;
+  --radius: 18px;
+  --radius-sm: 12px;
+  --shadow: 0 16px 48px rgba(30, 64, 120, 0.2);
+  --font: var(--font-nunito), system-ui, sans-serif;
+  --font-display: var(--font-baloo), system-ui, sans-serif;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  min-height: 100%;
+  min-height: 100dvh;
+  font-family: var(--font);
+  color: var(--text);
+}
+
+body {
+  background: linear-gradient(165deg, #74ebd5 0%, #9face6 40%, #fecfef 100%);
+  background-attachment: fixed;
+}
+
+.bubble-canvas {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 0;
+  pointer-events: none;
+}
+
+.sky-gradient {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(circle at 10% 20%, rgba(255, 255, 255, 0.35), transparent 40%),
+    radial-gradient(circle at 90% 10%, rgba(255, 217, 61, 0.25), transparent 35%);
+}
+
+.shell {
+  position: relative;
+  z-index: 1;
+  min-height: 100dvh;
+  max-height: 100dvh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: max(16px, env(safe-area-inset-top)) 16px max(16px, env(safe-area-inset-bottom));
+  box-sizing: border-box;
+}
+
+.shell-menu {
+  align-items: stretch;
+  justify-content: flex-start;
+  overflow: hidden;
+}
+
+.hidden {
+  display: none !important;
+}

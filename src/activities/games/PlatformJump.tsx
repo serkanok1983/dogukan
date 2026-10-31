@@ -40,7 +40,7 @@ export function PlatformJump() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [score, setScore] = useState(0);
   const [over, setOver] = useState(false);
-  const [combo, setCombo] = useState(0);
+  const [, setCombo] = useState(0);
   const scoreGame = useGameScore(GAME_SLUG);
   const submitted = useRef(false);
 

@@ -1,8 +1,8 @@
+# GitHub Actions dakikaları dolu: yayın elle yapılır (`npm run deploy`, docs/RELEASE.md).
+# Bu iş akışı yalnızca elle tetiklenir; main'e push artık çalışma başlatmaz (MASTER_PLAN §4.8, K30).
 name: Deploy to GitHub Pages
 
 on:
-  push:
-    branches: [main, master]
   workflow_dispatch:
 
 permissions:

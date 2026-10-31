@@ -27,7 +27,7 @@ describe("store ve olay veriyolu", () => {
     const off = onEvent("run_end", cb);
     const progressEvents = vi.fn();
     window.addEventListener("dogukan:progress", progressEvents);
-    trackEvent({ type: "run_end", slug: "super-ayi", score: 60, durationMs: 1000 });
+    trackEvent({ type: "run_end", slug: "super-ayi", score: 60, durationMs: 1000, level: 4 });
     expect(cb).toHaveBeenCalledTimes(1);
     expect(progressEvents).toHaveBeenCalledTimes(1);
     expect(getProgress().activities["super-ayi"]?.stars).toBe(2);

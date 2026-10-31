@@ -1,0 +1,483 @@
+/* Ebeveyn paneli /bilgi (S6). Önek: parent-. Yetişkin yüzeyi: yoğun ama okunur. */
+
+.parent-page {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  width: min(100%, 760px);
+  margin: 0 auto;
+  padding: calc(16px + var(--safe-top, 0px)) calc(14px + var(--safe-x, 0px))
+    calc(32px + var(--safe-bottom, 0px));
+  color: var(--ink, #173f5f);
+  font-family: var(--font-nunito, system-ui), system-ui, sans-serif;
+  font-size: 16px;
+  line-height: 1.45;
+}
+
+.parent-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 4px 12px;
+}
+
+.parent-h1 {
+  margin: 0;
+  font-family: var(--font-baloo, system-ui), system-ui, sans-serif;
+  font-size: 28px;
+}
+
+.parent-banner {
+  display: block;
+  padding: 12px 16px;
+  color: #7a4b00;
+  font-weight: 700;
+  text-decoration: none;
+  background: #fff4d6;
+  border: 2px solid #f6b93b;
+  border-radius: 14px;
+}
+
+.parent-card {
+  padding: 16px 18px;
+  background: #fff;
+  border-radius: 20px;
+  box-shadow: 0 6px 18px rgba(23, 63, 95, 0.08);
+}
+
+.parent-card-title {
+  margin: 0 0 10px;
+  font-family: var(--font-baloo, system-ui), system-ui, sans-serif;
+  font-size: 22px;
+}
+
+.parent-sub {
+  margin: 14px 0 6px;
+  font-size: 17px;
+}
+
+.parent-lead {
+  margin: 0 0 6px;
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.parent-muted {
+  color: var(--soft-ink, #4a6b82);
+  font-weight: 400;
+}
+
+.parent-note {
+  margin: 8px 0 0;
+  font-size: 14px;
+  color: var(--soft-ink, #4a6b82);
+}
+
+.parent-facts,
+.parent-list,
+.parent-plays,
+.parent-together,
+.parent-errors,
+.parent-all,
+.parent-gallery {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.parent-facts li {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  padding: 3px 0;
+}
+
+/* --- Bugün ---------------------------------------------------------------- */
+
+.parent-today {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 16px;
+}
+
+.parent-today-text {
+  flex: 1 1 260px;
+}
+
+.parent-ring {
+  width: 120px;
+  height: 120px;
+  flex: 0 0 auto;
+}
+
+.parent-ring-track,
+.parent-ring-fill {
+  fill: none;
+  stroke-width: 12;
+}
+
+.parent-ring-track {
+  stroke: #e8f1f6;
+}
+
+.parent-ring-fill {
+  stroke: #22a06b;
+  stroke-linecap: round;
+  transform: rotate(-90deg);
+  transform-origin: 60px 60px;
+}
+
+.parent-ring-fill.is-full {
+  stroke: #e08a00;
+}
+
+.parent-ring-num {
+  font-size: 28px;
+  font-weight: 700;
+  fill: var(--ink, #173f5f);
+}
+
+.parent-ring-sub {
+  font-size: 12px;
+  fill: var(--soft-ink, #4a6b82);
+}
+
+/* --- Bu hafta --------------------------------------------------------------- */
+
+.parent-verdict {
+  margin: 0 0 10px;
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.parent-verdict.is-ok {
+  color: #1b8a5b;
+}
+
+.parent-bars {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 8px;
+  align-items: end;
+}
+
+.parent-bar-col {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+
+.parent-bar {
+  display: flex;
+  flex-direction: column-reverse;
+  width: 100%;
+  max-width: 38px;
+  height: 120px;
+  overflow: hidden;
+  background: #f1f6f9;
+  border-radius: 8px;
+}
+
+.parent-bar-seg {
+  display: block;
+  width: 100%;
+}
+
+.is-learning {
+  background: #22a06b;
+}
+
+.is-arcade {
+  background: #ff6b9d;
+}
+
+.is-creative {
+  background: #f59e0b;
+}
+
+.parent-bar-num {
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.parent-bar-label {
+  font-size: 13px;
+  color: var(--soft-ink, #4a6b82);
+}
+
+.parent-legend {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  margin: 8px 0;
+  font-size: 14px;
+}
+
+.parent-dot {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  border-radius: 3px;
+}
+
+/* --- Beceriler / birlikte / oynananlar ----------------------------------------- */
+
+.parent-skill {
+  display: flex;
+  flex-direction: column;
+  padding: 6px 0;
+  border-bottom: 1px solid #eef3f6;
+}
+
+.parent-skill-name {
+  font-weight: 700;
+}
+
+.parent-skill-extra {
+  font-weight: 400;
+  color: var(--soft-ink, #4a6b82);
+}
+
+.parent-skill-meb {
+  font-size: 14px;
+  color: var(--soft-ink, #4a6b82);
+}
+
+.parent-together li {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 8px 0;
+  border-bottom: 1px solid #eef3f6;
+}
+
+.parent-day + .parent-day {
+  margin-top: 6px;
+  border-top: 1px solid #eef3f6;
+}
+
+.parent-plays li {
+  padding: 2px 0;
+}
+
+/* --- Galeri ------------------------------------------------------------------- */
+
+.parent-gallery {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+  gap: 10px;
+}
+
+.parent-build {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  align-items: center;
+}
+
+.parent-build-thumb {
+  display: block;
+  width: 100%;
+  aspect-ratio: 2 / 3;
+  background: #f1f6f9 center / contain no-repeat;
+  border-radius: 10px;
+  image-rendering: pixelated;
+}
+
+.parent-build-name {
+  font-size: 14px;
+  font-weight: 700;
+}
+
+/* --- Ayarlar ------------------------------------------------------------------- */
+
+.parent-field {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px 12px;
+  padding: 8px 0;
+  border-bottom: 1px solid #eef3f6;
+}
+
+.parent-field-label {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 180px;
+}
+
+.parent-field-hint {
+  font-size: 13px;
+  color: var(--soft-ink, #4a6b82);
+}
+
+.parent-field-control {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.parent-step {
+  width: 48px;
+  height: 48px;
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--ink, #173f5f);
+  background: #eef6fb;
+  border: 0;
+  border-radius: 12px;
+  cursor: pointer;
+}
+
+.parent-step:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+.parent-step-value {
+  min-width: 72px;
+  font-weight: 700;
+  text-align: center;
+}
+
+.parent-input,
+.parent-select {
+  min-height: 44px;
+  padding: 0 10px;
+  font: inherit;
+  color: var(--ink, #173f5f);
+  background: #fff;
+  border: 2px solid #d7e4ec;
+  border-radius: 10px;
+}
+
+.parent-switch {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  cursor: pointer;
+}
+
+.parent-switch input,
+.parent-check input {
+  width: 24px;
+  height: 24px;
+  accent-color: #22a06b;
+}
+
+.parent-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.parent-btn {
+  min-height: 48px;
+  padding: 0 16px;
+  font: inherit;
+  font-weight: 700;
+  color: var(--ink, #173f5f);
+  background: #eef6fb;
+  border: 2px solid #d7e4ec;
+  border-radius: 14px;
+  cursor: pointer;
+}
+
+.parent-btn:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.parent-btn-primary {
+  margin-top: 10px;
+  color: #fff;
+  background: #22a06b;
+  border-color: #1b8a5b;
+}
+
+.parent-btn-danger {
+  color: #9b1c1c;
+  background: #fdecec;
+  border-color: #f5c2c2;
+}
+
+.parent-btn-small {
+  min-height: 36px;
+  padding: 0 10px;
+  font-size: 14px;
+}
+
+.parent-btn:focus-visible,
+.parent-step:focus-visible,
+.parent-all-link:focus-visible,
+.parent-banner:focus-visible {
+  outline: 3px solid #0ea5e9;
+  outline-offset: 2px;
+}
+
+.parent-install {
+  margin-top: 12px;
+  padding: 10px 12px;
+  background: #f6fafc;
+  border-radius: 12px;
+}
+
+.parent-checklist {
+  margin-top: 12px;
+}
+
+.parent-check {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 0;
+}
+
+.parent-check label {
+  display: flex;
+  flex: 1 1 260px;
+  align-items: flex-start;
+  gap: 10px;
+  cursor: pointer;
+}
+
+/* --- Sağlık / tüm etkinlikler ----------------------------------------------------- */
+
+.parent-errors li {
+  padding: 6px 0;
+  border-bottom: 1px solid #eef3f6;
+  word-break: break-word;
+}
+
+.parent-errors code {
+  font-size: 13px;
+}
+
+.parent-all {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 4px 12px;
+}
+
+.parent-all-link {
+  display: block;
+  padding: 8px 4px;
+  color: inherit;
+  text-decoration: none;
+  border-radius: 8px;
+}
+
+@media (hover: hover) {
+  .parent-all-link:hover {
+    background: #f1f6f9;
+  }
+}

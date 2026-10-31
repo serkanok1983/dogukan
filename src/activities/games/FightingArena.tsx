@@ -1,7 +1,7 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
-import { drawParticles, spawnBurst, updateParticles, type Particle } from "@/lib/particles";
+import { useCallback, useEffect, useEffectEvent, useRef, useState } from "react";
+import { spawnBurst, updateParticles, type Particle } from "@/lib/particles";
 import { createGameJuice } from "@/lib/gameJuice";
 import { useGameActive, useGameBoot } from "@/lib/gameSession";
 import { useGameRunning } from "@/hooks/useGameRunning";
@@ -35,6 +35,7 @@ import {
   type Fighter,
   type Projectile,
 } from "./fighting/engine";
+import { canvasFont } from "@/lib/canvasFont";
 
 const GAME_SLUG = "dovus-arenasi";
 const KEY_LP = "KeyZ";
@@ -61,6 +62,7 @@ export function FightingArena() {
   const [round, setRound] = useState(1);
   const [announce, setAnnounce] = useState("Karakter seç");
   const [over, setOver] = useState(false);
+  const [endText, setEndText] = useState("");
   const [p1Char, setP1Char] = useState<CharacterId>("dogukan");
   const [charLocked, setCharLocked] = useState(false);
   const scoreGame = useGameScore(GAME_SLUG);
@@ -520,6 +522,7 @@ export function FightingArena() {
         overRef.current = true;
         setOver(true);
         announceRef.current = "KAZANDIN!";
+        setEndText(announceRef.current);
       } else {
         roundRef.current++;
         setRound(roundRef.current);
@@ -529,9 +532,17 @@ export function FightingArena() {
       overRef.current = true;
       setOver(true);
       announceRef.current = "KAYBETTİN";
+      setEndText(announceRef.current);
     }
     koCinematic.current.active = false;
   };
+
+  // Döngü en güncel kapanışları effect event üzerinden çağırır; efekt bunlar yüzünden yeniden kurulmaz.
+  const finishRoundEvent = useEffectEvent(finishRound);
+  const updateFighterEvent = useEffectEvent(updateFighter);
+  const cpuAIEvent = useEffectEvent(cpuAI);
+  const applyHitEvent = useEffectEvent(applyHit);
+  const triggerKoCinematicEvent = useEffectEvent(triggerKoCinematic);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -587,16 +598,16 @@ export function FightingArena() {
             koCinematic.current.t++;
             koCinematic.current.zoom = 1 + koCinematic.current.t * 0.004;
             if (koCinematic.current.t >= koCinematic.current.maxT) {
-              finishRound();
+              finishRoundEvent();
             }
           } else if (announceTRef.current > 0) {
             announceTRef.current--;
             if (announceTRef.current === 0) roundActiveRef.current = true;
           } else {
             timerRef.current = Math.max(0, timerRef.current - 1 / FPS);
-            updateFighter(p1.current, cpu.current, false);
-            cpuAI(cpu.current, p1.current);
-            updateFighter(cpu.current, p1.current, true);
+            updateFighterEvent(p1.current, cpu.current, false);
+            cpuAIEvent(cpu.current, p1.current);
+            updateFighterEvent(cpu.current, p1.current, true);
 
             for (const pr of projectiles.current) {
               pr.x += pr.vx;
@@ -605,7 +616,7 @@ export function FightingArena() {
               if (pr.trail.length > 8) pr.trail.shift();
               const target = pr.owner === "p1" ? cpu.current : p1.current;
               if (overlap({ x: pr.x, y: pr.y, w: pr.w, h: pr.h }, hurtbox(target))) {
-                applyHit(
+                applyHitEvent(
                   "fireball",
                   pr.owner === "p1" ? p1.current : cpu.current,
                   target,
@@ -621,14 +632,14 @@ export function FightingArena() {
             if (comboShow.current > 0) comboShow.current--;
 
             if (cpu.current.state === "ko" && !koCinematic.current.active) {
-              triggerKoCinematic(cpu.current, p1.current);
+              triggerKoCinematicEvent(cpu.current, p1.current);
             } else if (p1.current.state === "ko" && !koCinematic.current.active) {
-              triggerKoCinematic(p1.current, cpu.current);
+              triggerKoCinematicEvent(p1.current, cpu.current);
             } else if (p1.current.state === "ko" || timerRef.current <= 0) {
               if (timerRef.current <= 0 && p1.current.state !== "ko") {
                 cpu.current.state = "win";
                 p1.current.state = "ko";
-                triggerKoCinematic(p1.current, cpu.current);
+                triggerKoCinematicEvent(p1.current, cpu.current);
               }
             }
           }
@@ -931,7 +942,7 @@ export function FightingArena() {
         ctx.save();
         ctx.globalAlpha = Math.min(1, ft.life / 40);
         ctx.fillStyle = ft.color;
-        ctx.font = `bold ${18 * ft.scale}px var(--font-nunito), sans-serif`;
+        ctx.font = canvasFont(`bold ${18 * ft.scale}px var(--font-nunito), sans-serif`);
         ctx.textAlign = "center";
         ctx.strokeStyle = "rgba(0,0,0,0.5)";
         ctx.lineWidth = 3;
@@ -942,7 +953,7 @@ export function FightingArena() {
 
       if (comboShow.current > 0 && comboDisplay.current >= 2) {
         ctx.fillStyle = "#f472b6";
-        ctx.font = "bold 16px var(--font-nunito), sans-serif";
+        ctx.font = canvasFont("bold 16px var(--font-nunito), sans-serif");
         ctx.textAlign = "center";
         ctx.fillText(`${comboDisplay.current}x COMBO`, STAGE_W / 2, 72);
       }
@@ -957,7 +968,7 @@ export function FightingArena() {
         if (align === "right") ctx.fillRect(x + barW - w, 14, w, 14);
         else ctx.fillRect(x, 14, w, 14);
         ctx.fillStyle = "#fff";
-        ctx.font = "bold 11px var(--font-nunito), sans-serif";
+        ctx.font = canvasFont("bold 11px var(--font-nunito), sans-serif");
         ctx.textAlign = align;
         ctx.fillText(`${f.emoji} ${f.name}`, x + (align === "left" ? 0 : barW), 10);
       };
@@ -973,7 +984,7 @@ export function FightingArena() {
       }
 
       ctx.fillStyle = "#fde047";
-      ctx.font = "bold 20px var(--font-nunito), sans-serif";
+      ctx.font = canvasFont("bold 20px var(--font-nunito), sans-serif");
       ctx.textAlign = "center";
       ctx.fillText(String(Math.ceil(timerRef.current)), STAGE_W / 2, 28);
 
@@ -990,7 +1001,7 @@ export function FightingArena() {
         ctx.fillStyle = "#fde047";
         ctx.strokeStyle = "rgba(0,0,0,0.45)";
         ctx.lineWidth = 4;
-        ctx.font = `bold ${24 + Math.round((1 - Math.min(1, intro * 2)) * 10)}px var(--font-nunito), sans-serif`;
+        ctx.font = canvasFont(`bold ${24 + Math.round((1 - Math.min(1, intro * 2)) * 10)}px var(--font-nunito), sans-serif`);
         ctx.strokeText(announceRef.current, 0, 0);
         ctx.fillText(announceRef.current, 0, 0);
         ctx.restore();
@@ -1004,7 +1015,7 @@ export function FightingArena() {
         ctx.fillStyle = "#ef4444";
         ctx.strokeStyle = "#fff";
         ctx.lineWidth = 4;
-        ctx.font = "bold 42px var(--font-nunito), sans-serif";
+        ctx.font = canvasFont("bold 42px var(--font-nunito), sans-serif");
         ctx.textAlign = "center";
         ctx.strokeText("K.O.", 0, 0);
         ctx.fillText("K.O.", 0, 0);
@@ -1012,7 +1023,7 @@ export function FightingArena() {
       }
 
       ctx.fillStyle = "rgba(255,255,255,0.7)";
-      ctx.font = "10px var(--font-nunito), sans-serif";
+      ctx.font = canvasFont("10px var(--font-nunito), sans-serif");
       ctx.textAlign = "center";
       ctx.fillText("Z/X/C/V saldır · B yakalama · ↓+Z ateş", STAGE_W / 2, STAGE_H - 8);
 
@@ -1066,7 +1077,7 @@ export function FightingArena() {
       {charLocked && <GameTouchBar gameId="dovus-arenasi" />}
       {over && (
         <div className="game-over">
-          <p>🥋 {announceRef.current} Skor: {score}</p>
+          <p>🥋 {endText} Skor: {score}</p>
           <button type="button" className="btn-primary" onClick={reset}>
             Tekrar oyna
           </button>

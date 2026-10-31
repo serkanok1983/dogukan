@@ -33,8 +33,47 @@ C0 is merged. Deviations from the first draft of this file, already applied belo
   empty module in `vitest.config.mts`). Test files: `src/**/*.test.{ts,tsx}`.
 - Lint baseline after C0: the 14 pre-existing errors (games, `useGameScore`,
   `bilgi/page.tsx`) are unchanged; owners S4/S5/S6 fix them. One warning comes
-  from `docs/plan/workflow-understand-design.js` (S8: add `docs/**` to the
+  `docs/plan/workflow-understand-design.js` (S8: add `docs/**` to the
   ESLint ignores).
+
+**Integration notes (2026-10-31, S1–S9 merged):**
+
+- `useCanvasFit` DPR is opt-in (`dpr: "auto"`), see §10.3.
+- `src/app/manifest.ts` needs `export const dynamic = "force-static"` under `output: "export"`.
+- `verify-out` budgets are gzip sizes (`/` JS ≤ 250 KB, CSS ≤ 25 KB) and are hard errors.
+- Firebase: `@/lib/firebaseConfig` is SDK-free and safe to import statically; the SDK is only
+  loaded via `await import("@/lib/firebase")` (`getAuthedDb`, `pushValue`, re-exported `ref/set/get/…`).
+- `/` renders the island skeleton without JS (not "Kim oynuyor?"), so logged-in launches don't flash the login.
+- `BubbleBg` is deleted.
+- Canvas text: `ctx.font` cannot resolve CSS variables (`var(--font-nunito)` is silently ignored and the
+  previous font stays, e.g. `42px serif`). Always wrap with `canvasFont("bold 13px var(--font-nunito), sans-serif")`
+  from `@/lib/canvasFont`.
+- E2E: `npm run e2e` (Playwright, installed Chrome via `channel: "chrome"`; `E2E_CHANNEL=` for bundled Chromium)
+  runs `e2e/smoke.spec.ts` and `e2e/child-flow.spec.ts` (390×844, clock pinned to a weekday morning,
+  reduced motion, zero console errors). Not part of `npm run check`.
+
+**S5 additive changes (2026-10-31):**
+
+- `types.ts`: `Progress.rewards.questDays?: DayKey[]` (days on which all three
+  quests were completed; sticker trigger). Merge = sorted union. `emptyProgress`
+  initialises it to `[]`; old stores without it stay valid.
+- `reducers.ts`: `quests_set` is ignored when the store already holds the same
+  or a later day with items (two tabs cannot overwrite done flags).
+  `exercise_set_end` with `mode: "gate"` no longer writes activity stats/stars
+  (the gate slug `bal-topla` is not an activity); the day bucket still gets +1
+  honey. Sticker awards and quest completion run after `reduceDay`.
+- `RunResult` gains optional `runStars?: Stars` (this run's stars) and `level?`.
+- `leaderboard.ts`: `recordScore(..., opts?: { rivalVisible?})` and
+  `checkLiveMilestone(..., opts?: { rivalVisible?})`; when omitted they read
+  `getSettings().rivalVisible`. Rival wording is suppressed when off.
+  `checkLiveMilestone` returns `LiveMilestone` (adds `kind`).
+- New exports: `starRules.{STAR_TABLE, DEFAULT_THRESHOLDS, starRuleFor}`,
+  `stickers.{STICKER_PAGES, getSticker, stickerTriggered}`,
+  `cosmetics.{getCosmetic, starsAvailable}`,
+  `quests.{buildQuests, questView, slugForSkill}`,
+  `components/progress/session.ts` (`consecutiveRuns`, session counters),
+  `HoneyGate.HONEY_GATE_SLUG = "bal-topla"`, `RewardSheet.SUGGEST_LINE`,
+  `NoticeToaster.STICKER_REVEAL_MS`.
 
 ## 0. Ground rules (all packages)
 
@@ -1294,7 +1333,8 @@ export function useGameLoop(
   opts?: { maxDtMs?: number },
 ): void;
 // dt normalised to 60 Hz units (frameMs / 16.667), frame clamped to maxDtMs (50); paused when !running or document.hidden
-// @/hooks/useCanvasFit — existing signature kept; options gain { dpr?: 1 } opt-out; default backing store = css * min(devicePixelRatio, 2)
+// @/hooks/useCanvasFit — existing signature kept; options gain { dpr?: 1 | "auto" }. DEFAULT IS 1 (unchanged behaviour for the
+// 26 unmigrated games); migrated games opt in with { dpr: "auto" } = backing store css * min(devicePixelRatio, 2) + setTransform.
 // @/hooks/useCanvasPointer
 export function useCanvasPointer(
   canvas: React.RefObject<HTMLCanvasElement | null>,

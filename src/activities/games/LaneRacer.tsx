@@ -26,7 +26,7 @@ export function LaneRacer() {
   const running = useGameRunning();
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [score, setScore] = useState(0);
-  const [timeLeft, setTimeLeft] = useState(DURATION);
+  const [endReason, setEndReason] = useState<"crash" | "time" | null>(null);
   const [done, setDone] = useState(false);
   const [shield, setShield] = useState(false);
   const scoreGame = useGameScore(GAME_SLUG);
@@ -57,7 +57,7 @@ export function LaneRacer() {
     setScore(0);
     setShield(false);
     timeLeftRef.current = DURATION;
-    setTimeLeft(DURATION);
+    setEndReason(null);
     setDone(false);
     submitted.current = false;
     scoreGame.resetMilestones();
@@ -75,27 +75,28 @@ export function LaneRacer() {
   useEffect(() => {
     if (!running || done) return;
     const t = setInterval(() => {
-      setTimeLeft((tm) => {
-        const next = tm <= 1 ? 0 : tm - 1;
-        timeLeftRef.current = next;
-        if (tm <= 1) {
-          setDone(true);
-          sounds.win();
-        }
-        return next;
-      });
+      const tm = timeLeftRef.current;
+      timeLeftRef.current = tm <= 1 ? 0 : tm - 1;
+      if (tm <= 1) {
+        setEndReason("time");
+        setDone(true);
+        sounds.win();
+      }
     }, 1000);
     return () => clearInterval(t);
   }, [running, done]);
 
-  const moveLane = (dir: -1 | 1) => {
-    if (!running || overRef.current || done) return;
-    const next = lane.current + dir;
-    if (next >= 0 && next <= 2) {
-      lane.current = next;
-      sounds.tap();
-    }
-  };
+  const moveLane = useCallback(
+    (dir: -1 | 1) => {
+      if (!running || overRef.current || done) return;
+      const next = lane.current + dir;
+      if (next >= 0 && next <= 2) {
+        lane.current = next;
+        sounds.tap();
+      }
+    },
+    [running, done],
+  );
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -174,6 +175,7 @@ export function LaneRacer() {
           }
           sounds.gameOver();
           overRef.current = true;
+          setEndReason("crash");
           setDone(true);
           return false;
         }
@@ -246,7 +248,7 @@ export function LaneRacer() {
       canvas.removeEventListener("touchstart", onTouchStart);
       canvas.removeEventListener("touchend", onTouchEnd);
     };
-  }, [running, done, reset, shield, scoreGame]);
+  }, [running, done, reset, shield, scoreGame, moveLane]);
 
   return (
     <div className="game-panel canvas-game">
@@ -271,7 +273,7 @@ export function LaneRacer() {
       {done && (
         <div className="game-over">
           <p>
-            {overRef.current ? "💥 Çarptın! " : "🏆 Süre bitti! "}
+            {endReason === "crash" ? "💥 Çarptın! " : "🏆 Süre bitti! "}
             Mesafe: {score}
           </p>
           <button type="button" className="btn-primary" onClick={reset}>

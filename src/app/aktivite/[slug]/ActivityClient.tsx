@@ -2,8 +2,10 @@
 
 import { useEffect } from "react";
 import { ActivityShell } from "@/components/ActivityShell";
-import { getActivity } from "@/activities/registry";
+import { GameErrorBoundary } from "@/components/game/GameErrorBoundary";
+import { ACTIVITY_MAP } from "@/activities/registry";
 import { logDogukanVisit } from "@/lib/activityLog";
+import { trackEvent } from "@/lib/progress/events";
 import type { ActivityLearning } from "@/lib/activityLearning.types";
 
 type Props = {
@@ -14,10 +16,12 @@ type Props = {
 
 export function ActivityClient({ slug, title, learning }: Props) {
   useEffect(() => {
+    trackEvent({ type: "activity_open", slug });
     logDogukanVisit(slug, title);
   }, [slug, title]);
 
-  const Activity = getActivity(slug);
+  // Modül düzeyindeki sabit tablo: bileşen kimliği her slug için kararlıdır.
+  const Activity = ACTIVITY_MAP[slug] ?? null;
 
   if (!Activity) {
     return (
@@ -31,7 +35,9 @@ export function ActivityClient({ slug, title, learning }: Props) {
 
   return (
     <ActivityShell key={slug} slug={slug} title={title} learning={learning}>
-      {Activity()}
+      <GameErrorBoundary slug={slug}>
+        <Activity />
+      </GameErrorBoundary>
     </ActivityShell>
   );
 }

@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useEffectEvent, useRef, useState } from "react";
 import { drawParticles, spawnBurst, updateParticles, type Particle } from "@/lib/particles";
 import { createGameJuice } from "@/lib/gameJuice";
 import { useGameActive, useGameBoot } from "@/lib/gameSession";
@@ -22,7 +22,6 @@ const ROWS = 3;
 
 function createAliens(): Alien[] {
   const aliens: Alien[] = [];
-  const emojis = ["👾", "👾", "🛸"];
   for (let row = 0; row < ROWS; row++) {
     for (let col = 0; col < COLS; col++) {
       aliens.push({
@@ -97,7 +96,8 @@ export function AlienInvasion() {
     }
   }, [done, score, scoreGame]);
 
-  const shoot = () => {
+  // Yalnızca efektin dinleyicilerinden çağrılır; her zaman en güncel `running`/`done`'ı görür.
+  const shoot = useEffectEvent(() => {
     if (!running || overRef.current || done) return;
     if (shootCooldown.current > 0) return;
     sounds.shoot();
@@ -108,7 +108,7 @@ export function AlienInvasion() {
       fromPlayer: true,
     });
     shootCooldown.current = 14;
-  };
+  });
 
   useEffect(() => {
     const canvas = canvasRef.current;

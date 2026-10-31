@@ -6,7 +6,6 @@ import { createGameJuice } from "@/lib/gameJuice";
 import { useGameActive, useGameBoot } from "@/lib/gameSession";
 import { useGameRunning } from "@/hooks/useGameRunning";
 import { sounds } from "@/lib/sounds";
-import { randInt } from "@/lib/utils";
 import { useGameScore } from "@/hooks/useGameScore";
 import { ScoreHud } from "@/components/ScoreHud";
 
@@ -23,9 +22,9 @@ export function RainCatcher() {
   const running = useGameRunning();
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [score, setScore] = useState(0);
-  const [timeLeft, setTimeLeft] = useState(DURATION);
+  const [, setTimeLeft] = useState(DURATION);
   const [done, setDone] = useState(false);
-  const [combo, setCombo] = useState(0);
+  const [, setCombo] = useState(0);
   const scoreGame = useGameScore(GAME_SLUG);
   const submitted = useRef(false);
 
@@ -135,8 +134,6 @@ export function RainCatcher() {
         d.y += d.vy;
         const dx = d.x * W;
         const dy = d.y * H;
-        const ux = umbrellaX.current * W;
-        const uy = H - 55;
 
         if (d.y > 0.82 && d.y < 0.92 && Math.abs(d.x - umbrellaX.current) < 0.1) {
           if (d.kind === "rain") {

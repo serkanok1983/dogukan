@@ -4,6 +4,7 @@
  */
 import { applyExercise } from "@/lib/mastery";
 import type { SkillId } from "@/lib/skills";
+import { STICKERS, stickerTriggered } from "@/lib/stickers";
 import { getActivityInfo } from "@/lib/worlds";
 import { reduceDay } from "./dayReducer";
 import { starsForRun } from "./starRules";
@@ -15,11 +16,13 @@ import type {
   NoticeKind,
   Progress,
   ProgressEvent,
+  QuestState,
   Stars,
   TopicState,
 } from "./types";
 
 const SEEN_CAP = 300;
+const QUEST_DAYS_CAP = 400;
 const EASE_START = 0.7;
 const EASE_MIN = 0.6;
 const EASE_MAX = 1;
@@ -199,6 +202,8 @@ export function reduceProgress(p: Progress, e: ProgressEvent): Progress {
       break;
     }
     case "exercise_set_end": {
+      // S5: Bal topla (gate) bir etkinlik değildir; yıldız/oynama yazmaz (yalnız bal, gün kovasında).
+      if (e.mode === "gate") break;
       const stats = p.activities[e.slug] ?? emptyStats(e.at);
       const updated: ActivityStats = {
         ...stats,
@@ -262,9 +267,14 @@ export function reduceProgress(p: Progress, e: ProgressEvent): Progress {
       };
       break;
     }
-    case "quests_set":
+    case "quests_set": {
+      // S5: eski günün görevi yenisini ezmez; aynı gün ikinci kez kurulmaz
+      // (iki sekme aynı anda kurarsa ilk kurulan ve `done` bayrakları korunur).
+      const cur = p.quests.day ?? "";
+      if (cur > e.day || (cur === e.day && p.quests.items.length > 0)) break;
       next = { ...next, quests: { day: e.day, items: e.items } };
       break;
+    }
     case "cosmetic_buy": {
       const c = p.rewards.cosmetics;
       if (
@@ -300,8 +310,82 @@ export function reduceProgress(p: Progress, e: ProgressEvent): Progress {
       break;
   }
 
-  next = { ...next, inbox };
-  return withDay(next, e, runStars);
+  next = withDay({ ...next, inbox }, e, runStars);
+  return applyRewards(next, e);
+}
+
+// ---------------- Görevler ve çıkartmalar (S5) ----------------
+
+function questMatches(q: QuestState, e: ProgressEvent): boolean {
+  if (q.done) return false;
+  switch (e.type) {
+    case "run_end":
+      return q.slug !== undefined && q.slug === e.slug;
+    case "exercise_set_end":
+      if (e.mode !== "session") return false;
+      if (q.slug !== undefined && q.slug === e.slug) return true;
+      return q.kind !== "extra" && q.skill !== undefined && q.skill === e.skill;
+    case "capsule_end":
+      return q.topic !== undefined && q.topic === e.topic;
+    default:
+      return false;
+  }
+}
+
+function applyQuests(p: Progress, e: ProgressEvent, inbox: Notice[]): Progress {
+  if (
+    e.type !== "run_end" &&
+    e.type !== "exercise_set_end" &&
+    e.type !== "capsule_end"
+  )
+    return p;
+  const day = dayKey(e.at);
+  if (p.quests.day !== day || !p.quests.items.some((q) => questMatches(q, e)))
+    return p;
+  const items = p.quests.items.map((q) =>
+    questMatches(q, e) ? { ...q, done: true } : q,
+  );
+  const slug = "slug" in e ? e.slug : undefined;
+  inbox.push(notice(e, "quest_done", slug ? { slug } : {}));
+  let rewards = p.rewards;
+  if (items.every((q) => q.done)) {
+    inbox.push(notice(e, "quests_all_done"));
+    const questDays = p.rewards.questDays ?? [];
+    if (!questDays.includes(day)) {
+      rewards = {
+        ...rewards,
+        questDays: [...questDays, day].sort().slice(-QUEST_DAYS_CAP),
+      };
+    }
+  }
+  return { ...p, quests: { ...p.quests, items }, rewards };
+}
+
+function applyStickers(p: Progress, e: ProgressEvent, inbox: Notice[]): Progress {
+  let stickers = p.rewards.stickers;
+  for (const def of STICKERS) {
+    if (stickers[def.id] !== undefined || !stickerTriggered(def.trigger, p, e))
+      continue;
+    if (stickers === p.rewards.stickers) stickers = { ...stickers };
+    stickers[def.id] = e.at;
+    inbox.push({
+      id: `${e.id}:sticker:${def.id}`,
+      kind: "sticker",
+      at: e.at,
+      stickerId: def.id,
+    });
+  }
+  if (stickers === p.rewards.stickers) return p;
+  return { ...p, rewards: { ...p.rewards, stickers } };
+}
+
+/** Görev tamamlama ve çıkartma ödülleri; gün kovası güncellendikten sonra çalışır. */
+function applyRewards(p: Progress, e: ProgressEvent): Progress {
+  const inbox = [...p.inbox];
+  let next = applyQuests(p, e, inbox);
+  next = applyStickers(next, e, inbox);
+  if (inbox.length === p.inbox.length) return next;
+  return { ...next, inbox };
 }
 
 function withDay(
@@ -481,6 +565,10 @@ export function mergeProgress(a: Progress, b: Progress): Progress {
       },
       starsSpent: tieBreakNewer.rewards.starsSpent,
       streak,
+      questDays: sortedUnion(
+        a.rewards.questDays ?? [],
+        b.rewards.questDays ?? [],
+      ).slice(-QUEST_DAYS_CAP),
     },
     quests,
     inbox,

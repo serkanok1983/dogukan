@@ -1,5 +1,6 @@
 import { createAsteroidsMusic } from "@/lib/acelyaAsteroidsMusic";
 import { acelyaSounds } from "@/lib/acelyaSounds";
+import { canvasFont } from "@/lib/canvasFont";
 
 const FPS = 30;
 const FRICTION = 0.7;
@@ -386,7 +387,7 @@ export function mountClassicAsteroids(
       ctx.textAlign = "center";
       ctx.textBaseline = "middle";
       ctx.fillStyle = `rgba(255, 255, 255, ${textAlpha})`;
-      ctx.font = `small-caps ${TEXT_SIZE}px dejavu sans mono, var(--font-nunito), sans-serif`;
+      ctx.font = canvasFont(`small-caps ${TEXT_SIZE}px dejavu sans mono, var(--font-nunito), sans-serif`);
       ctx.fillText(text, W / 2, H * 0.75);
       textAlpha -= 1.0 / TEXT_FADE_TIME / FPS;
     } else if (ship.dead) {
@@ -401,11 +402,11 @@ export function mountClassicAsteroids(
     ctx.textAlign = "right";
     ctx.textBaseline = "middle";
     ctx.fillStyle = "white";
-    ctx.font = `${TEXT_SIZE}px dejavu sans mono, var(--font-nunito), monospace`;
+    ctx.font = canvasFont(`${TEXT_SIZE}px dejavu sans mono, var(--font-nunito), monospace`);
     ctx.fillText(String(score), W - SHIP_SIZE / 2, SHIP_SIZE);
 
     ctx.textAlign = "center";
-    ctx.font = `${TEXT_SIZE * 0.75}px dejavu sans mono, var(--font-nunito), monospace`;
+    ctx.font = canvasFont(`${TEXT_SIZE * 0.75}px dejavu sans mono, var(--font-nunito), monospace`);
     ctx.fillText(`BEST ${scoreHigh}`, W / 2, SHIP_SIZE);
 
     if (!active) return;

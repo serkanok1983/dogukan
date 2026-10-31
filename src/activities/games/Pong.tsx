@@ -52,8 +52,6 @@ export function Pong() {
     s.playerY = GAME_H / 2 - 40;
     s.computerY = GAME_H / 2 - 40;
     s.ballSpeed = 3;
-    s.ballDX = 3 * (Math.random() > 0.5 ? 1 : -1);
-    s.ballDY = 2 * (Math.random() > 0.5 ? 1 : -1);
     s.prevTotal = 0;
     s.ended = false;
     submitted.current = false;

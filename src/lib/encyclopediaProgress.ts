@@ -1,3 +1,23 @@
+/**
+ * Legacy `/kesfet` progress API, now an adapter over `progress.topics`
+ * (CONTRACT §1, §3.5). Owner: S7.
+ *
+ * - With a player: reads `getProgress().topics`, writes through
+ *   `trackEvent({ type: "topic_flag" })`. There is no dedicated "visited"
+ *   event, so a `lastVisited`-only patch is recorded as a flagless
+ *   `topic_flag`, which only bumps `topics[slug].lastAt`; `lastVisited` is read
+ *   back from `lastAt`.
+ * - Without a player (anonymous visit to the parent reference page, where
+ *   `trackEvent` is a no-op): falls back to the legacy localStorage key so
+ *   favourites still work. The store migrates that key into `topics` the
+ *   first time a player's progress is created.
+ * - Always dispatches `dogukan-encyclopedia-progress` for the hub and tools.
+ */
+import { getPlayerId } from "@/lib/auth";
+import { trackEvent } from "@/lib/progress/events";
+import { getProgress } from "@/lib/progress/store";
+import { KEYS, readJSON, writeJSON } from "@/lib/storage";
+
 export type EncyclopediaProgressEntry = {
   favorite?: boolean;
   complete?: boolean;
@@ -6,31 +26,51 @@ export type EncyclopediaProgressEntry = {
 
 export type EncyclopediaProgress = Record<string, EncyclopediaProgressEntry>;
 
-const STORAGE_KEY = "dogukan-merak-ansiklopedisi-v1";
+const CHANGE_EVENT = "dogukan-encyclopedia-progress";
+
+function readLegacy(): EncyclopediaProgress {
+  const parsed = readJSON<unknown>(KEYS.legacyEncyclopedia, null);
+  return parsed && typeof parsed === "object"
+    ? (parsed as EncyclopediaProgress)
+    : {};
+}
 
 export function readEncyclopediaProgress(): EncyclopediaProgress {
   if (typeof window === "undefined") return {};
-  try {
-    const raw = window.localStorage.getItem(STORAGE_KEY);
-    if (!raw) return {};
-    const parsed = JSON.parse(raw) as unknown;
-    return parsed && typeof parsed === "object" ? (parsed as EncyclopediaProgress) : {};
-  } catch {
-    return {};
+  if (!getPlayerId()) return readLegacy();
+  const progress: EncyclopediaProgress = {};
+  for (const [slug, topic] of Object.entries(getProgress().topics)) {
+    progress[slug] = {
+      favorite: topic.favorite,
+      complete: topic.complete,
+      ...(topic.lastAt ? { lastVisited: new Date(topic.lastAt).toISOString() } : {}),
+    };
   }
+  return progress;
 }
 
 export function updateEncyclopediaProgress(
   slug: string,
   patch: Partial<EncyclopediaProgressEntry>,
 ): EncyclopediaProgress {
+  if (typeof window === "undefined") return {};
+  if (getPlayerId()) {
+    trackEvent({
+      type: "topic_flag",
+      slug,
+      ...(patch.favorite !== undefined ? { favorite: patch.favorite } : {}),
+      ...(patch.complete !== undefined ? { complete: patch.complete } : {}),
+    });
+  } else {
+    const legacy = readLegacy();
+    legacy[slug] = { ...legacy[slug], ...patch };
+    writeJSON(KEYS.legacyEncyclopedia, legacy);
+  }
   const progress = readEncyclopediaProgress();
-  progress[slug] = { ...progress[slug], ...patch };
   try {
-    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(progress));
-    window.dispatchEvent(new CustomEvent("dogukan-encyclopedia-progress", { detail: progress }));
+    window.dispatchEvent(new CustomEvent(CHANGE_EVENT, { detail: progress }));
   } catch {
-    /* Private browsing or a full storage quota must not block learning. */
+    /* An event failure must not block learning. */
   }
   return progress;
 }

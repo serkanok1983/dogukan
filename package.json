@@ -10,7 +10,17 @@
     "lint": "eslint",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "check": "node scripts/check.mjs",
+    "deploy": "node scripts/deploy-pages.mjs",
+    "verify-out": "node scripts/verify-out.mjs",
+    "sw-manifest": "node scripts/sw-manifest.mjs",
+    "serve-out": "node scripts/serve-out.mjs",
+    "icons": "node scripts/make-icons.mjs",
+    "e2e": "playwright test"
+  },
+  "engines": {
+    "node": ">=20.9"
   },
   "dependencies": {
     "firebase": "^12.13.0",
@@ -19,6 +29,7 @@
     "react-dom": "19.2.4"
   },
   "devDependencies": {
+    "@playwright/test": "^1.64.1",
     "@tailwindcss/postcss": "^4",
     "@testing-library/dom": "^10.4.2",
     "@testing-library/react": "^16.3.3",

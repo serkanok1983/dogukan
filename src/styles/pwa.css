@@ -1,0 +1,118 @@
+/* PWA parçaları (S8, önek pwa-): güncelleme bildirimi, kurulum kartı, oyun iskeleti. */
+
+.pwa-toast {
+  position: fixed;
+  left: 50%;
+  bottom: calc(16px + var(--safe-bottom));
+  z-index: var(--z-toast);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  width: min(420px, calc(100% - 24px));
+  padding: 0.5rem;
+  background: #fff;
+  border: 3px solid var(--honey);
+  border-radius: 999px;
+  box-shadow: 0 12px 32px rgba(23, 63, 95, 0.25);
+  transform: translateX(-50%);
+}
+
+.pwa-toast-main {
+  flex: 1;
+  min-height: var(--kid-tap);
+  padding: 0 1rem;
+  color: var(--ink);
+  font: inherit;
+  font-family: var(--font-display);
+  font-size: 1.2rem;
+  font-weight: 700;
+  text-align: left;
+  background: #fff7d6;
+  border: none;
+  border-radius: 999px;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+.pwa-install {
+  padding: 1rem 1.1rem;
+  color: var(--ink);
+  font-size: 1rem;
+  background: #fff;
+  border: 2px solid #d8e6ed;
+  border-radius: 18px;
+}
+
+.pwa-install h3 {
+  margin: 0 0 0.35rem;
+  font-family: var(--font-display);
+  font-size: 1.2rem;
+}
+
+.pwa-install p,
+.pwa-install ol {
+  margin: 0 0 0.75rem;
+  line-height: 1.45;
+}
+
+.pwa-install ol {
+  padding-left: 1.3rem;
+}
+
+.pwa-install-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.pwa-install-actions button {
+  min-height: 48px;
+  padding: 0 1rem;
+  font: inherit;
+  font-weight: 700;
+  border: 2px solid #d8e6ed;
+  border-radius: 999px;
+  background: #fff;
+  cursor: pointer;
+}
+
+.pwa-install-actions .pwa-install-primary {
+  color: #fff;
+  background: #0f766e;
+  border-color: #0f766e;
+}
+
+.pwa-skeleton {
+  display: grid;
+  place-items: center;
+  gap: 1rem;
+  min-height: 320px;
+}
+
+.pwa-skeleton-emoji {
+  font-size: 4rem;
+  line-height: 1;
+}
+
+.pwa-skeleton-bar {
+  width: 60%;
+  height: 14px;
+  background: linear-gradient(90deg, #e2e8f0 0%, #f8fafc 50%, #e2e8f0 100%);
+  background-size: 200% 100%;
+  border-radius: 999px;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .pwa-skeleton-bar {
+    animation: pwaShimmer 1.2s linear infinite;
+  }
+}
+
+@keyframes pwaShimmer {
+  from {
+    background-position: 200% 0;
+  }
+  to {
+    background-position: -200% 0;
+  }
+}
