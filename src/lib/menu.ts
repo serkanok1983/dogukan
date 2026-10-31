@@ -37,6 +37,7 @@ export const MENU: MenuCategory[] = [
       { slug: "hizli-matematik", label: "Hızlı Matematik", emoji: "⚡" },
       { slug: "kelime-avcisi", label: "Kelime Avcısı", emoji: "🔤" },
       { slug: "hedef-vur", label: "Doğru Hedef", emoji: "🎯" },
+      { slug: "blok-dunyasi", label: "Blok Dünyası", emoji: "🧱" },
     ],
   },
   {
@@ -59,6 +60,7 @@ export const MENU: MenuCategory[] = [
     accent: "#4ecdc4",
     items: [
       { slug: "harf-tanima", label: "Harf Tanıma", emoji: "🔤" },
+      { slug: "ses-avi", label: "Ses Avı", emoji: "👂" },
       { slug: "harf-yazma", label: "Harf Yazma", emoji: "✍️" },
       { slug: "hece-birlestir", label: "Hece Birleştir", emoji: "🧱" },
       { slug: "kelime-okuma", label: "Kelime Okuma", emoji: "📚" },
@@ -116,6 +118,7 @@ export const MENU: MenuCategory[] = [
       { slug: "hayvanlar", label: "Hayvanlar", emoji: "🦁" },
       { slug: "mevsimler", label: "Mevsimler", emoji: "🍂" },
       { slug: "su-dongu", label: "Su Döngüsü", emoji: "💧" },
+      { slug: "guvenli-yol", label: "Güvenli Yol", emoji: "🚦" },
     ],
   },
   {
@@ -130,6 +133,7 @@ export const MENU: MenuCategory[] = [
       { slug: "mantik-eslestir", label: "Mantık Eşleştir", emoji: "🔗" },
       { slug: "fark-bul", label: "Farkı Bul", emoji: "👀" },
       { slug: "grupla", label: "Grupla", emoji: "📦" },
+      { slug: "dur-git", label: "Dur-Git", emoji: "🐟" },
     ],
   },
 ];

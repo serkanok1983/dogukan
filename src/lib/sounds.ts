@@ -12,7 +12,12 @@ function getCtx(): AudioContext | null {
   return ctx;
 }
 
-function tone(freq: number, duration: number, type: OscillatorType = "sine", gain = 0.12) {
+function tone(
+  freq: number,
+  duration: number,
+  type: OscillatorType = "sine",
+  gain = 0.12,
+) {
   const ac = getCtx();
   if (!ac) return;
   if (ac.state === "suspended") void ac.resume();
@@ -32,6 +37,17 @@ function tone(freq: number, duration: number, type: OscillatorType = "sine", gai
 
 function chord(notes: number[], gap = 70, dur = 0.1) {
   notes.forEach((f, i) => setTimeout(() => tone(f, dur), i * gap));
+}
+
+// ---- C0 shim (CONTRACT §8.2) — owner: S4. S4 ana kazanç, sessize alma ve AudioBuffer çalımını ekler. ----
+
+function unlock() {
+  const ac = getCtx();
+  if (ac && ac.state !== "running") void ac.resume().catch(() => {});
+}
+
+if (typeof window !== "undefined") {
+  window.addEventListener("dogukan:audio-unlock", unlock);
 }
 
 export const sounds = {
@@ -73,4 +89,15 @@ export const sounds = {
     tone(base, 0.08, "triangle", 0.1);
   },
   levelUp: () => chord([523, 659, 784, 988], 90, 0.14),
+  /** Bir dokunuşun içinde çağrılır; AudioContext'i başlatır/sürdürür. */
+  unlock,
+  /** 0–1. C0 shim: S4 gerçek ana kazancı ekleyene kadar etkisiz. */
+  setMasterGain: (v: number) => {
+    void v;
+  },
+  honey: () => tone(330, 0.09, "sine", 0.12),
+  sticker: () => chord([659, 784, 988, 1319], 70, 0.1),
+  countdown: () => tone(660, 0.07, "triangle", 0.1),
+  /** Öğrenme yüzeylerinde yanlış cevap: yumuşak, vızıltısız. */
+  softWrong: () => tone(220, 0.18, "triangle", 0.08),
 };

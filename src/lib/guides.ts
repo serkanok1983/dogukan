@@ -3,6 +3,8 @@ export type Guide = {
   intro: string;
   controls: string[];
   learn: string;
+  /** StartCard'da sesli okunan tek cümle (≤ 10 kelime). S3 her slug için doldurur. */
+  short?: string;
 };
 
 export const GUIDES: Record<string, Guide> = {
@@ -452,6 +454,35 @@ export const GUIDES: Record<string, Guide> = {
     intro: "İşaretleri ve yönleri okuyarak başlangıçtan hazineye giden yolu planla.",
     controls: ["Haritadaki ipuçlarını incele", "Yönünü seç ve yolu adım adım izle"],
     learn: "Haritalar gerçek alanları küçültülmüş simge, yön ve göreli konumlarla gösteren modellerdir.",
+  },
+  // ==================== Faz 1 yeni etkinlikler ====================
+  "ses-avi": {
+    type: "Ses Oyunu",
+    intro: "Kelimeyi dinle, aynı sesle başlayan resmi bul.",
+    controls: ["🔊 ile tekrar dinle", "Resme dokun"],
+    learn: "Kelimelerin ilk sesini duymak okuma-yazmanın ilk adımıdır.",
+    short: "Dinle ve aynı sesle başlayanı bul.",
+  },
+  "guvenli-yol": {
+    type: "Hayat Bilgisi",
+    intro: "Trafikte, evde ve ekranda güvende kalmak için ne yapacağını seç.",
+    controls: ["Soruyu dinle", "Doğru resme dokun"],
+    learn: "Güvenli davranışları önceden düşünmek, gerçek anda doğru seçimi kolaylaştırır.",
+    short: "Güvende kalmak için ne yaparsın?",
+  },
+  "dur-git": {
+    type: "Dikkat Oyunu",
+    intro: "Balıklara dokun, köpekbalığına dokunma!",
+    controls: ["Balığa dokun", "Köpekbalığını bekle, geçsin"],
+    learn: "Durmayı bilmek, hızlı davranmak kadar önemli bir beceridir.",
+    short: "Balığa dokun, köpekbalığına dokunma!",
+  },
+  "blok-dunyasi": {
+    type: "İnşa Oyunu",
+    intro: "Bloklarla kendi dünyanı kur, kaydet ve babana göster.",
+    controls: ["Bir blok seç", "Dokun veya sürükleyerek yerleştir", "↶ ile geri al"],
+    learn: "İnşa ederken sayma, simetri ve planlama birlikte çalışır.",
+    short: "Bloklarla kendi dünyanı kur!",
   },
 };
 

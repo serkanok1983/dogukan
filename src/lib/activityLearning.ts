@@ -596,11 +596,49 @@ const ACTIVITY_KNOWLEDGE: Readonly<Record<string, ActivityKnowledge>> = {
     "Düğmeleri renge göre ayırabileceğin gibi delik sayısına veya büyüklüğüne göre de ayırabilirsin.",
     "Elma, muz ve havucu 'yiyecek' grubunda birlikte tutabilirken daha özel bir ölçütte havuç neden ayrılır?",
   ),
+
+  // Faz 1 yeni etkinlikler
+  "ses-avi": knowledge(
+    "bes-duyum",
+    "İlk sesi ayırt etme",
+    "Kelimeyi dinleyip aynı sesle başlayan resmi seçerken kulakla duyduğun sesleri birbirinden ayırıyorsun.",
+    "Ses farkındalığı, kelimelerin küçük ses parçalarından oluştuğunu fark etmektir; harf-ses eşlemenin temelidir.",
+    "Sofrada 'kkk-aşık, kkk-ase' diye ilk sesi uzatarak aynı sesle başlayan eşyaları birlikte arayabilirsiniz.",
+    "'Elma' ile 'el' aynı sesle mi başlıyor? Bunu nasıl anladın?",
+  ),
+  "guvenli-yol": knowledge(
+    "bes-duyum",
+    "Güvenli davranış",
+    "Trafikte, evde ve ekranda karşılaşabileceğin durumlarda hangi seçimin seni koruyacağını önceden düşünüyorsun.",
+    "Güvenli davranış, tehlikeyi duyularımla fark edip durmak, uzaklaşmak ve güvendiğim bir büyüğe haber vermektir.",
+    "Karşıdan karşıya geçerken durup sağa sola bakmak ve ekranda korkutucu bir şey görünce kapatıp bir büyüğe göstermek aynı alışkanlıktır.",
+    "Ekranda seni korkutan bir şey görürsen ne yaparsın?",
+  ),
+  "dur-git": knowledge(
+    "sekiller-oruntuler-ve-simetri",
+    "Dürtü kontrolü",
+    "Balığa dokunup köpekbalığını beklerken hızlı tepki vermekle durmayı bilmek arasında denge kuruyorsun.",
+    "Dürtü kontrolü, aklana ilk gelen hareketi durdurup kurala uygun davranabilmektir.",
+    "'Kafa, omuz, diz' oyununda yanlış komutta durmak da aynı beceriyi çalıştırır.",
+    "Köpekbalığı geldiğinde elini durdurmak neden zor? Ne yapınca kolaylaşıyor?",
+  ),
+  "blok-dunyasi": knowledge(
+    "sekiller-oruntuler-ve-simetri",
+    "Planlama ve simetri",
+    "Bloklarla inşa ederken şekilleri, simetriyi ve kaç blok gerektiğini birlikte düşünüyorsun.",
+    "Simetri, bir şeklin iki yanının ayna görüntüsü gibi birbirine uymasıdır; inşada denge ve düzen sağlar.",
+    "Lego ya da tahta bloklarla bir kulenin iki yanını aynı yapmak da simetri kurmaktır.",
+    "Kurduğun yapının iki yanı aynı mı? Aynı olması için hangi bloğu değiştirirsin?",
+  ),
 };
 
-const menuSlugs = MENU.flatMap((category) => category.items.map((item) => item.slug));
+const menuSlugs = MENU.flatMap((category) =>
+  category.items.map((item) => item.slug),
+);
 const missingKnowledge = menuSlugs.filter((slug) => !ACTIVITY_KNOWLEDGE[slug]);
-const unknownKnowledge = Object.keys(ACTIVITY_KNOWLEDGE).filter((slug) => !menuSlugs.includes(slug));
+const unknownKnowledge = Object.keys(ACTIVITY_KNOWLEDGE).filter(
+  (slug) => !menuSlugs.includes(slug),
+);
 
 if (missingKnowledge.length > 0 || unknownKnowledge.length > 0) {
   throw new Error(

@@ -36,6 +36,14 @@ const Breakout = dynamic(() => import("./games/Breakout").then((m) => m.Breakout
 const PinballCadet = dynamic(() => import("./games/PinballCadet").then((m) => m.PinballCadet), { ssr: false });
 const WhackMole = dynamic(() => import("./games/WhackMole").then((m) => m.WhackMole), { ssr: false });
 
+// Faz 1 yeni etkinlikler (CONTRACT §5, §11)
+const BlockWorld = dynamic(() => import("./games/blocks/BlockWorld").then((m) => m.BlockWorld), { ssr: false });
+const DurGit = dynamic(() => import("./games/DurGit").then((m) => m.DurGit), { ssr: false });
+const ExerciseSession = dynamic(
+  () => import("./engine/ExerciseSession").then((m) => m.ExerciseSession),
+  { ssr: false },
+);
+
 // Yeni oyunlar
 const ColorWorkshop = dynamic(() => import("./games/ColorWorkshop").then((m) => m.ColorWorkshop), { ssr: false });
 const LetterTrace = dynamic(() => import("./games/LetterTrace").then((m) => m.LetterTrace), { ssr: false });
@@ -135,6 +143,11 @@ export const ACTIVITY_MAP: Record<string, () => React.ReactNode> = {
   "uzayli-istilasi": () => <AlienInvasion />,
   "dinozor-kazi": () => <DinoDig />,
   "royal-match": () => <RoyalMatch />,
+  // Faz 1 yeni etkinlikler
+  "ses-avi": () => <ExerciseSession slug="ses-avi" skill="tr.ses-ayirt" />,
+  "guvenli-yol": () => <ExerciseSession slug="guvenli-yol" skill="hb.guvenli" />,
+  "dur-git": () => <DurGit />,
+  "blok-dunyasi": () => <BlockWorld />,
 };
 
 export function getActivity(slug: string) {

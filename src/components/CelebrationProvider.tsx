@@ -13,11 +13,14 @@ type CelebrationState = {
 
 type CelebrationContextValue = {
   show: (message: string) => void;
+  /** Bloklamayan kutlama (CONTRACT §10.3). C0 shim: şimdilik `show` ile aynı; S4 gerçek toast'ı yazar. */
+  toast: (message: string) => void;
   isCelebrating: boolean;
 };
 
 const CelebrationContext = createContext<CelebrationContextValue>({
   show: () => {},
+  toast: () => {},
   isCelebrating: false,
 });
 
@@ -96,7 +99,7 @@ export function CelebrationProvider({ children }: { children: React.ReactNode })
   const isCelebrating = !!state;
 
   return (
-    <CelebrationContext.Provider value={{ show, isCelebrating }}>
+    <CelebrationContext.Provider value={{ show, toast: show, isCelebrating }}>
       {children}
       {state && (
         <div

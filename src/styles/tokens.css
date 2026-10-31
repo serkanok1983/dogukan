@@ -1,0 +1,44 @@
+/* Tasarım belirteçleri (CONTRACT §14). C0 yazdı; sahibi S8. */
+:root {
+  --kid-tap: 56px;
+  --kid-tile: 96px;
+  --kid-touch: 72px;
+  --kid-font: 18px;
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-x: max(env(safe-area-inset-left, 0px), env(safe-area-inset-right, 0px));
+  --world-macera: #ff6b9d;
+  --world-harf: #4ecdc4;
+  --world-sayi: #ffd93d;
+  --world-sekil: #a78bfa;
+  --world-merak: #6bcb77;
+  --world-blok: #f59e0b;
+  --world-baba: #f97316;
+  --honey: #f6b93b;
+  --z-sheet: 300;
+  --z-wellbeing: 400;
+  --z-gate: 450;
+  --z-intro: 500;
+  --z-toast: 600;
+  --evening-filter: sepia(0.3) brightness(0.9);
+  --ease-pop: cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.say-btn {
+  display: inline-grid;
+  place-items: center;
+  flex: 0 0 auto;
+  padding: 0;
+  color: inherit;
+  background: #fff;
+  border: 3px solid rgba(23, 63, 95, 0.15);
+  border-radius: 50%;
+  box-shadow: 0 4px 10px rgba(23, 63, 95, 0.12);
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+.say-btn:focus-visible {
+  outline: 3px solid #0ea5e9;
+  outline-offset: 2px;
+}

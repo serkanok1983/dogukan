@@ -12,6 +12,30 @@
 
 ---
 
+## C0 implementation notes (2026-10-31, C0 landed)
+
+C0 is merged. Deviations from the first draft of this file, already applied below:
+
+- Event payload fields may not be called `id` or `at` (they are stamped by
+  `trackEvent`). Hence `break_done.breakId`, `cosmetic_buy.cosmeticId`,
+  `cosmetic_equip.cosmeticId`.
+- `reduceDay` takes an optional 4th argument `runStars` so the day bucket can
+  record a run's stars without recomputing them.
+- `activitiesInWorld` returns `ACTIVITY_INFO` table order.
+- `useRunResult` lives in `src/components/progress/useRunResult.ts` (`.ts`, not `.tsx`).
+- Additive helpers: `isSkillId` (skills), `setStars` (reducers), `voiceLine`
+  (content/voice), `readRaw`/`writeRaw` (storage), `DAY_MS` (progress/time),
+  `_applyEvent`/`_readStoredForTests` (store, internal).
+- Mastery selectors (`dueSkills`, `weakestSkills`, `planSession`,
+  `pickForGate`, `summary`) ship with simple working bodies so S1/S5/S6 can use
+  them immediately; S2 refines them without changing signatures.
+- Tests: `npm test` runs `vitest run` (jsdom; `server-only` aliased to Next's
+  empty module in `vitest.config.mts`). Test files: `src/**/*.test.{ts,tsx}`.
+- Lint baseline after C0: the 14 pre-existing errors (games, `useGameScore`,
+  `bilgi/page.tsx`) are unchanged; owners S4/S5/S6 fix them. One warning comes
+  from `docs/plan/workflow-understand-design.js` (S8: add `docs/**` to the
+  ESLint ignores).
+
 ## 0. Ground rules (all packages)
 
 1. **Order:** package **C0 (core)** lands alone first. Then S1–S9 run in
@@ -287,7 +311,7 @@ export type ProgressEventInput =
       coplay: boolean;
       slug?: string;
     }
-  | { type: "break_done"; id: BreakId; skippedByParent: boolean }
+  | { type: "break_done"; breakId: BreakId; skippedByParent: boolean }
   | { type: "limit_reached" }
   | { type: "extension"; minutes: number }
   | { type: "bedtime_block" }
@@ -298,8 +322,8 @@ export type ProgressEventInput =
   | { type: "blocks_saved"; index: number; shared: boolean }
   | { type: "topic_flag"; slug: string; favorite?: boolean; complete?: boolean }
   | { type: "quests_set"; day: DayKey; items: QuestState[] } // emitted by S5 quests.ts
-  | { type: "cosmetic_buy"; id: CosmeticId; price: number }
-  | { type: "cosmetic_equip"; id: CosmeticId | null }
+  | { type: "cosmetic_buy"; cosmeticId: CosmeticId; price: number }
+  | { type: "cosmetic_equip"; cosmeticId: CosmeticId | null }
   | { type: "notices_ack"; ids: string[] };
 
 export type ProgressEvent = ProgressEventInput & { id: string; at: number };
@@ -360,7 +384,12 @@ export function _resetProgressForTests(p?: Progress): void;
 export function reduceProgress(p: Progress, e: ProgressEvent): Progress; // pure
 export function mergeProgress(a: Progress, b: Progress): Progress; // commutative, idempotent
 // dayReducer.ts
-export function reduceDay(d: DayUsage, e: ProgressEvent, p: Progress): DayUsage; // pure
+export function reduceDay(
+  d: DayUsage,
+  e: ProgressEvent,
+  p: Progress,
+  runStars?: Stars,
+): DayUsage; // pure; runStars = stars of this run_end
 ```
 
 **General reducer behaviour:**
@@ -455,9 +484,9 @@ contract):
 
 - `topic_flag`: merge the given flags into `topics[slug]`.
 - `quests_set`: `quests = { day, items }`.
-- `cosmetic_buy`: requires `totalStars(p) - starsSpent >= price`, otherwise
+- `cosmetic_buy` (field `cosmeticId`): requires `totalStars(p) - starsSpent >= price`, otherwise
   ignored. Then `owned.push(id)` and `starsSpent += price`.
-- `cosmetic_equip`: `equipped = id` when the id is owned or `null`.
+- `cosmetic_equip` (field `cosmeticId`): `equipped = cosmeticId` when it is owned or `null`.
 - `notices_ack`: remove the given ids from `inbox`.
 
 **Streak tick** (on `exercise_set_end` with `mode === "session"` and on
@@ -612,7 +641,7 @@ export const WORLDS: readonly World[];
 export const ACTIVITY_INFO: Readonly<Record<string, ActivityInfo>>;
 export function getWorld(id: WorldId): World;
 export function getActivityInfo(slug: string): ActivityInfo | undefined;
-/** Slugs of a world in MENU order (new slugs appended in table order). */
+/** Slugs of a world in ACTIVITY_INFO table order (§5 table). */
 export function activitiesInWorld(
   id: WorldId,
   opts?: { includeHidden?: boolean },
@@ -1600,16 +1629,16 @@ lines, and starts with this comment:
 C0 also adds **shims to existing files**: additive only, ≤ 10 lines each. The
 file's owner takes over afterwards.
 
-| File                                                                            | Shim                                                                                                                                                                  |
-| ------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `src/lib/auth.ts`                                                               | `useSession`, `loginAs` (§9)                                                                                                                                          |
-| `src/lib/gameSession.tsx`                                                       | `useGamePaused`, `useGameRestart`, `useHasRestart` (stubs)                                                                                                            |
-| `src/components/CelebrationProvider.tsx`                                        | `toast` alias of `show`                                                                                                                                               |
-| `src/lib/sounds.ts`                                                             | `unlock`, `setMasterGain`, `honey`, `sticker`, `countdown`, `softWrong`                                                                                               |
-| `src/lib/guides.ts`                                                             | `Guide.short?: string` (≤ 10-word StartCard line) + 4 new entries                                                                                                     |
-| `src/lib/menu.ts`, `src/lib/activityLearning.ts`, `src/activities/registry.tsx` | 4 new slugs (§5)                                                                                                                                                      |
-| `src/app/globals.css`                                                           | `@import "../styles/tokens.css";` as first line                                                                                                                       |
-| `package.json`                                                                  | devDeps `vitest`, `@vitejs/plugin-react`, `jsdom`, `@testing-library/react`, `@testing-library/dom`, `vite-tsconfig-paths`; scripts `test`, `test:watch`, `typecheck` |
+| File                                                                            | Shim                                                                                                                                                                                                                                                                              |
+| ------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `src/lib/auth.ts`                                                               | `useSession`, `loginAs` (§9)                                                                                                                                                                                                                                                      |
+| `src/lib/gameSession.tsx`                                                       | `useGamePaused`, `useGameRestart`, `useHasRestart` (stubs)                                                                                                                                                                                                                        |
+| `src/components/CelebrationProvider.tsx`                                        | `toast` alias of `show`                                                                                                                                                                                                                                                           |
+| `src/lib/sounds.ts`                                                             | `unlock`, `setMasterGain`, `honey`, `sticker`, `countdown`, `softWrong`                                                                                                                                                                                                           |
+| `src/lib/guides.ts`                                                             | `Guide.short?: string` (≤ 10-word StartCard line) + 4 new entries                                                                                                                                                                                                                 |
+| `src/lib/menu.ts`, `src/lib/activityLearning.ts`, `src/activities/registry.tsx` | 4 new slugs (§5)                                                                                                                                                                                                                                                                  |
+| `src/app/globals.css`                                                           | `@import "../styles/tokens.css";` as first line                                                                                                                                                                                                                                   |
+| `package.json`                                                                  | devDeps `vitest`, `@vitejs/plugin-react`, `jsdom`, `@testing-library/react`, `@testing-library/dom` (+ `@types/node` ^22, required by vitest 5; Vite 8 resolves tsconfig paths natively, so no `vite-tsconfig-paths`); scripts `test` (= `vitest run`), `test:watch`, `typecheck` |
 
 ---
 

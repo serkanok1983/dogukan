@@ -4,7 +4,7 @@
 > Claude Code (cloud) üzerinde çalıştı; iş başka bir IDE'de, API kredisi ile
 > devam edecek. Buradaki her şey repodadır; dış bir dosyaya bağımlılık yoktur.
 
-Son güncelleme: 2026-10-31 (sentez tamamlandı) · Dal: `claude/zealous-bell-8149v6` (kod olarak `main` ile aynı; yalnızca `docs/` eklendi)
+Son güncelleme: 2026-10-31 (çekirdek paket C0 tamamlandı) · Dal: `claude/zealous-bell-8149v6`
 
 > **Güncel durum:** Adım B (sentez) tamamlandı. Sentezde HANDOFF §4'teki
 > uzlaşmalara eklenen/değiştirilen kararlar: kapsül rotası `/kesfet/[slug]/kapsul/`
@@ -13,6 +13,13 @@ Son güncelleme: 2026-10-31 (sentez tamamlandı) · Dal: `claude/zealous-bell-81
 > `worlds.ts` açık slug→ada tablosudur, MENU yeniden gruplanmaz (K6); MEB kodları
 > doğrulanmadan doldurulmaz (K21); Blok Dünyası ayrı paket S9 oldu (toplam 9
 > paralel paket). Ayrıntı: `docs/plan/MASTER_PLAN.md §7`.
+>
+> **Adım C (C0) tamamlandı:** sözleşme tipleri, ilerleme deposu + olay veriyolu +
+> reducer'lar + birleştirme, settings, skills (37), worlds (73 slug), speech,
+> haptics, rng, mastery kuralları gerçek; diğer paketlerin arayüzleri imzası
+> sabit saplamalar (`// STUB (C0) — owner: Sx`). Vitest kuruldu (55 test).
+> 4 yeni slug sayfası çalışıyor (saplama kartları). Taslaktan sapmalar:
+> `CONTRACT.md` »C0 implementation notes«. **Sıradaki: Adım D (paralel paketler).**
 
 ---
 
@@ -63,7 +70,7 @@ Ortam notları: Node 22, `npm ci` çalışıyor, npm registry erişilebilir (vit
 | Tasarım (4 bakış açısı)      | ✅     | `docs/plan/proposals/*.md` (game-designer, pedagogy, mobile-production, parent-wellbeing)                                                                           |
 | Hakem (3 puanlayıcı)         | ⚠️ 2/3 | `docs/plan/judgements/judge-1.md` (çocuk/oyun tasarımcısı gözü), `judge-2.md` (eğitimci/baba gözü). **Hakem 3 (staff engineer / uygulanabilirlik gözü) çalışmadı.** |
 | Sentez (ana plan + sözleşme) | ✅     | `docs/plan/MASTER_PLAN.md` (Türkçe; tüm çatışma kararları §7) ve `docs/plan/CONTRACT.md` (İngilizce; arayüzler, dosya sahipliği §12, paket kabul ölçütleri §13)     |
-| Uygulama                     | ❌     | Kod değişikliği yapılmadı — **sıradaki iş Adım C (çekirdek paket C0)**                                                                                              |
+| Uygulama                     | ⏳     | C0 (çekirdek) ✅ — **sıradaki iş Adım D: S1–S9 paralel paketler**                                                                                                   |
 
 ### Hakemlerin puanları (10 üzerinden; sıra: engagement / learning / feasibility / wellbeing)
 
@@ -119,11 +126,11 @@ Aşağıdaki iki belgeyi üret. Prompt'un tamamı akış betiğinde `phase('Synt
 
 Girdi: `docs/plan/maps/*`, `docs/plan/proposals/*`, `docs/plan/judgements/*` — hepsini tam oku. Hakemlerin "must-have / reject / conflicts" bölümleri bağlayıcıdır.
 
-### Adım C — Çekirdek paket (tek ajan, önce) ← SIRADAKİ
+### Adım C — Çekirdek paket (tek ajan, önce) ✅ TAMAMLANDI
 
 Kapsam ve kabul ölçütleri: `CONTRACT.md §11–§13 (C0)`. Gerçek uygulamalar: store, olay veriyolu, reducer'lar, zaman, settings, skills, worlds, speech, haptics, rng, mastery kuralları; diğer her şey için imzası sabit saplamalar (§11) ve mevcut dosyalara küçük ekler (shim). Vitest altyapısı da C0'da kurulur (reducer/merge testleri için). Bitmeden paralel paketler başlamaz.
 
-### Adım D — Paralel paketler (7–8 ajan, **ayrık dosya sahipliği**)
+### Adım D — Paralel paketler (9 ajan, **ayrık dosya sahipliği**) ← SIRADAKİ
 
 Hakemlerin birleştirdiği akış tablosu (judge-1 §4.14 ve judge-2 §4.17 — sentez tek tabloya indirecek):
 Kesinleşmiş liste ve dosya sahipliği `CONTRACT.md §12`'de: S1 Kabuk/giriş · S2 Egzersiz motoru + konuşma · S3 İçerik ve katalog sahibi · S4 Oyun altyapısı/his + 14 lint hatası · S5 İlerleme · S6 İyi oluş + ebeveyn paneli · S7 Merak Kapsülleri · S8 Üretim/entegrasyon · S9 Blok Dünyası.
