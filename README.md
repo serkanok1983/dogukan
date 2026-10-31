@@ -19,3 +19,8 @@ npm run build
 ```
 
 Serkan ❤️ Doğukan
+
+## Geliştirme planı
+
+Yeniden tasarım çalışması sürüyor. Kaldığımız yer, alınan kararlar ve sıradaki
+adımlar için `docs/HANDOFF.md`; analiz ve öneri belgeleri için `docs/plan/`.
