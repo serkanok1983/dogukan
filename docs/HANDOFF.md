@@ -4,7 +4,15 @@
 > Claude Code (cloud) üzerinde çalıştı; iş başka bir IDE'de, API kredisi ile
 > devam edecek. Buradaki her şey repodadır; dış bir dosyaya bağımlılık yoktur.
 
-Son güncelleme: 2026-10-31 · Dal: `claude/zealous-bell-8149v6` (kod olarak `main` ile aynı; yalnızca `docs/` eklendi)
+Son güncelleme: 2026-10-31 (sentez tamamlandı) · Dal: `claude/zealous-bell-8149v6` (kod olarak `main` ile aynı; yalnızca `docs/` eklendi)
+
+> **Güncel durum:** Adım B (sentez) tamamlandı. Sentezde HANDOFF §4'teki
+> uzlaşmalara eklenen/değiştirilen kararlar: kapsül rotası `/kesfet/[slug]/kapsul/`
+> (K9); Faz 1'de hiçbir slug silinmez, kaldırılacaklar `hidden` ile gizlenir (K19);
+> yeni slug yalnızca `ses-avi`, `guvenli-yol`, `blok-dunyasi`, `dur-git` (K20);
+> `worlds.ts` açık slug→ada tablosudur, MENU yeniden gruplanmaz (K6); MEB kodları
+> doğrulanmadan doldurulmaz (K21); Blok Dünyası ayrı paket S9 oldu (toplam 9
+> paralel paket). Ayrıntı: `docs/plan/MASTER_PLAN.md §7`.
 
 ---
 
@@ -33,6 +41,7 @@ oyun sunamadı. İstenen:
 - Firebase Realtime DB isteğe bağlı (skor tablosu + ziyaret günlüğü), env yoksa sessizce kapalı.
 - Durum: `tsc` temiz, `next build` başarılı (90 sayfa), **lint 14 hata + 44 uyarı** (React Compiler kuralları: render'da ref erişimi, render'da `Math.random`, effect içinde senkron setState, korunamayan memoization; dosyalar: Asteroids, FightingArena, LaneRacer, RunnerDash, Pong, FlappyBird, bilgi/page, useGameScore).
 - Test yok. CI'da lint/tip denetimi yok.
+- **GitHub Actions limiti dolu:** CI kullanılmaz; kalite kapısı (`npm run check`) ve yayınlama (`npm run deploy` → `gh-pages` dalına elle itme) yerelde yapılır. Pages "legacy" modda `gh-pages` dalından yayınlıyor; depo herkese açık. Ayrıntı: `docs/plan/MASTER_PLAN.md §4.8` ve K30.
 - `AGENTS.md`: Bu Next sürümünde kırıcı değişiklikler var; Next'e özgü kod yazmadan önce `node_modules/next/dist/docs/` okunmalı. İlgili rehberler:
   - `01-app/02-guides/static-exports.md`
   - `01-app/02-guides/progressive-web-apps.md`
@@ -48,22 +57,22 @@ Ortam notları: Node 22, `npm ci` çalışıyor, npm registry erişilebilir (vit
 
 Çok ajanlı bir "anla → tasarla → hakemle → sentezle" akışı çalıştırıldı (akış betiği: `docs/plan/workflow-understand-design.js`, tüm prompt'lar içinde). **11/13 ajan tamamlandı**, son iki adım haftalık kullanım limiti nedeniyle çalışmadı.
 
-| Aşama | Durum | Çıktı |
-|---|---|---|
-| Anlama (5 okuyucu) | ✅ | `docs/plan/maps/*.md` (5 dosya, her biri 250–410 satır) |
-| Tasarım (4 bakış açısı) | ✅ | `docs/plan/proposals/*.md` (game-designer, pedagogy, mobile-production, parent-wellbeing) |
-| Hakem (3 puanlayıcı) | ⚠️ 2/3 | `docs/plan/judgements/judge-1.md` (çocuk/oyun tasarımcısı gözü), `judge-2.md` (eğitimci/baba gözü). **Hakem 3 (staff engineer / uygulanabilirlik gözü) çalışmadı.** |
-| Sentez (ana plan + sözleşme) | ❌ | `MASTER_PLAN.md` ve `CONTRACT.md` **henüz yok** — sıradaki iş bu |
-| Uygulama | ❌ | Kod değişikliği yapılmadı |
+| Aşama                        | Durum  | Çıktı                                                                                                                                                               |
+| ---------------------------- | ------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Anlama (5 okuyucu)           | ✅     | `docs/plan/maps/*.md` (5 dosya, her biri 250–410 satır)                                                                                                             |
+| Tasarım (4 bakış açısı)      | ✅     | `docs/plan/proposals/*.md` (game-designer, pedagogy, mobile-production, parent-wellbeing)                                                                           |
+| Hakem (3 puanlayıcı)         | ⚠️ 2/3 | `docs/plan/judgements/judge-1.md` (çocuk/oyun tasarımcısı gözü), `judge-2.md` (eğitimci/baba gözü). **Hakem 3 (staff engineer / uygulanabilirlik gözü) çalışmadı.** |
+| Sentez (ana plan + sözleşme) | ✅     | `docs/plan/MASTER_PLAN.md` (Türkçe; tüm çatışma kararları §7) ve `docs/plan/CONTRACT.md` (İngilizce; arayüzler, dosya sahipliği §12, paket kabul ölçütleri §13)     |
+| Uygulama                     | ❌     | Kod değişikliği yapılmadı — **sıradaki iş Adım C (çekirdek paket C0)**                                                                                              |
 
 ### Hakemlerin puanları (10 üzerinden; sıra: engagement / learning / feasibility / wellbeing)
 
-| Öneri | Hakem 1 | Hakem 2 | Verdict (ortak) |
-|---|---|---|---|
-| game-designer ("Bal Adaları") | 8/7/5/7 = 27 | 9/7/5/7 = 28 | Çocuğa dönük omurga: ada haritası, ayı yoldaş, yıldız/çıkartma, Blok Dünyası, Merak kapsül akışı, oyun hissi. Ekonomi detayları ve Faz 1 sanat kapsamı reddedildi. |
-| pedagogy | 6/10/6/7 = 29 | 6/10/7/8 = 31 | Öğrenme mimarisinin tamamı: MEB kodlu beceri grafı, mastery, sesli egzersiz motoru, 69→45 etkinlik eşlemesi. "Oyun parkı görev bitmeden kilitli" açılışı reddedildi. |
-| mobile-production | 6/3/9/6 = 24 | 6/3/9/6 = 24 | Teknik zemin olarak aynen: PWA, SW, hata sınırları, tek progress store, Vitest, CI. Çocuğun gününü bu tanımlamaz. |
-| parent-wellbeing | 6/5/8/10 = 29 | 7/6/8/10 = 31 | Yönetişim katmanı: süre/sayaç/durma/övgü ile ilgili her çatışmayı bu karar verir. Atlanamaz 60 s mola yumuşatıldı. |
+| Öneri                         | Hakem 1       | Hakem 2       | Verdict (ortak)                                                                                                                                                      |
+| ----------------------------- | ------------- | ------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| game-designer ("Bal Adaları") | 8/7/5/7 = 27  | 9/7/5/7 = 28  | Çocuğa dönük omurga: ada haritası, ayı yoldaş, yıldız/çıkartma, Blok Dünyası, Merak kapsül akışı, oyun hissi. Ekonomi detayları ve Faz 1 sanat kapsamı reddedildi.   |
+| pedagogy                      | 6/10/6/7 = 29 | 6/10/7/8 = 31 | Öğrenme mimarisinin tamamı: MEB kodlu beceri grafı, mastery, sesli egzersiz motoru, 69→45 etkinlik eşlemesi. "Oyun parkı görev bitmeden kilitli" açılışı reddedildi. |
+| mobile-production             | 6/3/9/6 = 24  | 6/3/9/6 = 24  | Teknik zemin olarak aynen: PWA, SW, hata sınırları, tek progress store, Vitest, CI. Çocuğun gününü bu tanımlamaz.                                                    |
+| parent-wellbeing              | 6/5/8/10 = 29 | 7/6/8/10 = 31 | Yönetişim katmanı: süre/sayaç/durma/övgü ile ilgili her çatışmayı bu karar verir. Atlanamaz 60 s mola yumuşatıldı.                                                   |
 
 İki hakem de önerilerin **birbirini tamamladığını**, ortalanmak yerine her birinin kendi alanında alınmasını söylüyor.
 
@@ -97,9 +106,11 @@ Ayrıntı ve gerekçeler: `docs/plan/judgements/judge-1.md` §2–4 ve `judge-2.
 ## 5. Sıradaki adımlar (sırayla)
 
 ### Adım A — (isteğe bağlı) Hakem 3
+
 Staff-engineer gözüyle uygulanabilirlik puanı. Prompt `docs/plan/workflow-understand-design.js` içindeki `JUDGE_LENSES[2]`'dir. İki hakem zaten teknik kapsamı (6 oyun, L1–L3, 2–4 kapsül, Playwright non-blocking) kıstığı için **atlanabilir**; sentezci bu gözü kendisi taşımalı.
 
 ### Adım B — Sentez (ZORUNLU, kod yazmadan önce)
+
 Aşağıdaki iki belgeyi üret. Prompt'un tamamı akış betiğinde `phase('Synthesize')` altında; özeti:
 
 **`docs/plan/MASTER_PLAN.md` (Türkçe):** 1) Ürün vizyonu 2) Deneyim mimarisi (ekranlar/akışlar, Türkçe UI metinleri) 3) Öğrenme mimarisi (skill id'leri, 69 etkinliğin eşlemesi, mastery, TTS politikası) 4) Teknik mimari (modül haritası, veri modeli, PWA, test, CI, lint) 5) Faz 1/2/3 iş paketleri 6) Kaldırılan/değiştirilen içerik 7) Riskler ve kararlar (hakemlerin her çatışmasına karar).
@@ -108,19 +119,23 @@ Aşağıdaki iki belgeyi üret. Prompt'un tamamı akış betiğinde `phase('Synt
 
 Girdi: `docs/plan/maps/*`, `docs/plan/proposals/*`, `docs/plan/judgements/*` — hepsini tam oku. Hakemlerin "must-have / reject / conflicts" bölümleri bağlayıcıdır.
 
-### Adım C — Çekirdek paket (tek ajan, önce)
-Sözleşme tipleri + progress store + event bus + `speech.ts`/haptics + `skills.ts` + `worlds.ts` + persistence. ≤ ~12 dosya. Bitmeden paralel paketler başlamaz.
+### Adım C — Çekirdek paket (tek ajan, önce) ← SIRADAKİ
+
+Kapsam ve kabul ölçütleri: `CONTRACT.md §11–§13 (C0)`. Gerçek uygulamalar: store, olay veriyolu, reducer'lar, zaman, settings, skills, worlds, speech, haptics, rng, mastery kuralları; diğer her şey için imzası sabit saplamalar (§11) ve mevcut dosyalara küçük ekler (shim). Vitest altyapısı da C0'da kurulur (reducer/merge testleri için). Bitmeden paralel paketler başlamaz.
 
 ### Adım D — Paralel paketler (7–8 ajan, **ayrık dosya sahipliği**)
+
 Hakemlerin birleştirdiği akış tablosu (judge-1 §4.14 ve judge-2 §4.17 — sentez tek tabloya indirecek):
-S1 Shell (avatar giriş, PIN, WorldMap, CompanionBar, NameTheBear, MENU regroup) · S2 Speech + egzersiz motoru · S3 İçerik (8 üretici L1–L3, guides tek cümle, ölü içerik temizliği) · S4 Oyun altyapısı ve hissi (6 oyun + 14 lint hatası) · S5 Progress reducer'ları/görev/çıkartma · S6 Wellbeing + ebeveyn paneli · S7 Blok Dünyası + kapsül akışı · S8 Production (PWA, SW, hata sınırları, CSS bölme, Vitest, CI, verify-out).
+Kesinleşmiş liste ve dosya sahipliği `CONTRACT.md §12`'de: S1 Kabuk/giriş · S2 Egzersiz motoru + konuşma · S3 İçerik ve katalog sahibi · S4 Oyun altyapısı/his + 14 lint hatası · S5 İlerleme · S6 İyi oluş + ebeveyn paneli · S7 Merak Kapsülleri · S8 Üretim/entegrasyon · S9 Blok Dünyası.
 Paylaşılan dosyalar (`globals.css`, `menu.ts`, `registry.tsx`, `layout.tsx`) **tek sahipli**; diğerleri kendi CSS/modül dosyalarını oluşturur, sahip entegre eder.
-Entegrasyon sırası: S8'in `<Activity/>` + CI ve S1'in `auth.ts` önce; sonra S4/S5/S2 hook'ları; sonra S3/S6/S7; S8'in SW manifest'i en son `out/` üstünde.
+Entegrasyon sırası: S8'in `<Activity/>` + `npm run check` betiği (CI yok) ve S1'in `auth.ts` önce; sonra S4/S5/S2 hook'ları; sonra S3/S6/S7; S8'in SW manifest'i en son `out/` üstünde.
 
 ### Adım E — Doğrulama
+
 `npm run lint` (0 hata, hedef 0 uyarı), `npx tsc --noEmit`, `npm test`, `npm run build`, `verify-out`; 69 etkinliğin tamamı çalışır durumda; mobil viewport'ta (390×844) Playwright smoke. Ardından adversarial review (her bulgu için "çürüt" denemesi), düzeltme, commit, push.
 
 ### Kesin kurallar
+
 - Faz 1 **69 mevcut etkinliği çalışır bırakır**.
 - Lint kurallarını devre dışı bırakarak değil, kodu düzelterek temizle.
 - Çocuk yüzeyinde dış link yok; Firebase yoksa her şey çalışır (silent-fail).
@@ -154,6 +169,6 @@ docs/
       game-designer.md  pedagogy.md  mobile-production.md  parent-wellbeing.md
     judgements/                      ← 2 hakem raporu (3. yok)
       judge-1.md  judge-2.md
-    MASTER_PLAN.md                   ← ÜRETİLECEK (Adım B)
-    CONTRACT.md                      ← ÜRETİLECEK (Adım B)
+    MASTER_PLAN.md                   ← Adım B çıktısı (Türkçe ana plan)
+    CONTRACT.md                      ← Adım B çıktısı (İngilizce entegrasyon sözleşmesi)
 ```
