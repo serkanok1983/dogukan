@@ -1,0 +1,1 @@
+self.__SSG_MANIFEST=new Set(["\u002Fada\u002F[world]","\u002Faktivite\u002F[slug]","\u002Fkesfet\u002F[slug]","\u002Fkesfet\u002F[slug]\u002Fkapsul"]);self.__SSG_MANIFEST_CB&&self.__SSG_MANIFEST_CB()
