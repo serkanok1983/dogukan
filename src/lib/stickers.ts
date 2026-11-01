@@ -297,10 +297,14 @@ function totalStarsOf(p: Progress): number {
   return n;
 }
 
-function setsDone(p: Progress): number {
+/**
+ * Ömür boyu tamamlanan öğrenme seti. `days` 60 günde budandığı için tek
+ * başına yetmez; `lifetime.sets` (tekdüze sayaç) ile gün toplamının büyüğü.
+ */
+export function lifetimeSets(p: Pick<Progress, "days" | "lifetime">): number {
   let n = 0;
   for (const d of Object.values(p.days)) n += d.setsDone;
-  return n;
+  return Math.max(n, p.lifetime?.sets ?? 0);
 }
 
 function capsulesDone(p: Progress): number {
@@ -331,7 +335,7 @@ export function stickerTriggered(
       return state !== undefined && state.level >= Number(b);
     }
     case "sets":
-      return setsDone(p) >= n;
+      return lifetimeSets(p) >= n;
     case "capsules":
       return capsulesDone(p) >= n;
     case "streak":

@@ -2,7 +2,7 @@ import { act, renderHook } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { useGameScore } from "@/hooks/useGameScore";
 import { loginAs, logout } from "@/lib/auth";
-import { checkLiveMilestone, recordScore } from "@/lib/leaderboard";
+import { checkLiveMilestone, fetchGameScores, recordScore } from "@/lib/leaderboard";
 import { onEvent } from "@/lib/progress/events";
 import { _resetProgressForTests, getProgress } from "@/lib/progress/store";
 import { updateSettings } from "@/lib/settings";
@@ -17,22 +17,46 @@ vi.mock("@/components/CelebrationProvider", () => ({
 vi.mock("@/lib/leaderboard", () => ({
   fetchGameScores: vi.fn(async () => ({ dogukan: 10, serkan: 99 })),
   subscribeGameScores: vi.fn(() => null),
-  recordScore: vi.fn(async (_slug: string, _player: string, score: number, opts?: { rivalVisible?: boolean }) => ({
-    score,
-    isNewRecord: true,
-    beatRival: true,
-    celebrate: true,
-    message: opts?.rivalVisible ? "Yeni rekor ve Serkan'ı geçtin! 🏆" : `🏆 Yeni rekor: ${score}!`,
-  })),
+  recordScore: vi.fn(
+    async (
+      _slug: string,
+      _player: string,
+      score: number,
+      opts?: { rivalVisible?: boolean },
+    ) => ({
+      score,
+      isNewRecord: true,
+      beatRival: true,
+      celebrate: true,
+      message: `🏆 ${score}! Dikkatle oynadın.${opts?.rivalVisible ? " · 🏆 Baba: 99" : ""}`,
+    }),
+  ),
   checkLiveMilestone: vi.fn(
-    async (_slug: string, _player: string, score: number, _last: number, opts?: { rivalVisible?: boolean }) =>
-      opts?.rivalVisible
-        ? { celebrate: true, message: "Vay be! Serkan'ı geçtin! 🏆", mark: score, kind: "rival" }
-        : { celebrate: true, message: "Aferin! 500 puan! ⭐", mark: 500, kind: "mark" },
+    async (
+      _slug: string,
+      _player: string,
+      score: number,
+      _last: number,
+      opts?: { rivalVisible?: boolean },
+    ) =>
+      opts?.rivalVisible && score < 200
+        ? // Eski sürümün rakip türü: kanca bunu asla göstermemeli.
+          {
+            celebrate: true,
+            message: "Vay be! Serkan'ı geçtin! 🏆",
+            mark: score,
+            kind: "rival",
+          }
+        : {
+            celebrate: true,
+            message: "⭐ 500! Dikkatle baktın!",
+            mark: 500,
+            kind: "mark",
+          },
   ),
 }));
 
-const RIVAL = /Serkan|geçtin|yakaladın/;
+const RIVAL = /Serkan|geçtin|yakaladın|Aferin|Süpersin|Vay be|Baba/;
 
 beforeEach(() => {
   logout();
@@ -67,7 +91,10 @@ describe("useGameScore", () => {
     act(() => result.current.resetMilestones());
     expect(starts).toHaveBeenCalledTimes(1);
     await act(async () => {
-      await Promise.all([result.current.submitFinal(1200), result.current.submitFinal(1200)]);
+      await Promise.all([
+        result.current.submitFinal(1200),
+        result.current.submitFinal(1200),
+      ]);
     });
     expect(ends).toHaveBeenCalledTimes(1);
     expect(recordScore).toHaveBeenCalledTimes(1);
@@ -97,7 +124,12 @@ describe("useGameScore", () => {
     await act(async () => {
       await result.current.submitFinal(400);
     });
-    expect(ends.mock.calls[0]?.[0]).toMatchObject({ slug: "super-ayi", score: 400, durationMs: 45_000, level: 3 });
+    expect(ends.mock.calls[0]?.[0]).toMatchObject({
+      slug: "super-ayi",
+      score: 400,
+      durationMs: 45_000,
+      level: 3,
+    });
     act(() => result.current.resetMilestones());
     await act(async () => {
       await result.current.submitFinal(10, { level: 7 });
@@ -121,10 +153,12 @@ describe("useGameScore", () => {
     expect(show).not.toHaveBeenCalled();
     expect(toast).toHaveBeenCalledTimes(2);
     for (const [msg] of toast.mock.calls) expect(msg).not.toMatch(RIVAL);
-    expect(vi.mocked(recordScore).mock.calls[0]?.[3]).toEqual({ rivalVisible: false });
+    expect(vi.mocked(recordScore).mock.calls[0]?.[3]).toEqual({
+      rivalVisible: false,
+    });
   });
 
-  it("rivalVisible açıkken rakip bilgisi ve metni görünür", async () => {
+  it("rivalVisible açıkken rakip yalnızca nötr sayı; kıyas/kişi övgüsü toast'u yok", async () => {
     updateSettings({ rivalVisible: true });
     const { result } = await mount();
     expect(result.current.rivalName).not.toBe("");
@@ -132,7 +166,26 @@ describe("useGameScore", () => {
     await act(async () => {
       await result.current.checkMilestone(150);
     });
-    expect(toast.mock.calls[0]?.[0]).toMatch(RIVAL);
+    expect(toast).not.toHaveBeenCalled();
+    act(() => result.current.resetMilestones());
+    await act(async () => {
+      await result.current.submitFinal(500);
+    });
+    expect(toast).toHaveBeenCalledTimes(1);
+    expect(toast.mock.calls[0]?.[0]).toMatch(/· 🏆 Baba: 99$/);
+    expect(toast.mock.calls[0]?.[0]).not.toMatch(
+      /Serkan|geçtin|yakaladın|Aferin|Süpersin/,
+    );
+  });
+
+  it("submitFinal ağı beklemez: rekor toast'u fetchGameScores çözülmeden gelir", async () => {
+    const { result } = await mount();
+    vi.mocked(fetchGameScores).mockImplementationOnce(() => new Promise(() => {}));
+    act(() => result.current.resetMilestones());
+    await act(async () => {
+      await result.current.submitFinal(700);
+    });
+    expect(toast).toHaveBeenCalledTimes(1);
   });
 
   it("ara kutlamalar 12 sn'de bir", async () => {

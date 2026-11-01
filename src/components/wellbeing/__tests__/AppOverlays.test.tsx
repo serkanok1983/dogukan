@@ -8,6 +8,13 @@ import { emptyDay, emptyProgress } from "@/lib/progress/time";
 import type { DayUsage } from "@/lib/progress/types";
 import { _resetClockForTests, setClockContext } from "@/lib/sessionClock";
 import { DEFAULT_SETTINGS, updateSettings, type Settings } from "@/lib/settings";
+import { speak } from "@/lib/speech";
+import { WB_LINES } from "@/content/voice";
+
+vi.mock("@/lib/speech", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("@/lib/speech")>();
+  return { ...actual, speak: vi.fn() };
+});
 
 vi.mock("next/navigation", () => ({
   usePathname: () => "/",
@@ -105,5 +112,24 @@ describe("HoneyJar", () => {
     const { container } = render(<HoneyJar size="sm" />);
     expect(container.querySelector(".wb-jar-wobble")).toBeNull();
     expect(container.querySelector(".wb-jar-sm")).not.toBeNull();
+  });
+
+  it("tanışma gününde −5 dk fazında da sallanmaz ve 'Bal azalıyor' denmez", () => {
+    setup(
+      at("10:00"),
+      { arcadeSec: 16 * 60 - 240, totalSec: 26 * 60 },
+      { graceUntil: MON },
+    );
+    const { container } = render(
+      <>
+        <HoneyJar />
+        <AppOverlays />
+      </>,
+    );
+    act(() => setClockContext({ slug: null, kind: "map", running: true }));
+    expect(container.querySelector(".wb-jar-wobble")).toBeNull();
+    expect(vi.mocked(speak).mock.calls.map((c) => c[0])).not.toContain(
+      WB_LINES.honeyLow.say,
+    );
   });
 });

@@ -1,0 +1,6 @@
+/* Asteroids: klavye ipucu dokunmatik cihazda gizlenir (orada dokunmatik çubuk var). */
+@media (hover: none), (pointer: coarse) {
+  .asteroids-game .asteroids-hint {
+    display: none;
+  }
+}

@@ -41,31 +41,39 @@ function getFirebaseApp(): FirebaseApp | null {
   return app;
 }
 
+async function signInOnce(firebaseApp: FirebaseApp): Promise<boolean> {
+  try {
+    const { getAuth, signInAnonymously } = await import("firebase/auth");
+    const auth = getAuth(firebaseApp);
+    if (!auth.currentUser) await signInAnonymously(auth);
+    return true;
+  } catch (e) {
+    console.warn("Firebase anonim oturum açılamadı:", e);
+    return false;
+  }
+}
+
 /**
- * Anonim oturum açar (bir kez; sonuç önbelleğe alınır). Konsolda Anonymous
- * Auth kapalıysa `false` döner ve yazımlar kuralların izin verdiği kadar sürer
- * (docs/ROLLOUT.md). Asla hata fırlatmaz.
+ * Anonim oturum açar (başarı önbelleğe alınır; başarısızlık — ör. çevrimdışı —
+ * bir sonraki çağrıda yeniden denenir). Kurallar her yolda `auth != null`
+ * ister (database.rules.json); oturum yoksa `false`. Asla hata fırlatmaz.
  */
 export function ensureAnonymousAuth(): Promise<boolean> {
   const firebaseApp = getFirebaseApp();
   if (!firebaseApp) return Promise.resolve(false);
   if (!authPromise) {
-    authPromise = (async () => {
-      try {
-        const { getAuth, signInAnonymously } = await import("firebase/auth");
-        const auth = getAuth(firebaseApp);
-        if (!auth.currentUser) await signInAnonymously(auth);
-        return true;
-      } catch (e) {
-        console.warn("Firebase anonim oturum açılamadı:", e);
-        return false;
-      }
-    })();
+    authPromise = signInOnce(firebaseApp).then((ok) => {
+      if (!ok) authPromise = null;
+      return ok;
+    });
   }
   return authPromise;
 }
 
-/** Eşzamanlı erişim (eski çağıranlar için). Anonim oturumu arka planda başlatır. */
+/**
+ * Eşzamanlı erişim (eski çağıranlar için). Oturum henüz açılmamış olabilir:
+ * okuma/abonelik/yazma için `getAuthedDb()` kullanın.
+ */
 export function getFirebaseDb(): Database | null {
   const firebaseApp = getFirebaseApp();
   if (!firebaseApp) return null;
@@ -76,12 +84,14 @@ export function getFirebaseDb(): Database | null {
   return db;
 }
 
-/** Yazmadan önce önerilen yol: önce anonim oturum, sonra veritabanı. */
+/**
+ * Her okuma, abonelik ve yazım için tek yol: önce anonim oturum, sonra
+ * veritabanı. Oturum açılamadıysa `null` (kurallar zaten reddederdi).
+ */
 export async function getAuthedDb(): Promise<Database | null> {
   const database = getFirebaseDb();
   if (!database) return null;
-  await ensureAnonymousAuth();
-  return database;
+  return (await ensureAnonymousAuth()) ? database : null;
 }
 
 /** `path` altına yeni bir kayıt ekler. Başarısızlıkta `false` döner, fırlatmaz. */
@@ -97,12 +107,14 @@ export async function pushValue(path: string, value: unknown): Promise<boolean> 
   }
 }
 
+/** @deprecated Oturum beklenmez; `getAuthedDb()` + `ref(db, "leaderboard/…")` kullanın. */
 export function leaderboardRef(gameSlug: string) {
   const database = getFirebaseDb();
   if (!database) return null;
   return ref(database, `leaderboard/${gameSlug}`);
 }
 
+/** @deprecated Oturum beklenmez; `getAuthedDb()` + `ref(db, "leaderboard")` kullanın. */
 export function leaderboardRootRef() {
   const database = getFirebaseDb();
   if (!database) return null;

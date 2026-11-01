@@ -46,6 +46,9 @@ export type TopicState = {
   favorite: boolean;
   complete: boolean;
   lastAt: number;
+  /** `favorite`/`complete` son yazım zamanı (birleştirmede son yazan kazanır). Eski veride yok. */
+  favoriteAt?: number;
+  completeAt?: number;
 };
 
 export type DayPlay = { sec: number; runs: number; stars: Stars };
@@ -59,6 +62,8 @@ export type DayUsage = {
   coplaySec: number;
   breakSec: number;
   sinceBreakSec: number;
+  /** Son `break_done` anındaki `totalSec`; `sinceBreakSec = totalSec − breakAtTotalSec`. Eski veride yok. */
+  breakAtTotalSec?: number;
   honeyEarned: number;
   setsDone: number;
   episodesDone: number;
@@ -67,6 +72,8 @@ export type DayUsage = {
   opens: number;
   extensions: number;
   extensionMinutes: number;
+  /** Uzatma olayı kimliği → dakika (sekmeler arası iki uzatma birleşince ikisi de sayılır). */
+  extensionGrants?: Record<string, number>;
   limitReached: boolean;
   bedtimeBlocks: number;
   togetherDone: boolean;
@@ -121,6 +128,10 @@ export type Progress = {
   quests: { day: DayKey | null; items: QuestState[] };
   inbox: Notice[];
   seenEventIds: string[];
+  /** Onaylanan bildirimler: kimlik → bildirimin `at` değeri (sınırlı). Başka sekmeden geri gelmesin diye. */
+  ackedNotices?: Record<string, number>;
+  /** Ömür boyu sayacı (günler 60 günde budanır). Birleştirme = max. */
+  lifetime?: { sets: number };
 };
 
 export type ProgressEventInput =

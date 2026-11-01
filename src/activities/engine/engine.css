@@ -307,6 +307,48 @@
   opacity: 0.4;
 }
 
+/* Sesli okunan seçenek (yönergeden sonra sırayla). */
+.ex-choice.is-reading {
+  border-color: var(--ex-accent);
+  box-shadow:
+    0 0 0 4px rgba(78, 205, 196, 0.35),
+    0 6px 0 var(--ex-accent);
+  transform: scale(1.04);
+}
+
+/* Cümle seçenekleri (hb.guvenli): tek sütun, kelimeler bölünmez, emoji kırpılmaz. */
+.ex-choices--sentences {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.ex-choice.is-sentence {
+  flex-direction: row;
+  justify-content: flex-start;
+  gap: 14px;
+  min-height: var(--kid-tile, 96px);
+  padding: 12px 18px;
+  text-align: start;
+}
+
+.ex-choices--big .ex-choice.is-sentence {
+  min-height: 112px;
+}
+
+.ex-choice.is-sentence .ex-choice-emoji {
+  flex: none;
+  font-size: 48px;
+  line-height: 1.2;
+}
+
+.ex-choice.is-sentence .ex-choice-text,
+.ex-choices--big .ex-choice.is-sentence .ex-choice-text {
+  font-size: 23px;
+  line-height: 1.25;
+  overflow-wrap: normal;
+  word-break: normal;
+  hyphens: manual;
+}
+
 /* ---- TapCount / CountVisual ---- */
 
 .ex-tapcount {

@@ -4,9 +4,11 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { useGameActive, useGameBoot } from "@/lib/gameSession";
 import { useGameRunning } from "@/hooks/useGameRunning";
 import { sounds } from "@/lib/sounds";
+import { speak } from "@/lib/speech";
 import { randInt } from "@/lib/utils";
 import { useGameScore } from "@/hooks/useGameScore";
 import { ScoreHud } from "@/components/ScoreHud";
+import { SayButton } from "@/components/SayButton";
 
 const GAME_SLUG = "renk-yaris";
 
@@ -20,6 +22,8 @@ const COLORS = [
 ];
 
 const DURATION = 40;
+
+const targetLine = (name: string) => `${name} rengine dokun!`;
 
 export function ColorRace() {
   const active = useGameActive();
@@ -38,6 +42,8 @@ export function ColorRace() {
       next = COLORS[randInt(0, COLORS.length - 1)];
     }
     setTarget(next);
+    // İlk turda tam cümle, sonra hızlı oyun için yalnız renk adı.
+    speak(avoid ? next.name : targetLine(next.name));
   }, []);
 
   const reset = useCallback(() => {
@@ -56,6 +62,7 @@ export function ColorRace() {
     if (done && !submitted.current) {
       submitted.current = true;
       scoreGame.submitFinal(score);
+      speak(`Süre doldu! ${score} doğru renk.`);
     }
   }, [done, score, scoreGame]);
 
@@ -108,11 +115,16 @@ export function ColorRace() {
       <p className="round-label">
         Süre: {time}s {streak >= 3 ? `· 🔥${streak}` : ""}
       </p>
-      {!active && <p className="game-waiting">ℹ️ Başla&apos;ya basınca süre işler</p>}
+      {!active && (
+        <p className="game-waiting">ℹ️ Başla&apos;ya basınca süre işler</p>
+      )}
       {done ? (
         <div className="result-panel inner">
           <h2>🌈 Süre doldu!</h2>
-          <p className="result-score">{score} doğru renk</p>
+          <p className="result-score">
+            {score} doğru renk{" "}
+            <SayButton text={`Süre doldu! ${score} doğru renk.`} />
+          </p>
           <button type="button" className="btn-primary" onClick={reset}>
             Tekrar oyna
           </button>
@@ -120,8 +132,12 @@ export function ColorRace() {
       ) : (
         <>
           <h2 className="count-prompt">
-            <span className="color-dot color-dot-lg" style={{ background: target.hex }} />
-            {target.emoji} {target.name} rengine dokun!
+            <span
+              className="color-dot color-dot-lg"
+              style={{ background: target.hex }}
+            />
+            {target.emoji} {targetLine(target.name)}
+            <SayButton text={targetLine(target.name)} />
           </h2>
           <div className="color-race-grid color-race-grid-6">
             {COLORS.map((c) => (

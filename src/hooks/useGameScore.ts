@@ -6,7 +6,10 @@
  * - `resetMilestones()` = yeni koşu: `run_start` yayar ve bir koşu jetonu açar.
  * - `submitFinal()` açık koşu başına tam bir `run_end` yayar; aynı koşudaki
  *   ikinci çağrı yok sayılır (Tetris'in çift gönderimi burada düzelir).
- * - Kutlamalar `toast()` ile; baba/rakip metni yalnızca `settings.rivalVisible`.
+ * - Kutlamalar `toast()` ile ve satırları `praise()`'den gelir (leaderboard.ts):
+ *   kişi övgüsü ve babayla kıyas yok. `rivalVisible` açıkken rakip yalnızca
+ *   nötr sayıdır (`rivalHigh`, "🏆 Baba: N").
+ * - Firebase hiçbir zaman beklenmez: sonuç yerel skorlarla, uzak güncelleme arka planda.
  */
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { PlayerId } from "@/lib/auth";
@@ -19,7 +22,6 @@ import {
   type LiveMilestone,
   type ScoreResult,
 } from "@/lib/leaderboard";
-import { praise } from "@/lib/praise";
 import { trackEvent } from "@/lib/progress/events";
 import { getSettings, useSettings, type Settings } from "@/lib/settings";
 import { useCelebration } from "@/components/CelebrationProvider";
@@ -30,9 +32,9 @@ type RunToken = { startAt: number; submitted: boolean; level: number };
 
 const selectRivalVisible = (s: Settings) => s.rivalVisible;
 
-function selfMilestoneLine(m: LiveMilestone): string {
-  if (m.kind === "record") return `🚀 ${praise("persisted")}`;
-  return `⭐ ${m.mark}! ${praise("correct_first")}`;
+/** Ara kutlama yalnızca kendi ilerlemesi için; rakip türü (eski) gösterilmez. */
+function milestoneLine(m: LiveMilestone): string | null {
+  return m.celebrate && m.kind !== "rival" && m.message ? m.message : null;
 }
 
 export function useGameScore(gameSlug: string) {
@@ -83,15 +85,11 @@ export function useGameScore(gameSlug: string) {
         durationMs: Math.max(0, now - (token.startAt || now)),
         ...(level !== undefined ? { level } : {}),
       });
-      const showRival = getSettings().rivalVisible;
       const result = await recordScore(gameSlug, player, score, {
-        rivalVisible: showRival,
+        rivalVisible: getSettings().rivalVisible,
       });
-      const updated = await fetchGameScores(gameSlug);
-      setHighs(updated);
-      if (result.celebrate) {
-        toast(showRival ? result.message : `${result.message} ${praise("run_end")}`);
-      }
+      if (result.celebrate && result.message) toast(result.message);
+      void fetchGameScores(gameSlug).then(setHighs);
       return result;
     },
     [gameSlug, player, toast],
@@ -103,19 +101,17 @@ export function useGameScore(gameSlug: string) {
       const now = Date.now();
       if (now - lastCheckAt.current < MILESTONE_GAP_MS) return;
       lastCheckAt.current = now;
-      const showRival = getSettings().rivalVisible;
       const m = await checkLiveMilestone(
         gameSlug,
         player,
         currentScore,
         lastMilestone.current,
-        {
-          rivalVisible: showRival,
-        },
+        { rivalVisible: getSettings().rivalVisible },
       );
       if (!m.celebrate) return;
       lastMilestone.current = m.mark;
-      toast(showRival ? m.message : selfMilestoneLine(m));
+      const line = milestoneLine(m);
+      if (line) toast(line);
     },
     [gameSlug, player, toast],
   );

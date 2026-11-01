@@ -10,6 +10,7 @@ import { ScoreHud } from "@/components/ScoreHud";
 import { GameTouchBar } from "@/components/GameTouchBar";
 import { useCanvasFit } from "@/hooks/useCanvasFit";
 import { canvasFont } from "@/lib/canvasFont";
+import { prefersKeyboardHints } from "./keyboardHints";
 
 const GAME_SLUG = "pinball-space-cadet";
 const W = 900;
@@ -111,6 +112,7 @@ export function PinballCadet() {
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
     const fx = juiceRef.current;
+    const keyHints = prefersKeyboardHints();
 
     const addScore = (v: number, x: number, y: number) => {
       scoreRef.current += v;
@@ -274,7 +276,7 @@ export function PinballCadet() {
       ctx.font = canvasFont("bold 14px var(--font-nunito), sans-serif");
       ctx.textAlign = "left";
       ctx.fillText(`Can: ${livesRef.current}`, 16, 24);
-      ctx.fillText("← / → flipper · Space launch", 16, H - 14);
+      if (keyHints) ctx.fillText("← / → palet · Boşluk fırlat", 16, H - 14);
 
       raf = requestAnimationFrame(loop);
     };
@@ -298,7 +300,7 @@ export function PinballCadet() {
       <GameTouchBar gameId="pinball" />
       {over && (
         <div className="game-over">
-          <p>🛰️ Game Over · Skor: {score}</p>
+          <p>🛰️ Oyun bitti · Skor: {score}</p>
           <button type="button" className="btn-primary" onClick={reset}>
             Yeniden başla
           </button>

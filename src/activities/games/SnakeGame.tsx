@@ -11,11 +11,20 @@ import { useGameScore } from "@/hooks/useGameScore";
 import { ScoreHud } from "@/components/ScoreHud";
 import { useCanvasFit } from "@/hooks/useCanvasFit";
 import { GameTouchBar } from "@/components/GameTouchBar";
+import { speak } from "@/lib/speech";
 
 const GAME_SLUG = "yilan-oyunu";
 const GRID = 24;
 const CELL = 24;
 const GAME_SIZE = GRID * CELL;
+/** Adım süresi (ms): yavaş başlar, yılan uzadıkça hızlanır. */
+const BASE_STEP_MS = 200;
+const MIN_STEP_MS = 80;
+const WAIT_LINE = "Bir oka bas, yılan yola çıksın!";
+
+function snakeStepMs(length: number): number {
+  return Math.max(MIN_STEP_MS, BASE_STEP_MS - (length - 1) * 3);
+}
 
 type Pt = { x: number; y: number };
 
@@ -33,6 +42,8 @@ export function SnakeGame() {
   const lastTs = useRef(0);
   const accRef = useRef(0);
   const particles = useRef<Particle[]>([]);
+  /** İlk yön tuşuna kadar yılan bekler (çocuk hazır olmadan duvara çarpmasın). */
+  const waitingRef = useRef(true);
   const state = useRef({
     snake: [{ x: 12, y: 12 }] as Pt[],
     dir: { x: 1, y: 0 },
@@ -50,6 +61,8 @@ export function SnakeGame() {
     particles.current = [];
     accRef.current = 0;
     lastTs.current = 0;
+    waitingRef.current = true;
+    speak(WAIT_LINE);
     setScore(0);
     setOver(false);
     submitted.current = false;
@@ -106,6 +119,19 @@ export function SnakeGame() {
       ctx.font = `${CELL - 4}px serif`;
       ctx.fillText("🍎", food.x * CELL + CELL / 2, food.y * CELL + CELL / 2);
       ctx.globalAlpha = 1;
+      if (waitingRef.current) {
+        // Başta yön okları yılanın çevresinde yanıp söner: "bir oka bas".
+        ctx.globalAlpha = 0.45 + pulse * 0.45;
+        ctx.fillStyle = "#fde047";
+        ctx.font = `${CELL}px serif`;
+        const hx = head.x * CELL + CELL / 2;
+        const hy = head.y * CELL + CELL / 2;
+        ctx.fillText("▲", hx, hy - CELL * 1.6);
+        ctx.fillText("▼", hx, hy + CELL * 1.6);
+        ctx.fillText("◀", hx - CELL * 1.6, hy);
+        ctx.fillText("▶", hx + CELL * 1.6, hy);
+        ctx.globalAlpha = 1;
+      }
     });
     updateParticles(particles.current, 1);
     drawParticles(ctx, particles.current);
@@ -158,8 +184,8 @@ export function SnakeGame() {
     const loop = (ts: number) => {
       const dt = lastTs.current ? ts - lastTs.current : 16;
       lastTs.current = ts;
-      accRef.current += dt;
-      const speedMs = Math.max(68, 150 - (state.current.snake.length - 1) * 2.2);
+      accRef.current = waitingRef.current ? 0 : accRef.current + dt;
+      const speedMs = snakeStepMs(state.current.snake.length);
       while (accRef.current >= speedMs) {
         accRef.current -= speedMs;
         step();
@@ -178,11 +204,15 @@ export function SnakeGame() {
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       const st = state.current;
+      // Beklerken her yön serbest (tek halkalı yılan geri dönebilir).
+      const free = waitingRef.current;
       const d = st.dir;
-      if (matchGameKey(e, "ArrowUp") && d.y !== 1) st.nextDir = { x: 0, y: -1 };
-      if (matchGameKey(e, "ArrowDown") && d.y !== -1) st.nextDir = { x: 0, y: 1 };
-      if (matchGameKey(e, "ArrowLeft") && d.x !== 1) st.nextDir = { x: -1, y: 0 };
-      if (matchGameKey(e, "ArrowRight") && d.x !== -1) st.nextDir = { x: 1, y: 0 };
+      const before = st.nextDir;
+      if (matchGameKey(e, "ArrowUp") && (free || d.y !== 1)) st.nextDir = { x: 0, y: -1 };
+      if (matchGameKey(e, "ArrowDown") && (free || d.y !== -1)) st.nextDir = { x: 0, y: 1 };
+      if (matchGameKey(e, "ArrowLeft") && (free || d.x !== 1)) st.nextDir = { x: -1, y: 0 };
+      if (matchGameKey(e, "ArrowRight") && (free || d.x !== -1)) st.nextDir = { x: 1, y: 0 };
+      if (free && st.nextDir !== before) waitingRef.current = false;
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
@@ -195,7 +225,7 @@ export function SnakeGame() {
         rivalHigh={scoreGame.rivalHigh}
         rivalName={scoreGame.rivalName}
         playerName={scoreGame.playerName} />
-        <p className="round-label">Snake · daha büyük alan · daha akıcı juice</p>
+        <p className="round-label">🐍 Elmaları topla, duvara çarpma!</p>
         {!active && <p className="game-waiting">ℹ️ Başla&apos;ya basınca yılan hareket eder</p>}
       </div>
       <div className="acelya-game-stage">

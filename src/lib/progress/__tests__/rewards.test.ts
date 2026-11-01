@@ -182,6 +182,44 @@ describe("görev tamamlama", () => {
   });
 });
 
+describe("ömür boyu set çıkartması", () => {
+  it("25 set: 60 günden eski günler budansa da ömür boyu sayaca göre verilir", () => {
+    // 24 set eskiden yapıldı; o günler budandı (days boş).
+    const old = { ...fresh(), lifetime: { sets: 24 }, days: {} };
+    const p = apply(
+      old,
+      ev({
+        type: "exercise_set_end",
+        slug: "harf-tanima",
+        skill: "tr.ses-harf",
+        correct: 6,
+        total: 6,
+        firstTry: 6,
+        mode: "session",
+      }),
+    );
+    expect(p.lifetime?.sets).toBe(25);
+    expect(p.rewards.stickers.aycicegi).toBeDefined();
+    expect(stickerNotices(p, "aycicegi")).toHaveLength(1);
+  });
+
+  it("gate seti ömür boyu sayaç artırmaz", () => {
+    const p = apply(
+      fresh(),
+      ev({
+        type: "exercise_set_end",
+        slug: "bal-topla",
+        skill: "mat.sayma",
+        correct: 3,
+        total: 3,
+        firstTry: 3,
+        mode: "gate",
+      }),
+    );
+    expect(p.lifetime?.sets).toBe(0);
+  });
+});
+
 describe("Bal topla (gate)", () => {
   it("yıldız ya da etkinlik yazmaz; yalnız +1 bal", () => {
     const p = apply(

@@ -5,15 +5,17 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { ParentChoice } from "@/components/auth/ParentChoice";
 import { ArithmeticGate, ParentGate } from "@/components/auth/ParentGate";
+import { SayButton } from "@/components/SayButton";
 import { ChapterEnd } from "@/components/progress/ChapterEnd";
 import { NoticeToaster } from "@/components/progress/NoticeToaster";
 import { StickerAlbum } from "@/components/progress/StickerAlbum";
 import { SHELL } from "@/content/shell";
 import { useProgress } from "@/hooks/useProgress";
 import { useWellbeing } from "@/hooks/useWellbeing";
+import { useSession } from "@/lib/auth";
 import { trackEvent } from "@/lib/progress/events";
 import { ensureTodayQuests } from "@/lib/quests";
-import { requestCoplay, setClockContext } from "@/lib/sessionClock";
+import { setClockContext, startCoplay } from "@/lib/sessionClock";
 import { useSettings } from "@/lib/settings";
 import { WORLDS, type World } from "@/lib/worlds";
 import type { BearPose } from "./BearAvatar";
@@ -21,7 +23,6 @@ import { CompanionBar } from "./CompanionBar";
 import { ContinueTile } from "./ContinueTile";
 import { islandHref, IslandTile } from "./IslandTile";
 import {
-  grantBabaPass,
   isArcadeWorld,
   islandProgress,
   selectActivities,
@@ -34,12 +35,16 @@ import { sayOnly } from "./spokenNav";
 
 type Overlay = "none" | "parent" | "parentChoice" | "album" | "baba";
 
+const PARENT_PLAYING_LINE = "Baba oynuyor.";
+const CHILD_PLAYS_LINE = "Doğukan oynasın";
+
 /** Ada haritası (MASTER_PLAN §2.4): CompanionBar, Devam + Görev, 6 ada (+ Baba ile). */
 export function WorldMap() {
   const router = useRouter();
   const activities = useProgress(selectActivities);
   const babaEnabled = useSettings(selectBabaEnabled);
-  const { evening } = useWellbeing();
+  const { evening, coplay } = useWellbeing();
+  const { player } = useSession();
   const chapterNoticeId = useProgress(selectChapterNoticeId);
   const [overlay, setOverlay] = useState<Overlay>("none");
   const [bearPose, setBearPose] = useState<BearPose | undefined>(undefined);
@@ -68,8 +73,7 @@ export function WorldMap() {
 
   const passBabaGate = () => {
     setOverlay("none");
-    grantBabaPass();
-    requestCoplay();
+    startCoplay();
     router.push(islandHref("baba"));
   };
 
@@ -83,6 +87,25 @@ export function WorldMap() {
           onParent={() => setOverlay("parent")}
           onAlbum={() => setOverlay("album")}
         />
+
+        {player === "serkan" && (
+          <section className="home-player-banner" aria-label={PARENT_PLAYING_LINE}>
+            <span className="home-player-banner-text">
+              <span aria-hidden>👨</span> {PARENT_PLAYING_LINE}
+            </span>
+            <SayButton text={PARENT_PLAYING_LINE} />
+            <button
+              type="button"
+              className="home-player-banner-btn"
+              onClick={() => {
+                sayOnly(CHILD_PLAYS_LINE);
+                setOverlay("parent");
+              }}
+            >
+              <span aria-hidden>🧒</span> {CHILD_PLAYS_LINE}
+            </button>
+          </section>
+        )}
 
         <section className="home-hero" aria-label="Bugün">
           <ContinueTile />
@@ -99,7 +122,7 @@ export function WorldMap() {
                     world={world}
                     stars={stars}
                     fill={fill}
-                    sleeping={evening && isArcadeWorld(world.id)}
+                    sleeping={evening && !coplay && isArcadeWorld(world.id)}
                     onActivate={world.gated === "coplay" ? () => openBabaGate(world) : undefined}
                   />
                 </li>

@@ -198,7 +198,7 @@ export function LetterTrace() {
     return (
       <div className="game-panel result-panel">
         <div className="result-emoji">✍️</div>
-        <h2>Harikasın!</h2>
+        <h2>Hepsini yazdın!</h2>
         <p className="result-score">Bu seviyedeki {LETTERS.length} harfi tamamladın!</p>
         <button type="button" className="btn-primary" onClick={restart}>
           Tekrar Oyna

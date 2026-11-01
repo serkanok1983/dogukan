@@ -8,10 +8,10 @@ import { useWellbeing } from "@/hooks/useWellbeing";
  * 2 hücre kalınca kavanoz bir kez sallanır (hareket azaltma tercihine uyar).
  */
 export function HoneyJar({ size = "md" }: { size?: "sm" | "md" }) {
-  const { honey, phase } = useWellbeing();
+  const { honey, graceDay } = useWellbeing();
   const capacity = Math.max(1, honey.capacity);
   const left = Math.min(capacity, Math.max(0, honey.left));
-  const wobble = left === 2 && phase !== "grace";
+  const wobble = left === 2 && !graceDay;
   const cells = Array.from({ length: capacity }, (_, i) => i < left);
   return (
     <span

@@ -18,10 +18,19 @@ import {
   type Particle,
 } from "@/lib/particles";
 import { sounds } from "@/lib/sounds";
+import { isSpeaking, speak } from "@/lib/speech";
 
 const DURATION_MS = 3200;
 /** Toast ekranda kalma süresi (CONTRACT §10.3: 1.2–1.8 sn). */
 export const TOAST_MS = 1600;
+
+/** Toast metninin sesli hali: emoji okunmasın. */
+export function toastSpeech(message: string): string {
+  return message
+    .replace(/[\p{Extended_Pictographic}\u{FE0F}\u{200D}]/gu, "")
+    .replace(/\s+/g, " ")
+    .trim();
+}
 
 type CelebrationState = {
   message: string;
@@ -80,6 +89,9 @@ export function CelebrationProvider({ children }: { children: React.ReactNode })
     if (toastTimerRef.current) clearTimeout(toastTimerRef.current);
     toastSeq.current += 1;
     sounds.star();
+    // Okuma bilmeyen çocuk için sesli; süren bir konuşmayı (oyun yönergesi) kesmez.
+    const line = toastSpeech(message);
+    if (line && !isSpeaking()) speak(line);
     setToastState({ id: toastSeq.current, message });
     toastTimerRef.current = setTimeout(() => {
       setToastState(null);

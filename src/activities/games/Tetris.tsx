@@ -35,6 +35,8 @@ const KEYS = Object.keys(SHAPES) as (keyof typeof SHAPES)[];
 
 type Piece = { key: string; color: string; matrix: number[][]; x: number; y: number };
 
+const emptyBoard = () => Array.from({ length: ROWS }, () => Array(COLS).fill("") as string[]);
+
 export function Tetris() {
   const active = useGameActive();
   const running = useGameRunning();
@@ -49,7 +51,8 @@ export function Tetris() {
   const scoreGame = useGameScore(GAME_SLUG);
   const submitted = useRef(false);
 
-  const boardRef = useRef<string[][]>([]);
+  // Çizim döngüsü bağlanır bağlanmaz tahtayı okur; Başla'dan önce de boş tahta olmalı.
+  const boardRef = useRef<string[][]>(emptyBoard());
   const pieceRef = useRef<Piece | null>(null);
   const scoreRef = useRef(0);
   const linesRef = useRef(0);
@@ -57,8 +60,6 @@ export function Tetris() {
   const dropMsRef = useRef(600);
   const lastDropRef = useRef(0);
   const overRef = useRef(false);
-
-  const emptyBoard = () => Array.from({ length: ROWS }, () => Array(COLS).fill("") as string[]);
 
   const randomPiece = (): Piece => {
     const k = KEYS[Math.floor(Math.random() * KEYS.length)];

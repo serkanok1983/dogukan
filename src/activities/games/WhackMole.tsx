@@ -14,6 +14,7 @@ import { useCanvasFit } from "@/hooks/useCanvasFit";
 import { useCanvasPointer } from "@/hooks/useCanvasPointer";
 import { FRAME_MS, useGameLoop } from "@/hooks/useGameLoop";
 import { sounds } from "@/lib/sounds";
+import { speak } from "@/lib/speech";
 import { randInt, pickRandom } from "@/lib/utils";
 import { useGameScore } from "@/hooks/useGameScore";
 import { ScoreHud } from "@/components/ScoreHud";
@@ -111,6 +112,7 @@ export function WhackMole() {
     if (done && !submitted.current) {
       submitted.current = true;
       void scoreGame.submitFinal(score);
+      speak(`Süre doldu! ${score} puan.`);
     }
   }, [done, score, scoreGame]);
 
@@ -227,10 +229,10 @@ export function WhackMole() {
       ctx.stroke();
 
       if (m.bad) {
-        ctx.fillStyle = "#4ade80";
-        ctx.font = "16px serif";
+        // "Dokunma" işareti (kafatası gibi korkutucu imge yok).
+        ctx.font = "18px serif";
         ctx.textAlign = "center";
-        ctx.fillText("💀", mx, my - MOLE_R - 6);
+        ctx.fillText("🚫", mx, my - MOLE_R - 6);
       }
 
       if (t > 0.8) {

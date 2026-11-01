@@ -56,6 +56,9 @@ export const STAR_TABLE: Readonly<Record<string, StarRule>> = {
   "pinball-space-cadet": { measure: "score", t: [500, 1500, 3500] }, // tampon 60–80
   "meyve-bicagi": { measure: "score", t: [150, 400, 800] }, // meyve 8–15 + seri
   "renk-yaris": { measure: "score", t: [20, 60, 120] }, // doğru 1 + seri×2
+  // Dur-Git (durGitLogic): 45 sn, hedef başına +1, hata −1. Doğan hedef sayısı
+  // ~18–27 (kusursuz oyun benzetimi: medyan 22, %10'luk dilim 18); bkz. starRules.test.
+  "dur-git": { measure: "score", t: [8, 14, 19] },
 };
 
 function byThresholds(value: number, t: Thresholds): Stars {

@@ -1,4 +1,8 @@
+import { canvasFont } from "./canvasFont";
 import { haptic, type HapticKind } from "./haptics";
+
+/** Skor baloncuklarının yazı tipi (ctx.font CSS değişkenini kendisi çözemez). */
+export const POP_FONT = "bold 18px var(--font-nunito), system-ui, sans-serif";
 
 export type JuiceParticle = {
   x: number;
@@ -134,7 +138,7 @@ export function createGameJuice() {
       for (const f of floats) {
         ctx.globalAlpha = Math.min(1, f.life / 40);
         ctx.fillStyle = f.color;
-        ctx.font = "bold 18px var(--font-nunito), system-ui, sans-serif";
+        ctx.font = canvasFont(POP_FONT);
         ctx.textAlign = "center";
         ctx.fillText(f.text, f.x, f.y);
       }

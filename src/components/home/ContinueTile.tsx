@@ -14,7 +14,7 @@ import { SpokenTile } from "./SpokenTile";
 /** "Devam et ▶": son oynanan görünür etkinlik; 1. gün Süper Ayı ve rekoru. */
 export function ContinueTile() {
   const activities = useProgress(selectActivities);
-  const { evening } = useWellbeing();
+  const { evening, coplay } = useWellbeing();
   const [record, setRecord] = useState(0);
 
   useEffect(() => {
@@ -30,7 +30,7 @@ export function ContinueTile() {
   const slug = mostRecentSlug(activities);
   const meta = findActivity(slug);
   const label = meta?.label ?? slug;
-  const sleeping = evening && getActivityInfo(slug)?.kind === "arcade";
+  const sleeping = evening && !coplay && getActivityInfo(slug)?.kind === "arcade";
   const showRecord = slug === DEFAULT_CONTINUE_SLUG && record > 0;
   const chipSay = showRecord
     ? `${shellLine(SHELL.continueSay, { etkinlik: label })} ${voiceLine("continueRecord", { skor: record })}`

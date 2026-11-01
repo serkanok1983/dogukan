@@ -316,6 +316,13 @@
   }
 }
 
+/* Uzay Savunma ve Yağmur Damlası: toast üstteki ipucu satırını örtmesin; bu
+   oyunlarda dokunmatik çubuk olmadığından tuvalin altındaki boş alana iner. */
+body:has(.gf-toast-low) .gf-toast {
+  top: auto;
+  bottom: calc(16px + var(--safe-bottom));
+}
+
 /* ---------- İkon skor göstergesi ---------- */
 
 .score-hud.gf-score-hud {

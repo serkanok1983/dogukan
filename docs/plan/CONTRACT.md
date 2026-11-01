@@ -52,6 +52,36 @@ C0 is merged. Deviations from the first draft of this file, already applied belo
   runs `e2e/smoke.spec.ts` and `e2e/child-flow.spec.ts` (390×844, clock pinned to a weekday morning,
   reduced motion, zero console errors). Not part of `npm run check`.
 
+**Review fixes (2026-11-01, live after deploy):**
+
+- Session: `loginAs("dogukan")` is persistent (local + session); `loginAs("serkan")` is **session-only**.
+  On load, a persistent non-dogukan login in localStorage is removed (old "Oturumu açık tut" father logins).
+  The map shows a "👨 Baba oynuyor" banner when the session player is serkan.
+- Clock (§10.2): `running` = `started && useGameActive()` (false under RewardSheet/HoneyGate/overlays/pause).
+  The "show overlay now" pause window closes on the first tap/key, `run_start`, or running false→true (30 s cap);
+  `card_end` counts only at that instant; `finishBreak` opens no window. Clock-jump reference persisted in
+  `dogukan-clock-ref` (backward jumps logged; forward jumps while asleep are indistinguishable from sleep).
+- `WellbeingState` adds `graceDay`, `arcadeOpen`, `honeyRefill`; `jarEmpty` excludes coplay and grace;
+  `evening` = `isEveningAt(now) || night override` (independent of warn phases). Overlays only for a
+  logged-in child session. New exports: `startCoplay`, `canStartArcadeNow`, `extensionMinutesFor`,
+  `canEarnHoney`, `canStartArcade(…, { ignoreNight })`, `SETTING_RANGES` (all settings sanitized/clamped).
+- Bal topla: one shared 2-per-session counter (StartCard + RewardSheet), never offered at the jar ceiling;
+  the game restarts only if a cell exists; in the evening arcade gets Harita only. One coplay gate (arithmetic);
+  the Baba ile pass is the coplay state.
+- Progress (§2/§3.5): additive fields `TopicState.favoriteAt/completeAt`, `DayUsage.breakAtTotalSec/extensionGrants`,
+  `Progress.ackedNotices/lifetime`. Merge stays commutative + idempotent and can now undo: acked notices stay
+  acked, break resets survive, extensions merge by grant id, favourites are last-writer-wins, `starsSpent` =
+  max(recorded, Σ owned catalogue prices). Load validates every field; persist merges with storage first;
+  re-read on `pageshow`/visible.
+- Firebase: every read/write awaits `getAuthedDb()` (returns null on failed anonymous sign-in, retried later);
+  `leaderboard.ts` loads the SDK lazily. Rival wording removed entirely: with `rivalVisible`, only
+  " · 🏆 Baba: N" is appended to a `praise()` line. **Re-paste `database.rules.json` in the Firebase console.**
+- QuizGame speaks (question, read-out of choices with highlight, retry → reveal, `praise()`), emits
+  `exercise_set_end` + natural pauses, 6 questions per set. ExerciseSession/CapsuleFeed read choices aloud and
+  never speak or reveal while inactive (overlay/pause); re-speak once afterwards. Bare consonants are blocked
+  at token level in all spoken strings. Ses Avı words carry optional `aka` names; distractors never share the
+  target's first sound under any name.
+
 **S5 additive changes (2026-10-31):**
 
 - `types.ts`: `Progress.rewards.questDays?: DayKey[]` (days on which all three

@@ -2,8 +2,11 @@
  * Harita ve ada ekranı için saf yardımcılar ve kararlı seçiciler.
  * Seçiciler modül düzeyindedir (useProgress/useSettings kararlı seçici ister).
  */
+import { getPlayerId, type PlayerId } from "@/lib/auth";
 import { trackEvent } from "@/lib/progress/events";
+import { readProgressSnapshot } from "@/lib/progress/store";
 import type { ActivityStats, Progress } from "@/lib/progress/types";
+import { isCoplayActive, startCoplay } from "@/lib/sessionClock";
 import type { Settings } from "@/lib/settings";
 import { activitiesInWorld, getActivityInfo, type WorldId } from "@/lib/worlds";
 
@@ -67,15 +70,21 @@ export function paginate<T>(items: readonly T[], size: number): T[][] {
 }
 
 /**
- * Süper Ayı rekoru (Doğukan). `leaderboard.ts` Firebase'i statik içe aktardığı için
- * harita paketine girmesin diye tembel yüklenir (CONTRACT §0.9).
+ * Süper Ayı rekoru, oturumdaki oyuncu için (`player` verilmezse `getPlayerId()`).
+ * Yerel skor tablosu (leaderboard'un Firebase'den önbelleklediği yüksekler dahil)
+ * ile ilerleme deposundaki `best`in büyüğü. Ağı beklemez; leaderboard harita
+ * paketine girmesin diye tembel yüklenir.
  */
-export async function loadContinueRecord(): Promise<number> {
+export async function loadContinueRecord(player?: PlayerId | null): Promise<number> {
+  const who = player ?? getPlayerId();
+  if (!who) return 0;
+  const best =
+    readProgressSnapshot(who).activities[DEFAULT_CONTINUE_SLUG]?.best ?? 0;
   try {
     const m = await import("@/lib/leaderboard");
-    return m.getHighScore(DEFAULT_CONTINUE_SLUG, "dogukan");
+    return Math.max(best, m.getHighScore(DEFAULT_CONTINUE_SLUG, who));
   } catch {
-    return 0;
+    return best;
   }
 }
 
@@ -88,15 +97,14 @@ export function trackAppOpenOnce(): void {
   trackEvent({ type: "app_open" });
 }
 
-/* Baba ile geçişi: haritadaki aritmetik kapıdan geçildiğinde ada ekranı yeniden sormaz.
-   Yalnızca bellekte (yeniden yüklemede kapı tekrar sorulur). */
-const BABA_PASS_MS = 15 * 60_000;
-let babaPassUntil = 0;
-
+/* Baba ile geçişi = birlikte oyun (tek durum, `sessionClock`): kapıdan geçilince 30 dk
+   coplay başlar; ada ekranı yeniden sormaz. Yalnızca bellekte. `now` eski imza için. */
 export function grantBabaPass(now: number = Date.now()): void {
-  babaPassUntil = now + BABA_PASS_MS;
+  void now;
+  startCoplay();
 }
 
 export function hasBabaPass(now: number = Date.now()): boolean {
-  return babaPassUntil > now;
+  void now;
+  return isCoplayActive();
 }

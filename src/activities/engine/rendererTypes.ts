@@ -17,4 +17,6 @@ export type RendererProps = {
   onAnswer: (ids: string[]) => void;
   /** Motorun konuşma kuyruğundan okutur (önceki zinciri keser). */
   say: (text: string, rate?: number) => void;
+  /** Şu an sesli okunan seçenek (vurgulanır); yoksa null. */
+  reading?: string | null;
 };

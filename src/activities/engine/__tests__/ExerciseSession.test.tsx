@@ -97,9 +97,10 @@ vi.mock("next/link", () => ({
 }));
 
 import { ExerciseSession } from "@/activities/engine/ExerciseSession";
+import { GameSessionProvider } from "@/lib/gameSession";
 import { notifyNaturalPause } from "@/lib/sessionClock";
 import { sounds } from "@/lib/sounds";
-import { unlockAudio } from "@/lib/speech";
+import { cancelSpeech, speak, unlockAudio } from "@/lib/speech";
 
 type Ev = { type: string } & Record<string, unknown>;
 const itemEvents = () =>
@@ -195,9 +196,12 @@ describe("ExerciseSession (session)", () => {
     choose("kedi");
     expect(sounds.softWrong).toHaveBeenCalledTimes(1);
     expect(sounds.wrong).not.toHaveBeenCalled();
-    expect(h.spoken.slice(-2)).toEqual([
+    // İpucu, yavaş yönerge, sonra söndürülmemiş seçenekler sırayla.
+    expect(h.spoken.slice(-4)).toEqual([
       { text: "Bir daha bak.", rate: undefined },
       { text: "Yavaş soru 1", rate: 0.75 },
+      { text: "elma", rate: undefined },
+      { text: "kedi", rate: undefined },
     ]);
     expect(
       (screen.getByRole("button", { name: "araba" }) as HTMLButtonElement).disabled,
@@ -264,6 +268,72 @@ describe("ExerciseSession (session)", () => {
     fireEvent.click(btn);
     expect(lastSpoken()).toContain("kedi");
     expect(sounds.softWrong).not.toHaveBeenCalled();
+  });
+
+  it("yönergeden sonra seçenekler sırayla vurguyla okunur; bir dokunuş keser", () => {
+    const pending: (() => void)[] = [];
+    vi.mocked(speak).mockImplementation((text, opts) => {
+      h.spoken.push({ text, rate: opts?.rate });
+      if (opts?.onEnd) pending.push(opts.onEnd);
+    });
+    try {
+      const { container } = render(
+        <ExerciseSession slug="sayma-oyunu" skill="mat.sayma" />,
+      );
+      start();
+      expect(lastSpoken()).toEqual(["Soru 1"]);
+      act(() => pending.shift()?.());
+      expect(lastSpoken()).toEqual(["Soru 1", "elma"]);
+      expect(
+        container.querySelector(".ex-choice.is-reading")?.getAttribute("aria-label"),
+      ).toBe("elma");
+      act(() => pending.shift()?.());
+      expect(
+        container.querySelector(".ex-choice.is-reading")?.getAttribute("aria-label"),
+      ).toBe("kedi");
+
+      fireEvent.pointerDown(container.querySelector(".ex-prompt") as HTMLElement);
+      expect(cancelSpeech).toHaveBeenCalled();
+      expect(container.querySelector(".ex-choice.is-reading")).toBeNull();
+      act(() => pending.shift()?.());
+      expect(lastSpoken()).not.toContain("araba");
+    } finally {
+      vi.mocked(speak).mockImplementation((text, opts) => {
+        h.spoken.push({ text, rate: opts?.rate });
+        opts?.onEnd?.();
+      });
+    }
+  });
+
+  it("oyun etkin değilken konuşmaz; katman kapanınca madde bir kez yeniden okunur", () => {
+    const view = (active: boolean) => (
+      <GameSessionProvider active={active}>
+        <ExerciseSession slug="sayma-oyunu" skill="mat.sayma" />
+      </GameSessionProvider>
+    );
+    const pending: (() => void)[] = [];
+    vi.mocked(speak).mockImplementation((text, opts) => {
+      h.spoken.push({ text, rate: opts?.rate });
+      if (opts?.onEnd) pending.push(opts.onEnd);
+    });
+    const { rerender } = render(view(true));
+    start();
+    expect(lastSpoken()).toEqual(["Soru 1"]);
+
+    // Katman açılır: süren zincir devam etmez (seçenekler katmanın üstüne okunmaz).
+    rerender(view(false));
+    act(() => pending.splice(0).forEach((f) => f()));
+    expect(lastSpoken()).toEqual(["Soru 1"]);
+    vi.mocked(speak).mockImplementation((text, opts) => {
+      h.spoken.push({ text, rate: opts?.rate });
+      opts?.onEnd?.();
+    });
+    h.spoken.length = 0;
+
+    rerender(view(true));
+    expect(lastSpoken().filter((t) => t === "Soru 1")).toHaveLength(1);
+    rerender(view(true));
+    expect(lastSpoken().filter((t) => t === "Soru 1")).toHaveLength(1);
   });
 
   it("üreticisi olmayan beceri 🚧 kartı gösterir, fırlatmaz", () => {

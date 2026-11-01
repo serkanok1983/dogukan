@@ -20,6 +20,8 @@ type Props = {
   index: number;
   total: number;
   runtime: CardRuntime;
+  /** Choice whose label is being read aloud right now (highlighted). */
+  readingId?: string | null;
   showStart: boolean;
   cardRef?: Ref<HTMLElement>;
   onStart: () => void;
@@ -53,9 +55,15 @@ function Visual({ card, runtime }: { card: CapsuleCard; runtime: CardRuntime }) 
   );
 }
 
-function choiceClass(card: CapsuleCard, runtime: CardRuntime, choice: CapsuleChoice): string {
+function choiceClass(
+  card: CapsuleCard,
+  runtime: CardRuntime,
+  choice: CapsuleChoice,
+  readingId: string | null,
+): string {
   const classes = ["cap-choice"];
   if (runtime.pickedId === choice.id) classes.push("is-picked");
+  if (readingId === choice.id) classes.push("is-reading");
   if (runtime.phase === "answered" && card.tap.type === "choose" && choice.id === card.tap.answerId) {
     classes.push("is-answer");
   }
@@ -67,6 +75,7 @@ export function CapsuleCardView({
   index,
   total,
   runtime,
+  readingId = null,
   showStart,
   cardRef,
   onStart,
@@ -117,7 +126,7 @@ export function CapsuleCardView({
               <button
                 key={choice.id}
                 type="button"
-                className={choiceClass(card, runtime, choice)}
+                className={choiceClass(card, runtime, choice, readingId)}
                 aria-pressed={runtime.pickedId === choice.id}
                 disabled={answered && !playCard}
                 onClick={() => onPick(choice)}

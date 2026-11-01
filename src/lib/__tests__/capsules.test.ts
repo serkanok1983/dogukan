@@ -49,6 +49,31 @@ describe("capsules data", () => {
       expect(episode.cards.filter((c) => c.tap.type === "done")).toHaveLength(1);
     });
 
+    it("shows exactly what it says (word cards show the spoken word); no grey-box emoji", () => {
+      for (const card of episode.cards) {
+        if (card.kind === "word") {
+          expect(card.text).toBeTruthy();
+          expect(card.say.toLocaleLowerCase("tr")).toContain(card.text?.toLocaleLowerCase("tr"));
+        } else {
+          expect(card.text ?? card.say, card.id).toBe(card.say);
+        }
+        const scenes = [
+          card.visual.type === "emoji" ? card.visual.scene : "",
+          ...(card.tap.choices ?? []).map((c) => c.emoji),
+        ];
+        // ZWJ family emoji (👨‍👦) renders as a grey silhouette box on recent Apple systems.
+        for (const s of scenes) expect(s, card.id).not.toMatch(/[\u{1F468}\u{1F469}]\u200D[\u{1F466}\u{1F467}]/u);
+        // Unicode 14+ emoji (🫥 🫲 🪷 🫏 …) are missing on older phones.
+        for (const s of scenes) expect(s, card.id).not.toMatch(/[\u{1FAE0}-\u{1FAFF}\u{1FA75}-\u{1FA77}\u{1FAA9}-\u{1FAAF}\u{1FAB7}-\u{1FABF}\u{1FAC3}-\u{1FACF}\u{1FADA}-\u{1FADF}]/u);
+      }
+    });
+
+    it("pulse is felt on the chest, not the wrist (hard for a 6-year-old)", () => {
+      for (const card of episode.cards) {
+        for (const line of spokenLines(card)) expect(line).not.toMatch(/bile[kğ]/i);
+      }
+    });
+
     it("follows hook → … → word → 2 quiz → mission", () => {
       const kinds = episode.cards.map((c) => c.kind);
       expect(kinds[0]).toBe("hook");

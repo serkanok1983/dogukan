@@ -1,16 +1,10 @@
 "use client";
 
 import "./home.css";
-import {
-  useEffect,
-  useRef,
-  useState,
-  useSyncExternalStore,
-  type CSSProperties,
-} from "react";
+import { useEffect, useRef, useState, type CSSProperties } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ParentGate } from "@/components/auth/ParentGate";
+import { ArithmeticGate } from "@/components/auth/ParentGate";
 import { SayButton } from "@/components/SayButton";
 import { SHELL } from "@/content/shell";
 import { useProgress } from "@/hooks/useProgress";
@@ -18,7 +12,7 @@ import { useWellbeing } from "@/hooks/useWellbeing";
 import { useParentMode, useSession } from "@/lib/auth";
 import { EPISODES, episodeHref } from "@/lib/capsules";
 import { findActivity } from "@/lib/menu";
-import { isCoplayActive, requestCoplay, setClockContext } from "@/lib/sessionClock";
+import { setClockContext, startCoplay } from "@/lib/sessionClock";
 import { useSettings } from "@/lib/settings";
 import {
   activitiesInWorld,
@@ -27,8 +21,6 @@ import {
   type WorldId,
 } from "@/lib/worlds";
 import {
-  grantBabaPass,
-  hasBabaPass,
   paginate,
   selectActivities,
   selectBabaEnabled,
@@ -49,18 +41,6 @@ type TileEntry = {
   sleeping?: boolean;
 };
 
-function noopSubscribe(): () => void {
-  return () => {};
-}
-
-function readCoplayPass(): boolean {
-  return isCoplayActive() || hasBabaPass();
-}
-
-function serverFalse(): boolean {
-  return false;
-}
-
 /** Ada ekranı: tek ekranda en fazla 12 kutucuk; fazlası yana kaydırılan sayfalarda. */
 export function IslandScreen({ worldId }: { worldId: WorldId }) {
   const world = getWorld(worldId);
@@ -69,15 +49,9 @@ export function IslandScreen({ worldId }: { worldId: WorldId }) {
   const session = useSession();
   const activities = useProgress(selectActivities);
   const topics = useProgress(selectTopics);
-  const { evening } = useWellbeing();
+  const { evening, coplay } = useWellbeing();
   const babaEnabled = useSettings(selectBabaEnabled);
   const parentMode = useParentMode();
-  const coplayPass = useSyncExternalStore(
-    noopSubscribe,
-    readCoplayPass,
-    serverFalse,
-  );
-  const [gatePassed, setGatePassed] = useState(false);
   const [gateOpen, setGateOpen] = useState(false);
   const [page, setPage] = useState(0);
   const pagesRef = useRef<HTMLDivElement>(null);
@@ -91,7 +65,8 @@ export function IslandScreen({ worldId }: { worldId: WorldId }) {
   }, [session.ready, session.player, router]);
 
   const gated = world.gated === "coplay";
-  const locked = gated && !(babaEnabled && (coplayPass || parentMode || gatePassed));
+  // Baba ile izni = birlikte oyun (tek kapı, tek durum).
+  const locked = gated && !(babaEnabled && (coplay || parentMode));
 
   const entries: TileEntry[] = [
     ...(worldId === "merak"
@@ -111,7 +86,7 @@ export function IslandScreen({ worldId }: { worldId: WorldId }) {
         emoji: meta?.emoji ?? "🎲",
         label: meta?.label ?? slug,
         stars: activities[slug]?.stars ?? 0,
-        sleeping: evening && getActivityInfo(slug)?.kind === "arcade",
+        sleeping: evening && !coplay && getActivityInfo(slug)?.kind === "arcade",
       };
     }),
   ];
@@ -247,12 +222,11 @@ export function IslandScreen({ worldId }: { worldId: WorldId }) {
       )}
 
       {gateOpen && (
-        <ParentGate
+        <ArithmeticGate
+          title={SHELL.babaGateTitle}
           onPass={() => {
             setGateOpen(false);
-            setGatePassed(true);
-            grantBabaPass();
-            requestCoplay();
+            startCoplay();
           }}
           onCancel={() => setGateOpen(false)}
         />

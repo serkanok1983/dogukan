@@ -1,0 +1,136 @@
+/* Renk Atölyesi: okuma bilmeyen çocuk renkleri görsün diye büyük renk kutuları.
+   Sınıf öneki: color-mix- (bileşenin kendi sınıfları). */
+
+.color-workshop {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  text-align: center;
+}
+
+.color-mix-round {
+  margin: 0;
+  font-size: max(var(--kid-font, 18px), 1.2rem);
+  font-weight: 800;
+  color: var(--ink, #173f5f);
+}
+
+.color-workshop {
+  --cw-swatch: clamp(72px, 20vw, 96px);
+}
+
+.color-mix-demo {
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 6px;
+  width: 100%;
+}
+
+.color-mix-part {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+
+.color-mix-swatch {
+  display: grid;
+  place-items: center;
+  width: var(--cw-swatch);
+  height: var(--cw-swatch);
+  padding: 0;
+  font-size: 2.6rem;
+  font-weight: 900;
+  color: #94a3b8;
+  border: 4px solid #ffffff;
+  border-radius: 24px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.18);
+  cursor: pointer;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.color-mix-swatch.is-white {
+  border-color: #d1d5db;
+}
+
+.color-mix-result {
+  background: repeating-linear-gradient(45deg, #f1f5f9 0 10px, #e2e8f0 10px 20px);
+  border-style: dashed;
+  border-color: #cbd5e1;
+  cursor: default;
+}
+
+.color-mix-result.is-found {
+  border-style: solid;
+  border-color: #22c55e;
+}
+
+.color-mix-plus,
+.color-mix-eq {
+  display: grid;
+  place-items: center;
+  height: var(--cw-swatch);
+  font-size: 1.8rem;
+  font-weight: 900;
+  color: var(--ink, #173f5f);
+}
+
+.color-mix-label {
+  font-size: max(var(--kid-font, 18px), 1.1rem);
+  font-weight: 800;
+  color: var(--ink, #173f5f);
+}
+
+.color-mix-prompt,
+.color-mix-title {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin: 0;
+  font-size: max(var(--kid-font, 18px), 1.3rem);
+  font-weight: 800;
+  color: var(--ink, #173f5f);
+}
+
+.color-workshop-options {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+  width: 100%;
+  max-width: 400px;
+}
+
+.color-workshop .color-mix-option {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: var(--kid-tile, 96px);
+  padding: 12px 8px;
+  font-size: max(var(--kid-font, 18px), 1.1rem);
+  touch-action: manipulation;
+}
+
+.color-mix-dot {
+  display: block;
+  width: var(--kid-touch, 72px);
+  height: var(--kid-touch, 72px);
+  border: 3px solid rgba(255, 255, 255, 0.9);
+  border-radius: 50%;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.18);
+  flex-shrink: 0;
+}
+
+.color-mix-dot.is-white {
+  border-color: #d1d5db;
+}
+
+.color-mix-name {
+  line-height: 1.2;
+}

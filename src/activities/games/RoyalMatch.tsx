@@ -6,6 +6,8 @@ import { createGameJuice } from "@/lib/gameJuice";
 import { useGameActive, useGameBoot } from "@/lib/gameSession";
 import { useGameRunning } from "@/hooks/useGameRunning";
 import { sounds } from "@/lib/sounds";
+import { praise } from "@/lib/praise";
+import { speak } from "@/lib/speech";
 import { randInt } from "@/lib/utils";
 import { useGameScore } from "@/hooks/useGameScore";
 import { ScoreHud } from "@/components/ScoreHud";
@@ -79,6 +81,7 @@ export function RoyalMatch() {
   const [done, setDone] = useState(false);
   const [, setCombo] = useState(0);
   const [message, setMessage] = useState("");
+  const [endLine, setEndLine] = useState("");
   const [, setSelected] = useState<[number, number] | null>(null);
   const scoreGame = useGameScore(GAME_SLUG);
   const submitted = useRef(false);
@@ -248,8 +251,10 @@ export function RoyalMatch() {
       if (movesLeftRef.current <= 0) {
         setDone(true);
         sounds.win();
-        setMessage("🎉 Harika! Oyun Bitti");
-        messageRef.current = "🎉 Harika! Oyun Bitti";
+        const line = praise("run_end");
+        setEndLine(line);
+        messageRef.current = "🎉 Hamleler bitti!";
+        speak(`Hamleler bitti! ${line} ${scoreRef.current} puan.`);
       }
     } else {
       // swap back
@@ -541,7 +546,9 @@ export function RoyalMatch() {
       )}
       {done && (
         <div className="game-over">
-          <p>👑 Muhteşem! Puan: {score}</p>
+          <p>
+            👑 {endLine} Puan: {score}
+          </p>
           <button type="button" className="btn-primary" onClick={reset}>
             Tekrar oyna
           </button>

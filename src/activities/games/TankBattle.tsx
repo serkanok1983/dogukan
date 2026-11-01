@@ -11,6 +11,7 @@ import { useGameScore } from "@/hooks/useGameScore";
 import { ScoreHud } from "@/components/ScoreHud";
 import { randInt } from "@/lib/utils";
 import { canvasFont } from "@/lib/canvasFont";
+import "./touch-targets.css";
 
 const W = 360;
 const H = 520;

@@ -309,7 +309,7 @@ export function SpaceDefense() {
   }, [running, over, reset, scoreGame]);
 
   return (
-    <div className="game-panel canvas-game">
+    <div className="game-panel canvas-game gf-toast-low">
       <ScoreHud
         score={score}
         selfHigh={scoreGame.selfHigh}

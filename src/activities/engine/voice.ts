@@ -2,10 +2,16 @@
  * Motorun konuşma kuyruğu: birkaç satırı art arda okur. Yeni bir `say` ya da
  * `stop` önceki zinciri geçersiz kılar; geçersiz zincirin kalan satırları ve
  * `onDone`'ı çalışmaz. `speak` her satır için `onEnd`'i tam bir kez çağırır.
+ * Bir satırın `onStart`'ı o satır okunmaya başlarken çağrılır (seçenek vurgusu).
  */
 import { speak } from "@/lib/speech";
 
-export type Line = { text: string; rate?: number; clip?: string };
+export type Line = {
+  text: string;
+  rate?: number;
+  clip?: string;
+  onStart?: () => void;
+};
 export type LineInput = Line | string | null | undefined | false;
 
 export type VoiceQueue = {
@@ -36,6 +42,7 @@ export function createVoiceQueue(): VoiceQueue {
           onDone?.();
           return;
         }
+        line.onStart?.();
         speak(line.text, {
           rate: line.rate,
           clip: line.clip,

@@ -52,6 +52,20 @@ export function secondsLeftToday(s: Settings, d: DayUsage, ms: number): number {
   return capSeconds(s, d, ms) - d.totalSec;
 }
 
+/**
+ * "+N dk" için yazılacak dakika: sınır beklerken (≤ 120 sn) aşılan süre de kapatılır,
+ * böylece uzatma verildiği andan itibaren en az N dakika sürer.
+ */
+export function extensionMinutesFor(
+  s: Settings,
+  d: DayUsage,
+  ms: number,
+  minutes: number,
+): number {
+  const overSec = Math.max(0, -secondsLeftToday(s, d, ms));
+  return minutes + Math.ceil(overSec / 60);
+}
+
 /** Bugün tanışma günlerinden biri mi (kavanoz kapı olmaz)? */
 export function isGraceDay(s: Settings, ms: number): boolean {
   return Boolean(s.graceUntil) && dayKey(ms) <= s.graceUntil;
@@ -89,21 +103,30 @@ export function honeyCells(
   };
 }
 
+/** Bir "Bal topla" daha kavanoza kullanılabilir bir hücre ekler mi (tavan dolmadıysa)? */
+export function canEarnHoney(s: Settings, d: DayUsage): boolean {
+  return honeyCells(s, { ...d, honeyEarned: d.honeyEarned + 1 }).left > 0;
+}
+
 /**
  * Arcade başlatılabilir mi? Gece ve sınırda hayır. Birlikte oyunda evet (kavanoz
- * boşalmaz). Akşam arcade adaları uyur. Tanışma günlerinde kavanoz kapı olmaz.
+ * boşalmaz). Akşam arcade adaları uyur (−5/−1 dk uyarıları akşamı bastırmaz).
+ * Tanışma günlerinde kavanoz kapı olmaz. `ignoreNight`: ebeveyn geceyi açtı;
+ * gece saatleri akşam sayılır.
  */
 export function canStartArcade(
   now: Date,
   s: Settings,
   d: DayUsage,
   coplay: boolean,
+  opts: { ignoreNight?: boolean } = {},
 ): boolean {
-  const phase = computePhase(now, s, d);
+  const ms = now.getTime();
+  const phase = computePhase(now, s, d, opts);
   if (phase === "night" || phase === "limit") return false;
   if (coplay) return true;
-  if (phase === "evening") return false;
-  return isGraceDay(s, now.getTime()) || honeyCells(s, d).left > 0;
+  if (isEveningAt(ms, s) || (opts.ignoreNight && isNightAt(ms, s))) return false;
+  return isGraceDay(s, ms) || honeyCells(s, d).left > 0;
 }
 
 export function canStartEpisode(s: Settings, d: DayUsage): boolean {

@@ -10,11 +10,17 @@ import { useGameScore } from "@/hooks/useGameScore";
 import { ScoreHud } from "@/components/ScoreHud";
 import { GameTouchBar } from "@/components/GameTouchBar";
 import { useCanvasFit } from "@/hooks/useCanvasFit";
+import { speak } from "@/lib/speech";
 
 const GAME_SLUG = "pong";
 const GAME_W = 800;
 const GAME_H = 400;
 const MAX_SCORE = 20;
+
+/** Maç sonu satırı: kazanınca kutlar, aksi halde nötr (korkutucu imge yok). */
+function endLine(playerScore: number): string {
+  return playerScore >= MAX_SCORE ? "Kazandın!" : `Maç bitti! ${playerScore} sayı aldın.`;
+}
 
 export function Pong() {
   const active = useGameActive();
@@ -116,6 +122,7 @@ export function Pong() {
     if (ended && !submitted.current) {
       submitted.current = true;
       void scoreGame.submitFinal(playerScore);
+      speak(endLine(playerScore));
     }
   }, [ended, playerScore, scoreGame]);
 
@@ -281,7 +288,9 @@ export function Pong() {
       <GameTouchBar gameId="pong" />
       {ended && (
         <div className="game-over">
-          <p>{playerScore >= MAX_SCORE ? "🎉 Kazandın!" : "💀 Bilgisayar kazandı!"}</p>
+          <p>
+            {playerScore >= MAX_SCORE ? "🎉" : "🏓"} {endLine(playerScore)}
+          </p>
           <button type="button" className="btn-primary" onClick={reset}>
             Tekrar oyna
           </button>

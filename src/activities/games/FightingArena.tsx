@@ -6,6 +6,7 @@ import { createGameJuice } from "@/lib/gameJuice";
 import { useGameActive, useGameBoot } from "@/lib/gameSession";
 import { useGameRunning } from "@/hooks/useGameRunning";
 import { sounds } from "@/lib/sounds";
+import { speak } from "@/lib/speech";
 import { getPlayerId } from "@/lib/auth";
 import { useGameScore } from "@/hooks/useGameScore";
 import { ScoreHud } from "@/components/ScoreHud";
@@ -36,6 +37,8 @@ import {
   type Projectile,
 } from "./fighting/engine";
 import { canvasFont } from "@/lib/canvasFont";
+import { prefersKeyboardHints } from "./keyboardHints";
+import "./fighting-arena.css";
 
 const GAME_SLUG = "dovus-arenasi";
 const KEY_LP = "KeyZ";
@@ -43,6 +46,8 @@ const KEY_HP = "KeyX";
 const KEY_LK = "KeyC";
 const KEY_HK = "KeyV";
 const KEY_THROW = "KeyB";
+
+const roundAnnounce = (r: number) => `${r}. RAUNT — BAŞLA!`;
 
 type FloatText = { x: number; y: number; text: string; color: string; life: number; scale: number };
 type ImpactRing = { x: number; y: number; life: number; maxLife: number; color: string; maxR: number };
@@ -79,7 +84,7 @@ export function FightingArena() {
   const roundRef = useRef(1);
   const timerRef = useRef(ROUND_TIME);
   const hitStopRef = useRef(0);
-  const announceRef = useRef("ROUND 1 — FIGHT!");
+  const announceRef = useRef(roundAnnounce(1));
   const announceTRef = useRef(0);
   const roundActiveRef = useRef(false);
   const overRef = useRef(false);
@@ -130,7 +135,8 @@ export function FightingArena() {
       shakeRef.current = { t: 0, amp: 0 };
       koCinematic.current = { active: false, t: 0, maxT: 110, victimId: "cpu", zoom: 1 };
       comboDisplay.current = 0;
-      announceRef.current = r === 1 ? "ROUND 1 — FIGHT!" : `ROUND ${r} — FIGHT!`;
+      announceRef.current = roundAnnounce(r);
+      speak(`${r}. raunt. Başla!`);
       announceTRef.current = 90;
       roundActiveRef.current = false;
       if (!keepScore) {
@@ -228,7 +234,7 @@ export function FightingArena() {
       defender.vx = -attacker.facing * 2.5;
       sounds.wrong();
       juiceRef.current.burst(defender.x + defender.w / 2, defender.y - 30, "#94a3b8", 8);
-      spawnFloat(defender.x, defender.y - 50, "BLOCK", "#94a3b8");
+      spawnFloat(defender.x, defender.y - 50, "BLOK", "#94a3b8");
       comboDisplay.current = 0;
     } else {
       const dmg = Math.floor(a.damage * attacker.dmgMult * (1 + roundRef.current * 0.02));
@@ -257,7 +263,7 @@ export function FightingArena() {
         atk === "hk" ? 20 : 14,
       );
       if (comboDisplay.current >= 3) {
-        spawnFloat(STAGE_W / 2, 80, `${comboDisplay.current} HİT COMBO!`, "#f472b6", 1.3);
+        spawnFloat(STAGE_W / 2, 80, `${comboDisplay.current} VURUŞ SERİSİ!`, "#f472b6", 1.3);
         juiceRef.current.flashScreen(0.15);
       }
       sounds.pop();
@@ -279,7 +285,7 @@ export function FightingArena() {
     triggerShake(8.5, 12);
     juiceRef.current.shakeScreen(12);
     juiceRef.current.flashScreen(0.3);
-    spawnFloat(defender.x, defender.y - 55, "THROW!", "#a78bfa", 1.4);
+    spawnFloat(defender.x, defender.y - 55, "FIRLAT!", "#a78bfa", 1.4);
     spawnFloat(defender.x, defender.y - 30, `-${dmg}`, "#f97316");
     spawnBurst(particles.current, defender.x + defender.w / 2, defender.y - 30, 20, [
       "#a78bfa",
@@ -517,12 +523,13 @@ export function FightingArena() {
       setScore(scoreRef.current);
       void scoreGame.checkMilestone(scoreRef.current);
       sounds.win();
-      if (perfect) spawnFloat(STAGE_W / 2, STAGE_H / 2, "PERFECT!", "#fde047", 1.5);
+      if (perfect) spawnFloat(STAGE_W / 2, STAGE_H / 2, "TAM CAN!", "#fde047", 1.5);
       if (roundRef.current >= 3) {
         overRef.current = true;
         setOver(true);
         announceRef.current = "KAZANDIN!";
         setEndText(announceRef.current);
+        speak("Kazandın! Üç raunt bitti.");
       } else {
         roundRef.current++;
         setRound(roundRef.current);
@@ -531,8 +538,9 @@ export function FightingArena() {
     } else {
       overRef.current = true;
       setOver(true);
-      announceRef.current = "KAYBETTİN";
+      announceRef.current = "MAÇ BİTTİ";
       setEndText(announceRef.current);
+      speak("Maç bitti. Bir daha deneyelim mi?");
     }
     koCinematic.current.active = false;
   };
@@ -549,6 +557,7 @@ export function FightingArena() {
     if (!running || !canvas || !charLocked) return;
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
+    const keyHints = prefersKeyboardHints();
 
     const onKey = (e: KeyboardEvent, down: boolean) => {
       const m = keys.current;
@@ -955,7 +964,7 @@ export function FightingArena() {
         ctx.fillStyle = "#f472b6";
         ctx.font = canvasFont("bold 16px var(--font-nunito), sans-serif");
         ctx.textAlign = "center";
-        ctx.fillText(`${comboDisplay.current}x COMBO`, STAGE_W / 2, 72);
+        ctx.fillText(`${comboDisplay.current}x SERİ`, STAGE_W / 2, 72);
       }
 
       const barW = 130;
@@ -1022,10 +1031,12 @@ export function FightingArena() {
         ctx.restore();
       }
 
-      ctx.fillStyle = "rgba(255,255,255,0.7)";
-      ctx.font = canvasFont("10px var(--font-nunito), sans-serif");
-      ctx.textAlign = "center";
-      ctx.fillText("Z/X/C/V saldır · B yakalama · ↓+Z ateş", STAGE_W / 2, STAGE_H - 8);
+      if (keyHints) {
+        ctx.fillStyle = "rgba(255,255,255,0.7)";
+        ctx.font = canvasFont("10px var(--font-nunito), sans-serif");
+        ctx.textAlign = "center";
+        ctx.fillText("Z/X/C/V vur · B yakala · ↓+Z ateş", STAGE_W / 2, STAGE_H - 8);
+      }
 
       raf = requestAnimationFrame(loop);
     };
@@ -1047,9 +1058,11 @@ export function FightingArena() {
         rivalName={scoreGame.rivalName}
         playerName={scoreGame.playerName}
       />
-      <p className="round-label">
-        Dövüş Arenası · Doğukan vs Serkan · 3 raunt arcade
-      </p>
+      {!charLocked && (
+        <p className="round-label">
+          Dövüş Arenası · Doğukan vs Serkan · 3 raunt arcade
+        </p>
+      )}
       {!active && <p className="game-waiting">ℹ️ Başla&apos;ya basınca dövüş başlar</p>}
 
       {!charLocked && (
@@ -1068,13 +1081,15 @@ export function FightingArena() {
 
       {charLocked && <p className="round-label">Raunt {round} · {announce}</p>}
 
-      <canvas
-        ref={canvasRef}
-        width={STAGE_W}
-        height={STAGE_H}
-        className="game-canvas touch-canvas fighting-canvas"
-      />
-      {charLocked && <GameTouchBar gameId="dovus-arenasi" />}
+      <div className="fight-stage">
+        <canvas
+          ref={canvasRef}
+          width={STAGE_W}
+          height={STAGE_H}
+          className="game-canvas touch-canvas fighting-canvas"
+        />
+      </div>
+      {charLocked && !over && <GameTouchBar gameId="dovus-arenasi" />}
       {over && (
         <div className="game-over">
           <p>🥋 {endText} Skor: {score}</p>

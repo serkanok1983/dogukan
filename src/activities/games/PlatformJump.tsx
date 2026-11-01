@@ -9,6 +9,7 @@ import { sounds } from "@/lib/sounds";
 import { randInt } from "@/lib/utils";
 import { useGameScore } from "@/hooks/useGameScore";
 import { ScoreHud } from "@/components/ScoreHud";
+import "./touch-targets.css";
 
 const GAME_SLUG = "ziplama-adasi";
 
@@ -327,7 +328,7 @@ export function PlatformJump() {
   };
 
   return (
-    <div className="game-panel canvas-game">
+    <div className="game-panel canvas-game jump-game">
       <ScoreHud
         score={score}
         selfHigh={scoreGame.selfHigh}

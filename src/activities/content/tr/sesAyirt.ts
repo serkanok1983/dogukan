@@ -2,6 +2,7 @@
  * `tr.ses-ayirt` — "Hangisi aynı sesle başlıyor?" Hedef kelime sesli okunur,
  * resmi gösterilir; çocuk aynı ilk sesle başlayan resmi seçer. Harf yoktur.
  * L1: 1. grup, 2 resim · L2: 1–2. grup, 3 resim · L3: 3 resim, yarısı son ses.
+ * Belirsizlik koruması: çeldirici, hedefin ilk sesini hiçbir adıyla (aka) paylaşmaz.
  */
 import type { Choice, Exercise, Generator } from "@/activities/engine/types";
 import { pick, shuffled, type Rng } from "@/lib/rng";
@@ -12,6 +13,7 @@ import {
   GROUP12,
   firstSound,
   lastSound,
+  soundsClash,
   wordsForSounds,
   type PictureWord,
 } from "./words";
@@ -66,13 +68,16 @@ function startSound(
   const sound = pick(rng, sounds);
   const same = wordsForSounds([sound]);
   const [target, answer] = sample(rng, same, 2) as [PictureWord, PictureWord];
-  // Çeldiriciler farklı seslerle başlar ve kendi aralarında da farklıdır.
+  // Çeldiriciler farklı seslerle başlar, kendi aralarında da farklıdır ve hedefle
+  // hiçbir adıyla aynı sesle başlamaz (iki doğru cevap olmasın).
+  const safe = (s: string) =>
+    wordsForSounds([s]).filter((w) => !soundsClash(w, target));
   const otherSounds = sample(
     rng,
-    sounds.filter((s) => s !== sound),
+    sounds.filter((s) => s !== sound && safe(s).length > 0),
     n - 1,
   );
-  const distractors = otherSounds.map((s) => pick(rng, wordsForSounds([s])));
+  const distractors = otherSounds.map((s) => pick(rng, safe(s)));
   return build(level, "start", target, answer, distractors, rng);
 }
 

@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useGameRunning } from "@/hooks/useGameRunning";
 import { sounds } from "@/lib/sounds";
+import "./touch-targets.css";
 
 const MAZE = [
   "###########",
@@ -18,13 +19,15 @@ const MAZE = [
 
 type Pos = { r: number; c: number };
 
+function startPos(): Pos {
+  for (let r = 0; r < MAZE.length; r++)
+    for (let c = 0; c < MAZE[r].length; c++) if (MAZE[r][c] === "S") return { r, c };
+  return { r: 1, c: 1 };
+}
+
 export function MazeGame() {
   const running = useGameRunning();
-  const [pos, setPos] = useState<Pos>(() => {
-    for (let r = 0; r < MAZE.length; r++)
-      for (let c = 0; c < MAZE[r].length; c++) if (MAZE[r][c] === "S") return { r, c };
-    return { r: 1, c: 1 };
-  });
+  const [pos, setPos] = useState<Pos>(startPos);
   const [won, setWon] = useState(false);
   const [steps, setSteps] = useState(0);
 
@@ -45,13 +48,19 @@ export function MazeGame() {
     }
   };
 
+  const restart = () => {
+    setPos(startPos());
+    setSteps(0);
+    setWon(false);
+  };
+
   if (won) {
     return (
       <div className="game-panel result-panel">
         <div className="result-emoji">🏁</div>
         <h2>Labirenti bitirdin!</h2>
         <p className="result-score">{steps} adım</p>
-        <button type="button" className="btn-primary" onClick={() => window.location.reload()}>
+        <button type="button" className="btn-primary" onClick={restart}>
           Tekrar
         </button>
       </div>
@@ -59,7 +68,7 @@ export function MazeGame() {
   }
 
   return (
-    <div className="game-panel">
+    <div className="game-panel maze-game">
       <p className="round-label">Adım: {steps} — 🐶 hedefe ulaş!</p>
       <div className="maze-grid">
         {MAZE.map((row, r) =>

@@ -178,6 +178,15 @@
   background: #e9f9ef;
 }
 
+/* Choice label being read aloud right now. */
+.cap-choice.is-reading {
+  border-color: var(--topic-color, #0ea5e9);
+  box-shadow:
+    0 0 0 4px color-mix(in srgb, var(--topic-color, #0ea5e9) 35%, transparent),
+    0 6px 0 rgba(23, 63, 95, 0.1);
+  transform: scale(1.05);
+}
+
 .cap-actions {
   display: flex;
   flex-wrap: wrap;

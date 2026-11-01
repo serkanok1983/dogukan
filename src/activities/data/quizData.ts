@@ -2,15 +2,33 @@ import type { QuizQuestion } from "../shared/QuizGame";
 
 const LETTERS = "ABCÇDEFGĞHIİJKLMNOÖPRSŞTUÜVYZ".split("");
 const VOWELS = ["A", "E", "I", "İ", "O", "Ö", "U", "Ü"];
-const VOWEL_TEST_LETTERS = ["A", "B", "E", "K", "I", "M", "Ö", "S", "Ü", "Y"];
+/** Harf her zaman bir resimli kelimeyle anılır: TTS'e tek ünsüz söyletilmez ("be" der). */
+const VOWEL_TEST_WORDS: readonly { word: string; emoji: string }[] = [
+  { word: "arı", emoji: "🐝" },
+  { word: "balık", emoji: "🐟" },
+  { word: "elma", emoji: "🍎" },
+  { word: "kedi", emoji: "🐱" },
+  { word: "ışık", emoji: "💡" },
+  { word: "muz", emoji: "🍌" },
+  { word: "ördek", emoji: "🦆" },
+  { word: "su", emoji: "💧" },
+  { word: "üzüm", emoji: "🍇" },
+  { word: "yıldız", emoji: "⭐" },
+];
 
-export const sesliHarf: QuizQuestion[] = VOWEL_TEST_LETTERS.map((L) => ({
-  prompt: `"${L}" sesli harf mi?`,
-  emoji: "🎵",
-  answer: VOWELS.includes(L) ? "Evet" : "Hayır",
-  options: ["Evet", "Hayır"],
-  hint: "Sesli harfler: A, E, I, İ, O, Ö, U, Ü",
-}));
+const trUpper = (s: string) => s.replace(/i/g, "İ").replace(/ı/g, "I").toUpperCase();
+
+export const sesliHarf: QuizQuestion[] = VOWEL_TEST_WORDS.map(({ word, emoji }) => {
+  const L = trUpper(word.charAt(0));
+  return {
+    prompt: `${trUpper(word)}: "${L}" sesli harf mi?`,
+    say: `${word}… ${word} kelimesinin ilk harfi sesli harf mi?`,
+    emoji,
+    answer: VOWELS.includes(L) ? "Evet" : "Hayır",
+    options: ["Evet", "Hayır"],
+    hint: "Sesli harfler: A, E, I, İ, O, Ö, U, Ü",
+  };
+});
 
 export const kelimeOkuma: QuizQuestion[] = [
   { prompt: "Bu kelime ne?", emoji: "🐱", answer: "KEDİ", options: ["KEDİ", "KUŞ", "KAPI", "KALE"], hint: "Miyavlayan hayvan" },
@@ -26,10 +44,10 @@ export const kelimeOkuma: QuizQuestion[] = [
 ];
 
 export const heceBirlestir: QuizQuestion[] = [
-  { prompt: "el + ma = ?", emoji: "🧱", answer: "elma", options: ["elma", "alem", "mela", "lame"], hint: "Meyve" },
-  { prompt: "ka + lem = ?", emoji: "🧱", answer: "kalem", options: ["kalem", "kelam", "lemka", "mekal"], hint: "Yazı yazarken kullanırız" },
-  { prompt: "ba + lık = ?", emoji: "🧱", answer: "balık", options: ["balık", "kalıb", "lıkba", "bılık"], hint: "Suda yaşayan hayvan" },
-  { prompt: "a + ta = ?", emoji: "🧱", answer: "ata", options: ["ata", "taa", "aat", "tat"], hint: "Geçmişte yaşamış büyüklerimizden biri" },
+  { prompt: "el + ma = ?", say: "el… ma… Birleştir. Hangi kelime olur?", emoji: "🧱", answer: "elma", options: ["elma", "alem", "mela", "lame"], hint: "Meyve" },
+  { prompt: "ka + lem = ?", say: "ka… lem… Birleştir. Hangi kelime olur?", emoji: "🧱", answer: "kalem", options: ["kalem", "kelam", "lemka", "mekal"], hint: "Yazı yazarken kullanırız" },
+  { prompt: "ba + lık = ?", say: "ba… lık… Birleştir. Hangi kelime olur?", emoji: "🧱", answer: "balık", options: ["balık", "kalıb", "lıkba", "bılık"], hint: "Suda yaşayan hayvan" },
+  { prompt: "a + rı = ?", say: "a… rı… Birleştir. Hangi kelime olur?", emoji: "🧱", answer: "arı", options: ["arı", "rıa", "ıra", "aır"], hint: "Bal yapan böcek" },
 ];
 
 export const cumleKur: QuizQuestion[] = [
@@ -57,11 +75,11 @@ export const benzerKelime: QuizQuestion[] = [
 ];
 
 export const boslukDoldur: QuizQuestion[] = [
-  { prompt: "Güneş gökyüzünde ___", emoji: "📝", answer: "parlar", options: ["parlar", "yüzer", "uçar", "koşar"], hint: "Işık verir" },
-  { prompt: "Balıklar suda ___", emoji: "📝", answer: "yüzer", options: ["yüzer", "uçar", "yürür", "konuşur"] },
-  { prompt: "Yağmur yağınca toprak ___", emoji: "📝", answer: "ıslanır", options: ["ıslanır", "uçar", "yanar", "kaybolur"] },
-  { prompt: "Kitabı dikkatle ___", emoji: "📝", answer: "okudum", options: ["okudum", "yüzdüm", "kokladım", "uçtum"], explanation: "Kitap okunur." },
-  { prompt: "Fidan büyüyünce bir ___ olabilir", emoji: "📝", answer: "ağaç", options: ["ağaç", "bulut", "bardak", "taş"], explanation: "Fidan büyüyünce ağaç olur." },
+  { prompt: "Güneş gökyüzünde ___", say: "Güneş gökyüzünde… ne yapar?", emoji: "☀️", answer: "parlar", options: ["parlar", "yüzer", "uçar", "koşar"], hint: "Işık verir" },
+  { prompt: "Balıklar suda ___", say: "Balıklar suda… ne yapar?", emoji: "🐟", answer: "yüzer", options: ["yüzer", "uçar", "yürür", "konuşur"] },
+  { prompt: "Yağmur yağınca toprak ___", say: "Yağmur yağınca toprak… ne olur?", emoji: "🌧️", answer: "ıslanır", options: ["ıslanır", "uçar", "yanar", "kaybolur"] },
+  { prompt: "Kitabı dikkatle ___", say: "Kitabı dikkatle… ne yaptım?", emoji: "📖", answer: "okudum", options: ["okudum", "yüzdüm", "kokladım", "uçtum"], explanation: "Kitap okunur." },
+  { prompt: "Fidan büyüyünce bir ___ olabilir", say: "Fidan büyüyünce bir… ne olur?", emoji: "🌱", answer: "ağaç", options: ["ağaç", "bulut", "bardak", "taş"], explanation: "Fidan büyüyünce ağaç olur." },
 ];
 
 export const toplama: QuizQuestion[] = Array.from({ length: 12 }, (_, i) => {
@@ -105,40 +123,40 @@ export const onlukBirlik: QuizQuestion[] = [
 ];
 
 export const saatOgren: QuizQuestion[] = [
-  { prompt: "Saat 6:00 — akrep?", emoji: "🕕", answer: "6", options: ["3", "6", "12", "9"] },
-  { prompt: "Saat 12:00 — akrep?", emoji: "🕛", answer: "12", options: ["12", "6", "3", "1"] },
-  { prompt: "Saat 3:00 — akrep?", emoji: "🕒", answer: "3", options: ["3", "12", "6", "9"] },
-  { prompt: "Saat 9:00 — akrep?", emoji: "🕘", answer: "9", options: ["9", "3", "12", "6"] },
+  { prompt: "Saat kaç? Kısa kola (akrebe) bak.", say: "Saat kaç? Kısa kola, akrebe bak.", emoji: "🕕", answer: "6", options: ["3", "6", "12", "9"] },
+  { prompt: "Saat kaç? Kısa kola (akrebe) bak.", say: "Saat kaç? Kısa kola, akrebe bak.", emoji: "🕛", answer: "12", options: ["12", "6", "3", "1"] },
+  { prompt: "Saat kaç? Kısa kola (akrebe) bak.", say: "Saat kaç? Kısa kola, akrebe bak.", emoji: "🕒", answer: "3", options: ["3", "12", "6", "9"] },
+  { prompt: "Saat kaç? Kısa kola (akrebe) bak.", say: "Saat kaç? Kısa kola, akrebe bak.", emoji: "🕘", answer: "9", options: ["9", "3", "12", "6"] },
 ];
 
 export const paraSay: QuizQuestion[] = [
-  { prompt: "1 TL + 1 TL toplam kaç TL eder?", emoji: "💰", answer: "2 TL", options: ["2 TL", "1 TL", "3 TL", "11 TL"] },
-  { prompt: "5 TL + 2 TL toplam kaç TL eder?", emoji: "💰", answer: "7 TL", options: ["7 TL", "52 TL", "3 TL", "10 TL"] },
-  { prompt: "2 TL + 2 TL + 1 TL toplam kaç TL eder?", emoji: "💰", answer: "5 TL", options: ["5 TL", "4 TL", "3 TL", "6 TL"] },
-  { prompt: "8 TL'lik ürün için hangisi tam ödeme olur?", emoji: "💰", answer: "5 TL + 2 TL + 1 TL", options: ["5 TL + 2 TL + 1 TL", "5 TL + 1 TL", "2 TL + 2 TL", "10 TL + 1 TL"], explanation: "5 + 2 + 1 = 8 TL eder." },
-  { prompt: "12 TL'nin 5 TL'sini harcarsan kaç TL kalır?", emoji: "💰", answer: "7 TL", options: ["7 TL", "5 TL", "12 TL", "17 TL"], explanation: "Kalan parayı bulmak için çıkarırız: 12 − 5 = 7." },
+  { prompt: "1 TL + 1 TL kaç TL eder?", emoji: "💰", answer: "2 TL", options: ["2 TL", "1 TL", "3 TL", "11 TL"] },
+  { prompt: "1 TL + 1 TL + 1 TL kaç TL eder?", emoji: "💰", answer: "3 TL", options: ["3 TL", "2 TL", "4 TL", "1 TL"] },
+  { prompt: "5 TL + 1 TL kaç TL eder?", emoji: "💰", answer: "6 TL", options: ["6 TL", "51 TL", "4 TL", "7 TL"] },
+  { prompt: "5 TL + 5 TL kaç TL eder?", emoji: "💰", answer: "10 TL", options: ["10 TL", "55 TL", "5 TL", "9 TL"], explanation: "İki beş lira, on lira eder." },
+  { prompt: "10 TL + 5 TL kaç TL eder?", emoji: "💰", answer: "15 TL", options: ["15 TL", "105 TL", "5 TL", "14 TL"] },
 ];
 
 export const karsilastir: QuizQuestion[] = [
   { prompt: "Hangisi daha büyük?", emoji: "⚖️", answer: "9", options: ["9", "5", "3", "1"] },
   { prompt: "Hangisi daha küçük?", emoji: "⚖️", answer: "2", options: ["8", "7", "2", "6"] },
-  { prompt: "En çok elma hangisinde?", emoji: "🍎", answer: "🍎🍎🍎🍎", options: ["🍎🍎🍎🍎", "🍎🍎", "🍎", "🍎🍎🍎"] },
-  { prompt: "En az balon hangisinde?", emoji: "🎈", answer: "🎈", options: ["🎈", "🎈🎈🎈", "🎈🎈", "🎈🎈🎈🎈"] },
+  { prompt: "En çok elma hangisinde?", emoji: "🍎", answer: "🍎🍎🍎🍎", options: ["🍎🍎🍎🍎", "🍎🍎", "🍎", "🍎🍎🍎"], optionSay: { "🍎🍎🍎🍎": "dört elma", "🍎🍎🍎": "üç elma", "🍎🍎": "iki elma", "🍎": "bir elma" } },
+  { prompt: "En az balon hangisinde?", emoji: "🎈", answer: "🎈", options: ["🎈", "🎈🎈🎈", "🎈🎈", "🎈🎈🎈🎈"], optionSay: { "🎈": "bir balon", "🎈🎈": "iki balon", "🎈🎈🎈": "üç balon", "🎈🎈🎈🎈": "dört balon" } },
 ];
 
 export const sekilTani: QuizQuestion[] = [
   { prompt: "Bu hangi şekil?", emoji: "🔺", answer: "Üçgen", options: ["Üçgen", "Kare", "Daire", "Dikdörtgen"] },
-  { prompt: "Bu hangi şekil?", emoji: "⬜", answer: "Kare", options: ["Kare", "Üçgen", "Daire", "Yıldız"] },
+  { prompt: "Bu hangi şekil?", emoji: "🟦", answer: "Kare", options: ["Kare", "Üçgen", "Daire", "Yıldız"] },
   { prompt: "Bu hangi şekil?", emoji: "⚫", answer: "Daire", options: ["Daire", "Kare", "Üçgen", "Yıldız"] },
   { prompt: "Bu hangi şekil?", emoji: "⭐", answer: "Yıldız", options: ["Yıldız", "Kare", "Daire", "Üçgen"] },
 ];
 
 export const sekilSay: QuizQuestion[] = [
-  { prompt: "🔺🔺🔺 kaç üçgen?", emoji: "🔺", answer: "3", options: ["3", "2", "4", "1"] },
-  { prompt: "⬜⬜ kaç kare?", emoji: "⬜", answer: "2", options: ["2", "3", "1", "4"] },
-  { prompt: "⚫⚫⚫⚫ kaç daire?", emoji: "⚫", answer: "4", options: ["4", "3", "5", "2"] },
-  { prompt: "🔺⬜🔺⚫🔺 dizisinde kaç üçgen var?", emoji: "🔺", answer: "3", options: ["3", "2", "4", "5"] },
-  { prompt: "⬜⚫⬜⚫⬜⚫ dizisinde toplam kaç şekil var?", emoji: "🔷", answer: "6", options: ["6", "3", "4", "5"] },
+  { prompt: "Kaç üçgen var?", emoji: "🔺🔺🔺", answer: "3", options: ["3", "2", "4", "1"] },
+  { prompt: "Kaç kare var?", emoji: "🟦🟦", answer: "2", options: ["2", "3", "1", "4"] },
+  { prompt: "Kaç daire var?", emoji: "⚫⚫⚫⚫", answer: "4", options: ["4", "3", "5", "2"] },
+  { prompt: "Kaç üçgen var?", emoji: "🔺🟦🔺⚫🔺", answer: "3", options: ["3", "2", "4", "5"] },
+  { prompt: "Toplam kaç şekil var?", emoji: "🟦⚫🟦⚫🟦⚫", answer: "6", options: ["6", "3", "4", "5"] },
 ];
 
 export const havaDurumu: QuizQuestion[] = [
@@ -168,7 +186,7 @@ export const bitkiBuyume: QuizQuestion[] = [
   { prompt: "Bitki neyle başlar?", emoji: "🌰", answer: "Tohum", options: ["Tohum", "Çiçek", "Meyve", "Yaprak"], explanation: "Önce tohum, sonra filiz, sonra çiçek." },
   { prompt: "Tohumu ektik. Büyümesi için ne veririz?", emoji: "🌱", answer: "Su", options: ["Su", "Taş", "Şeker", "Plastik"] },
   { prompt: "Bitki suyu hangi parçasıyla içer?", emoji: "🌿", answer: "Kök", options: ["Kök", "Çiçek", "Meyve", "Tohum"], explanation: "Kökler topraktaki suyu alır." },
-  { prompt: "Bitkiler büyümek için neye bakar?", emoji: "☀️", answer: "Güneş ışığı", options: ["Güneş ışığı", "Karanlık dolap", "Buz", "Gürültü"] },
+  { prompt: "Bitkiler büyümek için neye ihtiyaç duyar?", emoji: "☀️", answer: "Güneş ışığı", options: ["Güneş ışığı", "Karanlık dolap", "Buz", "Gürültü"] },
   { prompt: "Bitkinin yeşil, yassı parçası hangisi?", emoji: "🍃", answer: "Yaprak", options: ["Yaprak", "Kök", "Tohum", "Taş"] },
 ];
 
@@ -195,17 +213,17 @@ export const boyutSirala: QuizQuestion[] = [
 ];
 
 export const mantikEslestir: QuizQuestion[] = [
-  { prompt: "Elma — Meyve, Köpek — ?", emoji: "🔗", answer: "Hayvan", options: ["Hayvan", "Renk", "Sayı", "Taş"] },
-  { prompt: "Kırmızı — Renk, Daire — ?", emoji: "🔗", answer: "Şekil", options: ["Şekil", "Meyve", "Ses", "Koku"] },
-  { prompt: "Kuş — Uçar, Balık — ?", emoji: "🔗", answer: "Yüzer", options: ["Yüzer", "Uçar", "Havlar", "Koşar"] },
-  { prompt: "Göz — Görmek, Kulak — ?", emoji: "🔗", answer: "Duymak", options: ["Duymak", "Koklamak", "Yürümek", "Yemek"] },
+  { prompt: "Elma — Meyve, Köpek — ?", say: "Elma bir meyve. Köpek ne?", emoji: "🔗", answer: "Hayvan", options: ["Hayvan", "Renk", "Sayı", "Taş"] },
+  { prompt: "Kırmızı — Renk, Daire — ?", say: "Kırmızı bir renk. Daire ne?", emoji: "🔗", answer: "Şekil", options: ["Şekil", "Meyve", "Ses", "Koku"] },
+  { prompt: "Kuş — Uçar, Balık — ?", say: "Kuş uçar. Balık ne yapar?", emoji: "🔗", answer: "Yüzer", options: ["Yüzer", "Uçar", "Havlar", "Koşar"] },
+  { prompt: "Göz — Görmek, Kulak — ?", say: "Göz görmek için. Kulak ne için?", emoji: "🔗", answer: "Duymak", options: ["Duymak", "Koklamak", "Yürümek", "Yemek"] },
 ];
 
 export const farkBul: QuizQuestion[] = [
-  { prompt: "Hangisi farklı?", emoji: "👀", answer: "🐶", options: ["🐱", "😺", "🐶", "🐈"] },
-  { prompt: "Hangisi farklı?", emoji: "👀", answer: "🔵", options: ["🔴", "🟥", "❤️", "🔵"] },
-  { prompt: "Hangisi farklı?", emoji: "👀", answer: "🚗", options: ["🍎", "🍌", "🚗", "🍇"] },
-  { prompt: "Hangisi farklı?", emoji: "👀", answer: "🍕", options: ["🌙", "🍕", "☀️", "⭐"] },
+  { prompt: "Hangisi farklı?", emoji: "👀", answer: "⚽", options: ["🐱", "🐶", "⚽", "🐰"], optionSay: { "🐱": "kedi", "🐶": "köpek", "⚽": "top", "🐰": "tavşan" } },
+  { prompt: "Hangisi farklı?", emoji: "👀", answer: "🥦", options: ["🍎", "🍓", "🥦", "🍒"], optionSay: { "🍎": "elma", "🍓": "çilek", "🥦": "brokoli", "🍒": "kiraz" } },
+  { prompt: "Hangisi farklı?", emoji: "👀", answer: "🚗", options: ["🍎", "🍌", "🚗", "🍇"], optionSay: { "🍎": "elma", "🍌": "muz", "🚗": "araba", "🍇": "üzüm" } },
+  { prompt: "Hangisi farklı?", emoji: "👀", answer: "🍕", options: ["🌙", "🍕", "☀️", "⭐"], optionSay: { "🌙": "ay", "🍕": "pizza", "☀️": "güneş", "⭐": "yıldız" } },
 ];
 
 export const grupla: QuizQuestion[] = [

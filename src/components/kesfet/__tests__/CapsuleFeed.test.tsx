@@ -10,6 +10,7 @@ const mocks = vi.hoisted(() => ({
   notifyNaturalPause: vi.fn(),
   setClockContext: vi.fn(),
   requestCoplay: vi.fn(),
+  blocking: false,
 }));
 
 vi.mock("@/lib/speech", () => ({
@@ -18,6 +19,9 @@ vi.mock("@/lib/speech", () => ({
   unlockAudio: vi.fn(),
 }));
 vi.mock("@/lib/progress/events", () => ({ trackEvent: mocks.trackEvent }));
+vi.mock("@/hooks/useWellbeing", () => ({
+  useWellbeing: () => ({ blocking: mocks.blocking }),
+}));
 vi.mock("@/lib/sessionClock", () => ({
   notifyNaturalPause: mocks.notifyNaturalPause,
   setClockContext: mocks.setClockContext,
@@ -62,6 +66,7 @@ beforeEach(() => {
   mocks.notifyNaturalPause.mockClear();
   mocks.setClockContext.mockClear();
   mocks.requestCoplay.mockClear();
+  mocks.blocking = false;
 });
 
 afterEach(cleanup);
@@ -107,6 +112,75 @@ describe("CapsuleFeed", () => {
       episode.cards[1]?.say,
       expect.anything(),
     );
+  });
+
+  it("reads the prompt and the choice labels in order with a highlight; a tap skips", () => {
+    const pending: (() => void)[] = [];
+    mocks.speak.mockImplementation((_t: string, opts?: { onEnd?: () => void }) => {
+      if (opts?.onEnd) pending.push(opts.onEnd);
+    });
+    try {
+      const card = episode.cards[0] as CapsuleCard;
+      const { container, getByRole } = render(<CapsuleFeed episode={episode} />);
+      fireEvent.click(getByRole("button", { name: /Başla/ }));
+      act(() => pending.shift()?.()); // card line ends → prompt
+      expect(mocks.speak).toHaveBeenLastCalledWith(card.tap.prompt, expect.anything());
+      act(() => pending.shift()?.()); // prompt ends → first label
+      const first = card.tap.choices?.[0];
+      expect(mocks.speak).toHaveBeenLastCalledWith(first?.label, expect.anything());
+      expect(container.querySelector(".cap-choice.is-reading")?.textContent).toContain(
+        first?.label,
+      );
+      act(() => pending.shift()?.());
+      expect(mocks.speak).toHaveBeenLastCalledWith(
+        card.tap.choices?.[1]?.label,
+        expect.anything(),
+      );
+
+      const calls = mocks.speak.mock.calls.length;
+      fireEvent.pointerDown(container.querySelector(".cap-say") as HTMLElement);
+      expect(container.querySelector(".cap-choice.is-reading")).toBeNull();
+      act(() => pending.shift()?.());
+      expect(mocks.speak.mock.calls.length).toBe(calls);
+    } finally {
+      mocks.speak.mockImplementation((_t: string, opts?: { onEnd?: () => void }) =>
+        opts?.onEnd?.(),
+      );
+    }
+  });
+
+  it("never reveals or speaks behind a wellbeing overlay; re-speaks the card once after", () => {
+    const pending: (() => void)[] = [];
+    mocks.speak.mockImplementation((_t: string, opts?: { onEnd?: () => void }) => {
+      if (opts?.onEnd) pending.push(opts.onEnd);
+    });
+    try {
+      const card = episode.cards[0] as CapsuleCard;
+      const { container, getByRole, rerender } = render(<CapsuleFeed episode={episode} />);
+      fireEvent.click(getByRole("button", { name: /Başla/ }));
+      expect(mocks.speak).toHaveBeenCalledTimes(1);
+
+      // The break overlay opens; the overlay's own voice cancels ours (onend fires).
+      mocks.blocking = true;
+      rerender(<CapsuleFeed episode={episode} />);
+      act(() => pending.splice(0).forEach((f) => f()));
+      expect(mocks.speak).toHaveBeenCalledTimes(1);
+      expect(container.querySelector(".cap-choice")).toBeNull();
+
+      // Overlay closes: the card's line is spoken once more, then the question.
+      mocks.blocking = false;
+      rerender(<CapsuleFeed episode={episode} />);
+      expect(mocks.speak).toHaveBeenCalledTimes(2);
+      expect(mocks.speak).toHaveBeenLastCalledWith(card.say, expect.anything());
+      rerender(<CapsuleFeed episode={episode} />);
+      expect(mocks.speak).toHaveBeenCalledTimes(2);
+      act(() => pending.shift()?.());
+      expect(container.querySelector(".cap-choice")).not.toBeNull();
+    } finally {
+      mocks.speak.mockImplementation((_t: string, opts?: { onEnd?: () => void }) =>
+        opts?.onEnd?.(),
+      );
+    }
   });
 
   it("never advances by time alone", () => {

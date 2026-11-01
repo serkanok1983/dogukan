@@ -25,8 +25,29 @@ export type PlayerId = keyof typeof PLAYERS;
 const STORAGE_KEY = KEYS.loggedIn;
 const PLAYER_KEY = KEYS.player;
 
+/**
+ * Yalnızca bu oyuncu cihazda kalıcı oturum açabilir. Baba (`serkan`) girişi
+ * sekmeye özeldir (sessionStorage): yeni sekme/PWA açılışı asla babanın
+ * oturumuyla, yani çocuk korumaları (süre, uyku, mola, etkinlik kaydı) kapalı
+ * başlamaz.
+ */
+const PERSISTENT_PLAYER: PlayerId = "dogukan";
+
+/**
+ * Eski sürümün "Oturumu açık tut" seçeneği ya da eski `loginAs("serkan")`
+ * localStorage'a baba girişi yazmış olabilir: onu kaldırır. Bu sekmedeki
+ * sessionStorage oturumuna dokunmaz. İdempotent; her okumada çağrılır.
+ */
+function dropPersistentFatherLogin(): void {
+  const stored = readRaw(PLAYER_KEY, "local");
+  if (stored === null || stored === PERSISTENT_PLAYER) return;
+  removeKey(STORAGE_KEY, "local");
+  removeKey(PLAYER_KEY, "local");
+}
+
 export function getPlayerId(): PlayerId | null {
   if (typeof window === "undefined") return null;
+  dropPersistentFatherLogin();
   const id = readRaw(PLAYER_KEY, "session") ?? readRaw(PLAYER_KEY, "local");
   if (id && id in PLAYERS) return id as PlayerId;
   return null;
@@ -43,6 +64,7 @@ export function getRivalId(id: PlayerId): PlayerId {
 
 export function isLoggedIn(): boolean {
   if (typeof window === "undefined") return false;
+  dropPersistentFatherLogin();
   return (
     readRaw(STORAGE_KEY, "session") === "true" ||
     readRaw(STORAGE_KEY, "local") === "true"
@@ -56,11 +78,11 @@ function announceSession() {
   window.dispatchEvent(new Event(SESSION_EVENT));
 }
 
-/** @deprecated `loginAs` kullanın. */
+/** @deprecated `loginAs` kullanın. `remember` yalnızca Doğukan için geçerlidir. */
 export function setLoggedIn(playerId: PlayerId, remember: boolean): void {
   writeRaw(STORAGE_KEY, "true", "session");
   writeRaw(PLAYER_KEY, playerId, "session");
-  if (remember) {
+  if (remember && playerId === PERSISTENT_PLAYER) {
     writeRaw(STORAGE_KEY, "true", "local");
     writeRaw(PLAYER_KEY, playerId, "local");
   }
@@ -68,9 +90,11 @@ export function setLoggedIn(playerId: PlayerId, remember: boolean): void {
 }
 
 /**
- * Kalıcı oturum açar (CONTRACT §9). İlerleme deposu `dogukan:session` olayını
- * dinler ve `reloadProgressForPlayer()` çağırır (doğrudan içe aktarmak
- * auth ↔ store döngüsü yaratırdı).
+ * Oturum açar (CONTRACT §9). `dogukan` kalıcıdır (local + session); `serkan`
+ * yalnızca bu sekmede (session) geçerlidir ve cihazdaki Doğukan girişini
+ * silmez. İlerleme deposu `dogukan:session` olayını dinler ve
+ * `reloadProgressForPlayer()` çağırır (doğrudan içe aktarmak auth ↔ store
+ * döngüsü yaratırdı).
  */
 export function loginAs(player: PlayerId): void {
   setLoggedIn(player, true);

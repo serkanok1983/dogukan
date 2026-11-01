@@ -36,7 +36,7 @@ vi.mock("@/activities/content", () => {
   return { GENERATORS, getGenerator: (s: SkillId) => GENERATORS[s] };
 });
 
-import { buildGate, buildSession, isCorrect, normalizeExercise, pickFade } from "@/activities/engine/plan";
+import { buildGate, buildSession, isCorrect, normalizeExercise, pickFade, readoutChoices } from "@/activities/engine/plan";
 import { DAY_MS, emptyProgress } from "@/lib/progress/time";
 import type { Progress, SkillState } from "@/lib/progress/types";
 import { createRng } from "@/lib/rng";
@@ -154,5 +154,22 @@ describe("normalizeExercise / isCorrect / pickFade", () => {
     expect(pickFade(base, ["b"], ["c"])).toBeNull();
     const two = { ...base, choices: base.choices?.slice(0, 2) };
     expect(pickFade(two, ["b"], [])).toBeNull();
+  });
+
+  it("seçenekler sırayla okunur; söndürülen ve yazılı harf/kelime seçenekleri okunmaz", () => {
+    expect(readoutChoices(base).map((c) => c.id)).toEqual(["a", "b", "c"]);
+    expect(readoutChoices(base, ["c"]).map((c) => c.id)).toEqual(["a", "b"]);
+    expect(readoutChoices({ ...base, skill: "tr.ses-harf" })).toEqual([]);
+    expect(readoutChoices({ ...base, skill: "tr.kelime" })).toEqual([]);
+    const pictures = {
+      ...base,
+      skill: "tr.kelime" as const,
+      choices: [
+        { id: "a", emoji: "🍎", say: "elma" },
+        { id: "b", emoji: "🐱", say: "kedi" },
+      ],
+    };
+    expect(readoutChoices(pictures)).toHaveLength(2);
+    expect(readoutChoices({ ...base, kind: "order" })).toEqual([]);
   });
 });

@@ -102,6 +102,46 @@
   user-select: none;
 }
 
+/* "Baba oynuyor" şeridi: oturum serkan iken haritada. */
+.home-player-banner {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 12px;
+  padding: 8px 12px;
+  font-size: 20px;
+  font-weight: 700;
+  background: #fff7ed;
+  border: 3px solid #f97316;
+  border-radius: 24px;
+}
+
+.home-player-banner-text {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.home-player-banner-btn {
+  min-height: var(--kid-tap, 56px);
+  padding: 0 18px;
+  color: #fff;
+  font: inherit;
+  font-size: 19px;
+  background: #f97316;
+  border: 0;
+  border-radius: 999px;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+.home-player-banner-btn:focus-visible {
+  outline: 3px solid #0ea5e9;
+  outline-offset: 3px;
+}
+
 /* Ebeveyn köşesi: ayının şapka köşesi, 3 sn basılı tutulur. */
 .home-bear-corner {
   position: absolute;
@@ -193,12 +233,17 @@
   line-height: 1;
 }
 
+/* Kelime ortasından kırılmaz ("Vücudumu / z"): önce Türkçe heceleme (<html lang="tr">),
+   yalnızca tek başına sığmayan kelime son çare olarak bölünür. */
 .home-tile-label {
   max-width: 100%;
   font-size: 19px;
   font-weight: 700;
   line-height: 1.15;
-  overflow-wrap: anywhere;
+  overflow-wrap: break-word;
+  word-break: normal;
+  -webkit-hyphens: auto;
+  hyphens: auto;
 }
 
 .home-tile-badge {

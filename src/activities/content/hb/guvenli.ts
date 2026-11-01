@@ -2,6 +2,11 @@
  * `hb.guvenli` — Güvenli Yol: trafik, evdeki tehlikeler, kaybolunca yardım,
  * 112 ve "ekranda korkunç bir şey" senaryoları. Her madde bir sahne + seçenekler.
  * L1: 2 seçenek · L2: 3 seçenek · L3: 3–4 seçenek ve ek senaryolar.
+ *
+ * Emoji sözlüğü tüm senaryolarda tutarlıdır (testle korunur): bir emoji bir
+ * senaryoda doğru, başka birinde yanlış seçenek olmaz. ✋ = dur/hayır,
+ * 🙋 = büyüğüne/görevliye söyle, 🙅 = uzak dur, 🏃 = koşarım (hep yanlış).
+ * Trafik: Türkiye'de öğretilen sıra "önce sola, sonra sağa, sonra yine sola".
  */
 import type { Choice, Exercise, Generator } from "@/activities/engine/types";
 import { pick, shuffled } from "@/lib/rng";
@@ -28,10 +33,10 @@ export const SCENARIOS: readonly Scenario[] = [
   {
     key: "kirmizi-isik",
     minLevel: 1,
-    scene: "🚦",
+    scene: "🔴",
     caption: "Işık kırmızı",
     say: "Yaya ışığı kırmızı yandı. Ne yaparsın?",
-    correct: { emoji: "🧍", text: "Dururum" },
+    correct: { emoji: "✋", text: "Dururum" },
     wrong: [
       { emoji: "🏃", text: "Koşarak geçerim" },
       { emoji: "⚽", text: "Yolda top oynarım" },
@@ -43,17 +48,17 @@ export const SCENARIOS: readonly Scenario[] = [
   {
     key: "yesil-isik",
     minLevel: 1,
-    scene: "🚸",
+    scene: "🟢",
     caption: "Yaya ışığı yeşil",
     say: "Yaya ışığı yeşil yandı. Nasıl geçersin?",
-    correct: { emoji: "👀", text: "Sağa sola bakıp geçerim" },
+    correct: { emoji: "👀", text: "Sola, sağa, sola bakıp geçerim" },
     wrong: [
       { emoji: "📱", text: "Telefona bakarak geçerim" },
       { emoji: "🏃", text: "Hiç bakmadan koşarım" },
-      { emoji: "🛴", text: "Yolun ortasında dururum" },
+      { emoji: "🧍", text: "Yolun ortasında dururum" },
     ],
-    retry: "Geçmeden önce ne yaparız?",
-    reveal: "Önce sağa sola bak, sonra geç.",
+    retry: "Geçmeden önce nereye bakarız?",
+    reveal: "Önce sola, sonra sağa, sonra yine sola bak.",
   },
   {
     key: "ocak",
@@ -63,7 +68,7 @@ export const SCENARIOS: readonly Scenario[] = [
     say: "Ocakta sıcak bir tencere var. Ne yaparsın?",
     correct: { emoji: "🙅", text: "Uzak dururum" },
     wrong: [
-      { emoji: "✋", text: "Tencereye dokunurum" },
+      { emoji: "👆", text: "Tencereye dokunurum" },
       { emoji: "🥄", text: "Kaşıkla karıştırırım" },
       { emoji: "🧗", text: "Ocağa tırmanırım" },
     ],
@@ -112,9 +117,9 @@ export const SCENARIOS: readonly Scenario[] = [
       say: "Kapatırım ve büyüğüme gösteririm",
     },
     wrong: [
-      { emoji: "👀", text: "Bakmaya devam ederim" },
+      { emoji: "📺", text: "Bakmaya devam ederim" },
       { emoji: "🤐", text: "Kimseye söylemem" },
-      { emoji: "🙈", text: "Gizlice yine açarım" },
+      { emoji: "🤫", text: "Gizlice yine açarım" },
     ],
     retry: "Korkunca kime gideriz? Düşün.",
     reveal: "Kapat ve büyüğüne göster.",
@@ -139,15 +144,15 @@ export const SCENARIOS: readonly Scenario[] = [
     minLevel: 2,
     scene: "🏞️",
     caption: "Parkta kayboldun",
-    say: "Parkta babanı göremiyorsun. Kimden yardım istersin?",
-    correct: { emoji: "👮", text: "Polisten" },
+    say: "Parkta babanı göremiyorsun. Ne yaparsın?",
+    correct: { emoji: "🙋", text: "Yerimde kalırım, çocuklu bir anneye söylerim" },
     wrong: [
-      { emoji: "🐱", text: "Kediden" },
-      { emoji: "🚗", text: "Arabadaki yabancıdan" },
-      { emoji: "🏃", text: "Kimseden, koşup giderim" },
+      { emoji: "🏃", text: "Babamı aramaya koşarım" },
+      { emoji: "🚗", text: "Arabadaki yabancıya giderim" },
+      { emoji: "🚪", text: "Parktan dışarı çıkarım" },
     ],
-    retry: "Bize kim yardım eder? Düşün.",
-    reveal: "Polis sana yardım eder.",
+    retry: "Kaybolunca nerede bekleriz? Düşün.",
+    reveal: "Olduğun yerde kal, çocuklu bir anneye söyle.",
   },
   {
     key: "112",
@@ -189,7 +194,7 @@ export const SCENARIOS: readonly Scenario[] = [
     wrong: [
       { emoji: "😋", text: "Şeker diye yerim" },
       { emoji: "🧸", text: "Oyuncaklarıma veririm" },
-      { emoji: "🎒", text: "Cebime koyarım" },
+      { emoji: "👖", text: "Cebime koyarım" },
     ],
     retry: "İlaç şeker midir? Düşün.",
     reveal: "İlacı yalnız büyükler verir.",
@@ -200,9 +205,9 @@ export const SCENARIOS: readonly Scenario[] = [
     scene: "🚗",
     caption: "Arabaya bindin",
     say: "Arabaya bindin. İlk ne yaparsın?",
-    correct: { emoji: "🔒", text: "Kemerimi takarım" },
+    correct: { emoji: "🔗", text: "Kemerimi takarım" },
     wrong: [
-      { emoji: "🧍", text: "Ayakta dururum" },
+      { emoji: "🧸", text: "Kemersiz oynarım" },
       { emoji: "🪟", text: "Camdan sarkarım" },
       { emoji: "🤸", text: "Koltukta zıplarım" },
     ],

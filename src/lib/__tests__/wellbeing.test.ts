@@ -4,10 +4,13 @@ import type { DayUsage } from "@/lib/progress/types";
 import { DEFAULT_SETTINGS, type Settings } from "@/lib/settings";
 import {
   breakDue,
+  canEarnHoney,
   canStartArcade,
   canStartEpisode,
   computePhase,
+  extensionMinutesFor,
   honeyCells,
+  secondsLeftToday,
 } from "@/lib/wellbeing";
 
 // İstanbul = UTC+3. 2026-11-02 pazartesi, 2026-10-31 cumartesi.
@@ -150,5 +153,40 @@ describe("canStartArcade / canStartEpisode / breakDue", () => {
     expect(
       breakDue({ ...S, breakEveryMinutes: 20 }, day({ sinceBreakSec: 1200 })),
     ).toBe(true);
+  });
+});
+
+describe("wellbeing — düzeltmeler", () => {
+  it("canStartArcade: akşam −5 dk uyarısında da kapalı (faz warn5 olsa bile)", () => {
+    const d = day({ totalSec: min(26) });
+    expect(computePhase(at(MON, "20:05"), S, d)).toBe("warn5");
+    expect(canStartArcade(at(MON, "20:05"), S, d, false)).toBe(false);
+    expect(canStartArcade(at(MON, "20:05"), S, d, true)).toBe(true);
+  });
+
+  it("canStartArcade: gece izniyle gece saatleri akşam sayılır", () => {
+    expect(
+      canStartArcade(at(MON, "21:00"), S, day(), false, { ignoreNight: true }),
+    ).toBe(false);
+    expect(
+      canStartArcade(at(MON, "21:00"), S, day(), true, { ignoreNight: true }),
+    ).toBe(true);
+    expect(canStartArcade(at(MON, "21:00"), S, day(), true)).toBe(false);
+  });
+
+  it("canEarnHoney: tavan dolunca Bal topla hücre eklemez", () => {
+    expect(canEarnHoney(S, day({ arcadeSec: min(16) }))).toBe(true);
+    expect(canEarnHoney(S, day({ arcadeSec: min(26), honeyEarned: 5 }))).toBe(false);
+    expect(canEarnHoney(S, day({ arcadeSec: min(25), honeyEarned: 4 }))).toBe(true);
+  });
+
+  it("extensionMinutesFor: +10 dk verildiği andan itibaren tam 10 dk", () => {
+    const now = at(MON, "16:00").getTime();
+    const over = day({ totalSec: min(30) + 110 });
+    const minutes = extensionMinutesFor(S, over, now, 10);
+    expect(minutes).toBe(12);
+    const after = { ...over, extensionMinutes: minutes };
+    expect(secondsLeftToday(S, after, now)).toBeGreaterThanOrEqual(min(10));
+    expect(extensionMinutesFor(S, day({ totalSec: min(20) }), now, 10)).toBe(10);
   });
 });

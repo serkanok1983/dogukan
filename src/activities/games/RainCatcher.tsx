@@ -218,7 +218,7 @@ export function RainCatcher() {
   }, [running, done, reset, scoreGame]);
 
   return (
-    <div className="game-panel canvas-game">
+    <div className="game-panel canvas-game gf-toast-low">
       <ScoreHud score={score} selfHigh={scoreGame.selfHigh} rivalHigh={scoreGame.rivalHigh} rivalName={scoreGame.rivalName} playerName={scoreGame.playerName} />
       <p className="round-label">Şemsiyeyi kaydır, yağmur damlalarını yakala! ❄️ doludan kaçın</p>
       {!active && <p className="game-waiting">ℹ️ Başla{"'"}ya basınca oyun başlar</p>}

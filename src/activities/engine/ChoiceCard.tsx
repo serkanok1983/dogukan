@@ -5,7 +5,9 @@ import type { RendererProps } from "./rendererTypes";
 
 /**
  * 2–4 resim/harf/sayı seçeneği (her biri ≥ 96 px). `bigTap` ya da 2 seçenek →
- * iki dev düğme. Uzun basınca seçenek okunur; cevap gösterildikten sonra da.
+ * iki dev düğme. Motor yönergeden sonra seçenekleri sırayla okur (`reading`
+ * vurgulanır); uzun basınca da seçenek okunur, cevap gösterildikten sonra da.
+ * Cümle seçenekleri tek sütunda, kelimeler bölünmeden gösterilir.
  */
 export function ChoiceCard({
   ex,
@@ -15,15 +17,18 @@ export function ChoiceCard({
   disabled,
   onAnswer,
   say,
+  reading = null,
 }: RendererProps) {
   const choices = ex.choices ?? [];
   const answer = ex.answerIds[0];
   const showAnswer = phase === "correct" || phase === "reveal";
   const big = ex.bigTap === true || choices.length <= 2;
+  const sentences = choices.some((c) => c.text?.trim().includes(" "));
   const cls = [
     "ex-choices",
     big ? "ex-choices--big" : "",
     `ex-choices--n${choices.length}`,
+    sentences ? "ex-choices--sentences" : "",
   ]
     .filter(Boolean)
     .join(" ");
@@ -37,6 +42,8 @@ export function ChoiceCard({
         const className = [
           "ex-choice",
           c.emoji && !c.text ? "is-emoji" : "",
+          sentences ? "is-sentence" : "",
+          reading === c.id ? "is-reading" : "",
           isFaded ? "is-faded" : "",
           isWrong ? "is-wrong" : "",
           isRight ? "is-right" : "",

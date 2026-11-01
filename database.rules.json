@@ -43,7 +43,7 @@
         "gallery": {
           "$index": {
             ".write": "auth != null && ($player === 'dogukan' || $player === 'serkan') && $index.matches(/^[0-4]$/)",
-            ".validate": "newData.hasChildren(['name', 'thumb', 'sharedAt']) && newData.child('name').isString() && newData.child('name').val().length <= 40 && newData.child('thumb').isString() && newData.child('thumb').val().beginsWith('data:image/') && newData.child('thumb').val().length <= 28000 && newData.child('sharedAt').isNumber()"
+            ".validate": "newData.hasChildren(['name', 'thumb', 'sharedAt']) && newData.child('name').isString() && newData.child('name').val().length <= 40 && newData.child('thumb').isString() && (newData.child('thumb').val() === '' || (newData.child('thumb').val().beginsWith('data:image/') && newData.child('thumb').val().length <= 28000)) && newData.child('sharedAt').isNumber() && (!newData.hasChild('cells') || (newData.child('cells').isString() && newData.child('cells').val().length <= 4000))"
           }
         }
       }

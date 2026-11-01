@@ -31,9 +31,26 @@ export function getCosmetic(id: CosmeticId): CosmeticDef | undefined {
   return COSMETICS.find((c) => c.id === id);
 }
 
+/**
+ * Harcanan yıldız, sahip olunan kozmetiklerin katalog fiyatlarından türetilir;
+ * `recorded` (eski sayaç) yalnızca katalogda olmayan kimlikler için alt sınırdır.
+ * İki sekmede aynı anda alınan iki kozmetik birleşince ikisinin fiyatı da sayılır.
+ */
+export function spentStars(
+  owned: readonly CosmeticId[],
+  recorded: number = 0,
+): number {
+  let n = 0;
+  for (const id of new Set(owned)) n += getCosmetic(id)?.price ?? 0;
+  return Math.max(n, recorded);
+}
+
 /** Harcanabilir yıldız: toplam yıldız − harcanan. */
 export function starsAvailable(p: Progress): number {
   let n = 0;
   for (const a of Object.values(p.activities)) n += a.stars;
-  return Math.max(0, n - p.rewards.starsSpent);
+  return Math.max(
+    0,
+    n - spentStars(p.rewards.cosmetics.owned, p.rewards.starsSpent),
+  );
 }

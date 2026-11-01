@@ -5,15 +5,19 @@
  *
  * - session: 6 madde (planSession) + set sonu ekranı; gate: pickForGate'ten 3 madde, ekran yok.
  * - İlk soru "Başla ▶" dokunuşunun içinde okunur (iOS kuralı); sonrakiler açılınca okunur.
+ * - Yönergeden sonra seçenekler sırayla, vurguyla okunur; herhangi bir dokunuş keser.
+ * - Oyun etkin değilken (iyi oluş katmanı, ⏸) konuşma durur ve başlamaz; katman
+ *   kapanınca o anki madde bir kez yeniden okunur.
  * - 1. yanlış: yumuşak ton, ipucu cümlesi, soru yavaş tekrar, bir çeldirici söner.
  * - 2. yanlış: cevap gösterilir ve okunur, madde bir kez sona eklenir (toplama sayılmaz).
  * - Her cevaplanan madde `exercise_item`, set sonu bir kez `exercise_set_end` yayar.
  */
 import "./engine.css";
 import Link from "next/link";
-import { useEffect, useReducer, useRef, useState } from "react";
+import { useEffect, useEffectEvent, useReducer, useRef, useState } from "react";
 import { getGenerator } from "@/activities/content";
 import { SayButton } from "@/components/SayButton";
+import { useGameActive } from "@/lib/gameSession";
 import { praise } from "@/lib/praise";
 import { trackEvent } from "@/lib/progress/events";
 import { getProgress } from "@/lib/progress/store";
@@ -34,6 +38,7 @@ import {
   GATE_SIZE,
   isCorrect,
   pickFade,
+  readoutChoices,
   SESSION_SIZE,
   type PlannedItem,
 } from "./plan";
@@ -43,7 +48,7 @@ import { createTimers } from "./timers";
 import { TraceCanvas } from "./TraceCanvas";
 import type { Exercise } from "./types";
 import { ExerciseVisual } from "./visuals";
-import { createVoiceQueue, type VoiceQueue } from "./voice";
+import { createVoiceQueue, type LineInput, type VoiceQueue } from "./voice";
 
 export type ExerciseSessionResult = {
   correct: number;
@@ -213,6 +218,11 @@ export function ExerciseSession({
   const finishedRun = useRef(0);
   /** Her deneme yalnızca bir kez cevaplanır (hızlı çift dokunuş koruması). */
   const answeredToken = useRef<string | null>(null);
+  const shownKey = useRef<string | null>(null);
+  /** Yönerge + seçenek okuması sürüyor (bir dokunuş keser). */
+  const readoutOn = useRef(false);
+  const [reading, setReading] = useState<{ token: string; id: string } | null>(null);
+  const active = useGameActive();
 
   const available =
     mode === "gate"
@@ -231,13 +241,80 @@ export function ExerciseSession({
     [voice, timers],
   );
 
-  // Yeni madde açılınca yönergeyi oku (ilki "Başla" dokunuşunda okundu).
+  const sayLines = (lines: LineInput[], onDone?: () => void) => {
+    readoutOn.current = false;
+    voice.say(lines, onDone);
+  };
+
+  /** `lead` satırları, yönerge (ipucunda yavaş) ve ardından seçenekler sırayla, vurguyla. */
+  const speakAsk = (
+    lead: LineInput[],
+    item: QItem,
+    hint: boolean,
+    skip: readonly string[],
+  ) => {
+    const { ex } = item;
+    const token = `${item.key}#${hint ? 1 : 0}`;
+    const choices = readoutChoices(ex, skip).map((c) => ({
+      text: c.say,
+      onStart: () => setReading({ token, id: c.id }),
+    }));
+    readoutOn.current = choices.length > 0;
+    voice.say(
+      [
+        ...lead,
+        hint
+          ? { text: ex.prompt.hintSay ?? ex.prompt.say, rate: 0.75 }
+          : ex.prompt.say,
+        ...choices,
+      ],
+      () => {
+        readoutOn.current = false;
+        setReading(null);
+      },
+    );
+  };
+
+  const stopVoice = () => {
+    readoutOn.current = false;
+    voice.stop();
+    setReading(null);
+  };
+
+  /** Okuma sürerken herhangi bir dokunuş okumayı keser. */
+  const skipReadout = () => {
+    if (!readoutOn.current) return;
+    stopVoice();
+    cancelSpeech();
+  };
+
+  // Katman açılınca (⏸, mola) zinciri durdur: kalan satırlar okunmaz. Katmanın
+  // kendi sesi bizimkini zaten keser; cancelSpeech onu da susturacağı için çağrılmaz.
+  // Kapanınca madde bir kez yeniden okunur.
   useEffect(() => {
-    if (!current || spokenKey.current === current.key) return;
+    if (active) return;
+    readoutOn.current = false;
+    voice.stop();
+    spokenKey.current = null;
+  }, [active, voice]);
+
+  const speakCurrent = useEffectEvent((item: QItem) => {
+    if (shownKey.current !== item.key) {
+      shownKey.current = item.key;
+      shownAt.current = Date.now();
+    }
+    if (state.phase === "ask") speakAsk([], item, false, []);
+    else if (state.phase === "hint")
+      speakAsk([state.caption], item, true, state.faded);
+    else if (state.phase === "reveal") sayLines([state.caption, answerSay(item.ex)]);
+  });
+
+  // Yeni madde açılınca yönergeyi oku (ilki "Başla" dokunuşunda okundu); yalnızca etkinken.
+  useEffect(() => {
+    if (!current || !active || spokenKey.current === current.key) return;
     spokenKey.current = current.key;
-    shownAt.current = Date.now();
-    voice.say([current.ex.prompt.say]);
-  }, [current, voice]);
+    speakCurrent(current);
+  }, [current, active]);
 
   // Set sonu: tek bir exercise_set_end, doğal mola, onDone.
   useEffect(() => {
@@ -283,13 +360,14 @@ export function ExerciseSession({
     const first = queue[0];
     if (first) {
       spokenKey.current = first.key;
+      shownKey.current = first.key;
       shownAt.current = now;
-      voice.say([first.ex.prompt.say]);
+      speakAsk([], first, false, []);
     }
     dispatch({ type: "start", queue });
   };
 
-  const sayNow = (text: string, rate?: number) => voice.say([{ text, rate }]);
+  const sayNow = (text: string, rate?: number) => sayLines([{ text, rate }]);
 
   const answer = (ids: string[]) => {
     const item = current;
@@ -328,7 +406,7 @@ export function ExerciseSession({
         advanced = true;
         dispatch({ type: "advance", key });
       };
-      voice.say([caption], () => timers.later(go, ADVANCE_AFTER_VOICE_MS));
+      sayLines([caption], () => timers.later(go, ADVANCE_AFTER_VOICE_MS));
       timers.later(go, ADVANCE_FALLBACK_MS);
       return;
     }
@@ -336,15 +414,16 @@ export function ExerciseSession({
     sounds.softWrong();
     if (state.tries === 0) {
       const caption = ex.feedback.retry || praise("wrong_try_again");
+      const fade = pickFade(ex, ids, state.faded);
       dispatch({
         type: "wrong",
         key: item.key,
         chosen: ids,
-        fade: pickFade(ex, ids, state.faded),
+        fade,
         caption,
         requeue: null,
       });
-      voice.say([caption, { text: ex.prompt.hintSay ?? ex.prompt.say, rate: 0.75 }]);
+      speakAsk([caption], item, true, fade ? [...state.faded, fade] : state.faded);
       return;
     }
 
@@ -368,8 +447,16 @@ export function ExerciseSession({
       caption,
       requeue,
     });
-    voice.say([caption, answerSay(ex)]);
+    sayLines([caption, answerSay(ex)]);
   };
+
+  const readingId =
+    active &&
+    current &&
+    reading?.token === `${current.key}#${state.tries}` &&
+    (state.phase === "ask" || state.phase === "hint")
+      ? reading.id
+      : null;
 
   const size = mode === "gate" ? GATE_SIZE : SESSION_SIZE;
   const rail: Mark[] =
@@ -386,6 +473,7 @@ export function ExerciseSession({
       className={`ex-session ex-session--${mode}`}
       data-slug={slug}
       data-skill={skill}
+      onPointerDownCapture={skipReadout}
     >
       <header className="ex-top">
         <StarRail marks={rail} />
@@ -395,7 +483,7 @@ export function ExerciseSession({
             className="ex-exit"
             aria-label="Haritaya dön"
             onClick={() => {
-              voice.stop();
+              stopVoice();
               cancelSpeech();
               onExit();
             }}
@@ -415,7 +503,8 @@ export function ExerciseSession({
           item={current}
           state={state}
           voiceOn={voiceOn}
-          voice={voice}
+          reading={readingId}
+          onStopVoice={stopVoice}
           onAnswer={answer}
           say={sayNow}
           onNext={() => dispatch({ type: "advance", key: current.key })}
@@ -423,7 +512,13 @@ export function ExerciseSession({
       ) : null}
 
       {stage === "done" && mode === "session" ? (
-        <EndSheet result={result} rail={state.rail} voice={voice} onAgain={begin} />
+        <EndSheet
+          result={result}
+          rail={state.rail}
+          voice={voice}
+          active={active}
+          onAgain={begin}
+        />
       ) : null}
       {stage === "done" && mode === "gate" ? (
         <div className="ex-gate-done" aria-hidden>
@@ -438,7 +533,8 @@ function ItemView({
   item,
   state,
   voiceOn,
-  voice,
+  reading,
+  onStopVoice,
   onAnswer,
   say,
   onNext,
@@ -446,7 +542,8 @@ function ItemView({
   item: QItem;
   state: State;
   voiceOn: boolean;
-  voice: VoiceQueue;
+  reading: string | null;
+  onStopVoice: () => void;
   onAnswer: (ids: string[]) => void;
   say: (text: string, rate?: number) => void;
   onNext: () => void;
@@ -464,6 +561,7 @@ function ItemView({
     disabled: phase === "correct" || phase === "reveal",
     onAnswer,
     say,
+    reading,
   };
 
   let renderer: React.ReactNode = null;
@@ -493,7 +591,7 @@ function ItemView({
           size={72}
           label="Soruyu tekrar dinle"
           className="ex-say"
-          onPress={voice.stop}
+          onPress={onStopVoice}
           disabled={phase === "correct"}
         />
         {promptText ? (
@@ -569,21 +667,31 @@ function EndSheet({
   result,
   rail,
   voice,
+  active,
   onAgain,
 }: {
   result: ExerciseSessionResult;
   rail: Mark[];
   voice: VoiceQueue;
+  active: boolean;
   onAgain: () => void;
 }) {
   // "high" = hepsi doğru (ikinci denemede bulunanlar dahil).
   const high = result.total > 0 && result.correct >= result.total;
   const [line] = useState(() => praise(high ? "set_done_high" : "set_done_low"));
   const ask = "Bir tane daha mı? Yoksa haritaya mı dönelim?";
+  const said = useRef(false);
 
+  // Yalnızca etkinken okunur; set sonu molası kapanınca bir kez yeniden okunur.
   useEffect(() => {
+    if (!active) {
+      said.current = false;
+      return;
+    }
+    if (said.current) return;
+    said.current = true;
     voice.say([line, ask]);
-  }, [line, voice]);
+  }, [active, line, voice]);
 
   return (
     <div className="ex-end" role="group" aria-label="Set bitti">

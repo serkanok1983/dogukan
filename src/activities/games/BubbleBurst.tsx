@@ -6,6 +6,7 @@ import { createGameJuice } from "@/lib/gameJuice";
 import { useGameActive, useGameBoot } from "@/lib/gameSession";
 import { useGameRunning } from "@/hooks/useGameRunning";
 import { sounds } from "@/lib/sounds";
+import { speak } from "@/lib/speech";
 import { randInt } from "@/lib/utils";
 import { useGameScore } from "@/hooks/useGameScore";
 import { ScoreHud } from "@/components/ScoreHud";
@@ -66,6 +67,7 @@ export function BubbleBurst() {
     if (done && !submitted.current) {
       submitted.current = true;
       scoreGame.submitFinal(score);
+      speak(`Süre doldu! ${score} puan.`);
     }
   }, [done, score, scoreGame]);
 
@@ -209,7 +211,7 @@ export function BubbleBurst() {
       <canvas ref={canvasRef} width={W} height={H} className="game-canvas touch-canvas" />
       {done && (
         <div className="game-over">
-          <p>🫧 Harika! Puan: {score}</p>
+          <p>🫧 Süre doldu! Puan: {score}</p>
           <button type="button" className="btn-primary" onClick={reset}>
             Tekrar oyna
           </button>

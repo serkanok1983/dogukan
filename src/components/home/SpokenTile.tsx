@@ -63,7 +63,9 @@ export function SpokenTile({
               {emoji}
             </span>
           ))}
-        <span className="home-tile-label">{label}</span>
+        <span className="home-tile-label" lang="tr">
+          {label}
+        </span>
         {children}
         {badge && (
           <span className="home-tile-badge" aria-hidden>

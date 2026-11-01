@@ -6,6 +6,7 @@ import { useGameActive } from "@/lib/gameSession";
 import { useGameRunning } from "@/hooks/useGameRunning";
 import { useGameScore } from "@/hooks/useGameScore";
 import { GameTouchBar } from "@/components/GameTouchBar";
+import "./asteroids.css";
 
 const GAME_SLUG = "asteroids";
 const GAME_W = 760;
@@ -129,7 +130,7 @@ export function Asteroids() {
     <div className="asteroids-game">
       <header ref={hudRef} className="asteroids-hud">
         <h1 className="asteroids-title">Asteroids 🚀</h1>
-        <p className="asteroids-hint">← → dön · ↑ itiş · Space ateş</p>
+        <p className="asteroids-hint">← → dön · ↑ ileri · Boşluk ateş</p>
         <p className="asteroids-rival">
           Puan: {score} · Rekor: {scoreGame.selfHigh}
         </p>

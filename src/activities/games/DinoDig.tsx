@@ -1,7 +1,9 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import { SayButton } from "@/components/SayButton";
 import { sounds } from "@/lib/sounds";
+import "./touch-targets.css";
 
 const W = 300;
 const H = 300;
@@ -227,7 +229,7 @@ export function DinoDig() {
 
   if (done) {
     return (
-      <div className="game-panel result-panel">
+      <div className="game-panel result-panel dino-dig">
         <div className="result-emoji">{dino.emoji}</div>
         <h2>{dino.name} Bulundu!</h2>
         <p className="result-score">Tüm kemikleri ortaya çıkardın!</p>
@@ -242,11 +244,13 @@ export function DinoDig() {
   }
 
   return (
-    <div className="game-panel">
+    <div className="game-panel dino-dig">
       <p className="round-label">
         {dino.emoji} {dino.name} · Kemik {revealedCount}/{totalBones}
       </p>
-      <p className="count-prompt">Parmağınla toprağı kaz, fosilleri bul!</p>
+      <p className="count-prompt">
+        Parmağınla toprağı kaz, fosilleri bul! <SayButton text="Parmağınla toprağı kaz, fosilleri bul!" />
+      </p>
       <canvas
         ref={initCanvas}
         width={W}
@@ -281,10 +285,8 @@ export function DinoDig() {
           <button
             key={key}
             type="button"
-            className="option-btn"
+            className="option-btn dino-pick"
             style={{
-              padding: "8px 14px",
-              fontSize: "0.85rem",
               background: i === dinoIdx ? "#fef3c7" : undefined,
               border: i === dinoIdx ? "2px solid #f59e0b" : undefined,
             }}

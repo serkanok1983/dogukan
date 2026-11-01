@@ -324,7 +324,7 @@ export function AlienInvasion() {
       <canvas ref={canvasRef} width={W} height={H} className="game-canvas touch-canvas" />
       {done && (
         <div className="game-over">
-          <p>{lives <= 0 ? "💀 Yenildin! " : "🎉 Kazandın! "}Puan: {score}</p>
+          <p>{lives <= 0 ? "🛸 Oyun bitti! " : "🎉 Kazandın! "}Puan: {score}</p>
           <button type="button" className="btn-primary" onClick={reset}>Tekrar oyna</button>
         </div>
       )}

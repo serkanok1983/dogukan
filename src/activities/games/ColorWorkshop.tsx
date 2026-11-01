@@ -1,8 +1,13 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { Fragment, useEffect, useMemo, useRef, useState } from "react";
+import { SayButton } from "@/components/SayButton";
+import { useGameBoot } from "@/lib/gameSession";
+import { praise } from "@/lib/praise";
 import { sounds } from "@/lib/sounds";
+import { speak } from "@/lib/speech";
 import { randInt, shuffle } from "@/lib/utils";
+import "./color-workshop.css";
 
 type Level = {
   prompt: string;
@@ -52,11 +57,24 @@ function getFakeOptions(correct: string, count: number): string[] {
   return picked;
 }
 
+const lower = (s: string) => s.toLocaleLowerCase("tr");
+
+/** Sesli soru: "Mavi ile sarı karışınca hangi renk olur?" */
+function colorPromptSay(level: Level): string {
+  const [a, b] = level.parts;
+  return `${a.label} ile ${lower(b.label)} karışınca hangi renk olur?`;
+}
+
+const isWhite = (color: string | undefined) => color === "#ffffff";
+
 export function ColorWorkshop() {
   const [round, setRound] = useState(0);
   const [score, setScore] = useState(0);
   const [feedback, setFeedback] = useState<"idle" | "ok" | "bad">("idle");
-  const [done, setDone] = useState(false);
+  const [picked, setPicked] = useState<string | null>(null);
+  const [missed, setMissed] = useState(false);
+  const [doneLine, setDoneLine] = useState<string | null>(null);
+  const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const level = LEVELS[round % LEVELS.length];
 
@@ -66,41 +84,83 @@ export function ColorWorkshop() {
     return shuffle([correct, ...fakes]);
   }, [level]);
 
+  useEffect(
+    () => () => {
+      if (timer.current) clearTimeout(timer.current);
+    },
+    [],
+  );
+
+  // StartCard'daki "Başla" dokunuşundan sonra ilk soru sesli sorulur.
+  useGameBoot(() => speak(colorPromptSay(LEVELS[0])));
+
+  const later = (fn: () => void, ms: number) => {
+    if (timer.current) clearTimeout(timer.current);
+    timer.current = setTimeout(() => {
+      timer.current = null;
+      fn();
+    }, ms);
+  };
+
   const pick = (name: string) => {
     if (feedback !== "idle") return;
+    setPicked(name);
     if (name === level.answer) {
       sounds.success();
-      setScore((s) => s + 1);
+      if (!missed) setScore((s) => s + 1);
       setFeedback("ok");
-      setTimeout(() => {
+      speak(`${name}! ${praise(missed ? "correct_retry" : "correct_first")}`);
+      later(() => {
         if (round + 1 >= LEVELS.length) {
-          setDone(true);
+          const line = praise("set_done_high");
+          setDoneLine(line);
           sounds.win();
+          speak(line, { interrupt: false });
         } else {
           setRound((r) => r + 1);
           setFeedback("idle");
+          setPicked(null);
+          setMissed(false);
+          speak(colorPromptSay(LEVELS[round + 1]), { interrupt: false });
         }
-      }, 700);
+      }, 900);
     } else {
-      sounds.wrong();
+      sounds.softWrong();
+      setMissed(true);
       setFeedback("bad");
-      setTimeout(() => setFeedback("idle"), 600);
+      speak(`${name}. ${praise("wrong_try_again")}`);
+      later(() => {
+        setFeedback("idle");
+        setPicked(null);
+      }, 700);
     }
   };
 
   const restart = () => {
+    if (timer.current) clearTimeout(timer.current);
+    timer.current = null;
     setRound(0);
     setScore(0);
     setFeedback("idle");
-    setDone(false);
+    setPicked(null);
+    setMissed(false);
+    setDoneLine(null);
+    speak(colorPromptSay(LEVELS[0]));
   };
 
-  if (done) {
+  if (doneLine) {
+    const scoreSay = `${LEVELS.length} renkten ${score} tanesini ilk denemede buldun.`;
     return (
-      <div className="game-panel result-panel">
-        <div className="result-emoji">🖌️</div>
-        <h2>Renk Ustası!</h2>
-        <p className="result-score">{score} / {LEVELS.length}</p>
+      <div className="game-panel result-panel color-workshop">
+        <div className="result-emoji" aria-hidden="true">
+          🖌️
+        </div>
+        <h2 className="color-mix-title">
+          {doneLine} <SayButton text={`${doneLine} ${scoreSay}`} />
+        </h2>
+        <p className="result-score" aria-label={scoreSay}>
+          ⭐ {score} / {LEVELS.length}
+        </p>
         <button type="button" className="btn-primary" onClick={restart}>
           Tekrar Oyna
         </button>
@@ -108,71 +168,78 @@ export function ColorWorkshop() {
     );
   }
 
+  const promptSay = colorPromptSay(level);
+
   return (
-    <div className="game-panel">
-      <p className="round-label">
-        Tur {round + 1}/{LEVELS.length} · ⭐ {score}
+    <div className="game-panel color-workshop">
+      <p
+        className="color-mix-round"
+        aria-label={`Tur ${round + 1} / ${LEVELS.length}`}
+      >
+        🎨 {round + 1}/{LEVELS.length} · ⭐ {score}
       </p>
       <div className="color-mix-demo">
-        <div className="color-mix-parts">
-          {level.parts.map((p) => (
-            <div key={p.color} className="color-mix-part">
-              <div
-                className="color-mix-swatch"
-                style={{ background: p.color, border: p.color === "#ffffff" ? "2px solid #d1d5db" : "none" }}
+        {level.parts.map((p, i) => (
+          <Fragment key={p.color}>
+            {i > 0 && (
+              <span className="color-mix-plus" aria-hidden="true">
+                +
+              </span>
+            )}
+            <div className="color-mix-part">
+              <button
+                type="button"
+                className={`color-mix-swatch${isWhite(p.color) ? " is-white" : ""}`}
+                style={{ background: p.color }}
+                aria-label={p.label}
+                onClick={() => speak(p.label)}
               />
               <span className="color-mix-label">{p.label}</span>
             </div>
-          ))}
+          </Fragment>
+        ))}
+        <span className="color-mix-eq" aria-hidden="true">
+          =
+        </span>
+        <div className="color-mix-part">
+          <span
+            className={`color-mix-swatch color-mix-result${feedback === "ok" ? " is-found" : ""}`}
+            style={feedback === "ok" ? { background: level.target } : undefined}
+            aria-hidden="true"
+          >
+            {feedback === "ok" ? "" : "?"}
+          </span>
+          <span className="color-mix-label">
+            {feedback === "ok" ? level.answer : "?"}
+          </span>
         </div>
-        <span className="color-mix-plus">+</span>
-        <span className="color-mix-eq">= ?</span>
       </div>
-      <p className="round-label" style={{ marginTop: 8, fontSize: "1.1rem" }}>{level.prompt}</p>
-      <div
-        className="color-workshop-options"
-        style={{
-          display: "grid",
-          gridTemplateColumns: "repeat(2, 1fr)",
-          gap: 12,
-          maxWidth: 380,
-          margin: "16px auto 0",
-        }}
-      >
+      <p className="color-mix-prompt">
+        {level.prompt} <SayButton text={promptSay} />
+      </p>
+      <div className="color-workshop-options">
         {options.map((name) => {
           const opt = OPTIONS.find((o) => o.name === name);
           const isCorrect = feedback === "ok" && name === level.answer;
-          const isWrong = feedback === "bad" && name === level.answer;
+          const isWrong = feedback === "bad" && name === picked;
           return (
             <button
               key={name}
               type="button"
-              className="option-btn"
+              className={`option-btn color-mix-option${isCorrect ? " correct" : ""}${isWrong ? " wrong" : ""}`}
               style={{
-                padding: "18px 10px",
-                fontSize: "1rem",
-                display: "flex",
-                alignItems: "center",
-                gap: 10,
-                background: isCorrect ? "#dcfce7" : isWrong ? "#fecaca" : undefined,
-                border: isCorrect ? "2px solid #22c55e" : isWrong ? "2px solid #ef4444" : undefined,
-                opacity: feedback !== "idle" && name !== level.answer ? 0.5 : 1,
+                opacity: feedback === "ok" && name !== level.answer ? 0.5 : 1,
               }}
               onClick={() => pick(name)}
               disabled={feedback !== "idle"}
+              aria-label={name}
             >
               <span
-                style={{
-                  display: "inline-block",
-                  width: 28,
-                  height: 28,
-                  borderRadius: "50%",
-                  background: opt?.color ?? "#ccc",
-                  border: opt?.color === "#ffffff" ? "2px solid #d1d5db" : "none",
-                  flexShrink: 0,
-                }}
+                className={`color-mix-dot${isWhite(opt?.color) ? " is-white" : ""}`}
+                style={{ background: opt?.color ?? "#ccc" }}
+                aria-hidden="true"
               />
-              {name}
+              <span className="color-mix-name">{name}</span>
             </button>
           );
         })}

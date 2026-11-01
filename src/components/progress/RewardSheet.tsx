@@ -6,7 +6,11 @@
  * - Kazanılan yıldızlar animasyonla gelir; 1,5 sn sonra dokununca atlanır.
  * - `praise()` satırı sesli okunur. Otomatik kapanma / yeniden başlatma yoktur.
  * - İki EŞİT düğme: ▶ Tekrar · 🗺️ Harita.
- * - Kavanoz boşsa: 🍯 Bal topla (3 soru) · 🗺️ Harita (oturumda ≤ 2 kez; sonra yalnız Harita).
+ * - Arcade kavanozu boşsa: 🍯 Bal topla (3 soru) · 🗺️ Harita (oturumda ≤ 2 kez, StartCard
+ *   ile ortak; tavan dolmuşsa hiç; sonra yalnız Harita). Bal topla bitince oyun yalnızca
+ *   kavanozda gerçekten hücre varsa yeniden başlar.
+ * - Akşam başladıysa arcade için Tekrar yok: yalnız Harita (Bal topla da yok).
+ * - Birlikte oyunda kavanoz/akşam kapı değildir (`arcadeOpen`).
  * - Aynı oyunda art arda 3 koşudan sonra oturumda bir kez: "Başka bir adaya bakalım mı?"
  */
 import "./progress.css";
@@ -18,7 +22,9 @@ import { useWellbeing } from "@/hooks/useWellbeing";
 import { haptic } from "@/lib/haptics";
 import { praise } from "@/lib/praise";
 import { useQuests } from "@/lib/quests";
-import { notifyNaturalPause } from "@/lib/sessionClock";
+import { canStartArcadeNow, notifyNaturalPause } from "@/lib/sessionClock";
+import type { WellbeingState } from "@/lib/sessionClock";
+import { getActivityInfo } from "@/lib/worlds";
 import { sounds } from "@/lib/sounds";
 import { speak } from "@/lib/speech";
 import { HoneyGate } from "./HoneyGate";
@@ -31,9 +37,26 @@ import {
 import type { RunResult } from "./useRunResult";
 
 export const SUGGEST_LINE = "Başka bir adaya bakalım mı?";
+/** Kavanoz boş ve Bal topla sunulmuyor: yalnız Harita (StartCard da kullanır). */
+export const JAR_MAP_LINE = "Bal bitti. Haritada öğrenme adaları açık.";
 const SKIP_AFTER_MS = 1500;
 
-type Variant = "normal" | "honey" | "mapOnly";
+type Variant = "normal" | "honey" | "mapOnly" | "sleep";
+
+/** Arcade bu an başlatılamazsa hangi düğmeler? Bal topla sunulursa sayacı işaretlemek çağıranın işi. */
+function decideVariant(wb: WellbeingState, arcade: boolean): Variant {
+  if (!arcade || wb.arcadeOpen) return "normal";
+  if (wb.evening) return "sleep";
+  if (wb.jarEmpty) return wb.honeyRefill && canOfferHoney() ? "honey" : "mapOnly";
+  return "normal"; // gece/sınır: kaplama zaten açılır
+}
+
+function variantLine(variant: Variant): string | null {
+  if (variant === "honey") return VOICE.jarEmpty;
+  if (variant === "mapOnly") return JAR_MAP_LINE;
+  if (variant === "sleep") return VOICE.eveningTile;
+  return null;
+}
 
 function StarRow({
   count,
@@ -70,15 +93,16 @@ export function RewardSheet(props: {
   onMap: () => void;
 }) {
   const { slug, result, onRestart, onMap } = props;
-  const { jarEmpty } = useWellbeing();
+  const wb = useWellbeing();
   const { items } = useQuests();
+  const arcade = getActivityInfo(slug)?.kind === "arcade";
 
-  // Bağlam bir kez, açılışta belirlenir (sonraki çizimlerde değişmez).
+  // Bağlam bir kez, açılışta belirlenir; yalnızca düğme işleyicileri sonradan değiştirir.
   const [newStar] = useState(result.isNewStar);
   const [line] = useState(() => praise(newStar ? "new_star" : "run_end"));
-  const [variant] = useState<Variant>(() =>
-    jarEmpty ? (canOfferHoney() ? "honey" : "mapOnly") : "normal",
-  );
+  const [initialVariant] = useState<Variant>(() => decideVariant(wb, arcade));
+  const [lateVariant, setLateVariant] = useState<Variant | null>(null);
+  const variant = lateVariant ?? initialVariant;
   const [suggest] = useState(() => canSuggestIsland(slug));
   const [canSkip, setCanSkip] = useState(false);
   const [skipped, setSkipped] = useState(false);
@@ -88,12 +112,13 @@ export function RewardSheet(props: {
   useEffect(() => {
     if (!counted.current) {
       counted.current = true;
-      if (variant === "honey") markHoneyOffered();
+      if (initialVariant === "honey") markHoneyOffered();
       if (suggest) markIslandSuggested();
     }
     notifyNaturalPause("run_end");
     speak(line);
-    if (variant !== "normal") speak(VOICE.jarEmpty, { interrupt: false });
+    const jarLine = variantLine(initialVariant);
+    if (jarLine) speak(jarLine, { interrupt: false });
     if (suggest) speak(SUGGEST_LINE, { interrupt: false });
     if (newStar) {
       sounds.star();
@@ -102,7 +127,27 @@ export function RewardSheet(props: {
     const t = setTimeout(() => setCanSkip(true), SKIP_AFTER_MS);
     return () => clearTimeout(t);
     // Bağımlılıkların hepsi açılışta sabitlenir → yalnızca bir kez çalışır.
-  }, [line, variant, suggest, newStar]);
+  }, [line, initialVariant, suggest, newStar]);
+
+  /** Sayfa açıkken akşam başladıysa / kavanoz bittiyse düğmeler yeniden seçilir. */
+  const switchTo = (next: Variant) => {
+    if (next === "honey") markHoneyOffered();
+    setLateVariant(next);
+    setGateOpen(false);
+    const say = variantLine(next);
+    if (say) speak(say);
+  };
+
+  const again = () => {
+    const next = decideVariant(wb, arcade);
+    if (next !== "normal") switchTo(next);
+    else onRestart();
+  };
+
+  const onHoneyFilled = () => {
+    if (canStartArcadeNow()) onRestart();
+    else switchTo("mapOnly");
+  };
 
   const stars = result.runStars ?? result.starsAfter;
   const nextQuest = items.find((q) => !q.done);
@@ -117,7 +162,7 @@ export function RewardSheet(props: {
         aria-label="Bal topla"
       >
         <div className="pr-sheet-card pr-sheet-card--gate">
-          <HoneyGate onFilled={onRestart} onMap={onMap} />
+          <HoneyGate onFilled={onHoneyFilled} onMap={onMap} />
         </div>
       </div>
     );
@@ -155,19 +200,17 @@ export function RewardSheet(props: {
           </span>
         </button>
 
-        {variant !== "normal" && (
+        {(variant === "honey" || variant === "mapOnly") && (
           <div className="pr-jar" aria-hidden>
             <HoneyJar size="sm" />
           </div>
         )}
 
-        <div className={`pr-actions${variant === "mapOnly" ? " is-single" : ""}`}>
+        <div
+          className={`pr-actions${variant === "mapOnly" || variant === "sleep" ? " is-single" : ""}`}
+        >
           {variant === "normal" && (
-            <button
-              type="button"
-              className="pr-btn pr-btn--again"
-              onClick={onRestart}
-            >
+            <button type="button" className="pr-btn pr-btn--again" onClick={again}>
               ▶ Tekrar
             </button>
           )}

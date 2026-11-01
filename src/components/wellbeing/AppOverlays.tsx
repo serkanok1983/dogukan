@@ -36,7 +36,8 @@ export function AppOverlays() {
 
   if (parentPage) return null;
 
-  const honeyLow = wb.honey.left === 2 && wb.phase !== "grace";
+  // Tanışma günü fazdan bağımsızdır (−5 dk / akşam fazı "grace"i bastırır).
+  const honeyLow = wb.honey.left === 2 && !wb.graceDay;
   return (
     <>
       <CountdownBadge

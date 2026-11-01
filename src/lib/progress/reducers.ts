@@ -2,11 +2,12 @@
  * Saf ilerleme reducer'ı ve çok cihazlı birleştirme (CONTRACT §3.5).
  * C0 yazdı; sahibi S5 (çıkartma/görev/kozmetik genişletmeleri).
  */
+import { getCosmetic, spentStars } from "@/lib/cosmetics";
 import { applyExercise } from "@/lib/mastery";
 import type { SkillId } from "@/lib/skills";
-import { STICKERS, stickerTriggered } from "@/lib/stickers";
+import { lifetimeSets, STICKERS, stickerTriggered } from "@/lib/stickers";
 import { getActivityInfo } from "@/lib/worlds";
-import { reduceDay } from "./dayReducer";
+import { fixMergedDay, reduceDay } from "./dayReducer";
 import { starsForRun } from "./starRules";
 import { dayKey, daysBetween, emptyDay, weekKey } from "./time";
 import type {
@@ -22,6 +23,7 @@ import type {
 } from "./types";
 
 const SEEN_CAP = 300;
+const ACKED_CAP = 300;
 const QUEST_DAYS_CAP = 400;
 const EASE_START = 0.7;
 const EASE_MIN = 0.6;
@@ -217,6 +219,7 @@ export function reduceProgress(p: Progress, e: ProgressEvent): Progress {
         next = {
           ...next,
           rewards: { ...next.rewards, streak: tickStreak(p, e, inbox) },
+          lifetime: { sets: lifetimeSets(p) + 1 },
         };
       }
       break;
@@ -262,6 +265,8 @@ export function reduceProgress(p: Progress, e: ProgressEvent): Progress {
             favorite: e.favorite ?? topic.favorite,
             complete: e.complete ?? topic.complete,
             lastAt: e.at,
+            ...(e.favorite !== undefined ? { favoriteAt: e.at } : {}),
+            ...(e.complete !== undefined ? { completeAt: e.at } : {}),
           },
         },
       };
@@ -277,17 +282,17 @@ export function reduceProgress(p: Progress, e: ProgressEvent): Progress {
     }
     case "cosmetic_buy": {
       const c = p.rewards.cosmetics;
-      if (
-        c.owned.includes(e.cosmeticId) ||
-        totalStars(p) - p.rewards.starsSpent < e.price
-      )
-        break;
+      // Fiyat katalogdan; harcanan sahip olunanlardan türetilir (birleştirme ikisini de sayar).
+      const price = getCosmetic(e.cosmeticId)?.price ?? e.price;
+      const spent = spentStars(c.owned, p.rewards.starsSpent);
+      if (c.owned.includes(e.cosmeticId) || totalStars(p) - spent < price) break;
+      const owned = [...c.owned, e.cosmeticId];
       next = {
         ...next,
         rewards: {
           ...p.rewards,
-          cosmetics: { ...c, owned: [...c.owned, e.cosmeticId] },
-          starsSpent: p.rewards.starsSpent + e.price,
+          cosmetics: { ...c, owned },
+          starsSpent: spentStars(owned, spent + price),
         },
       };
       break;
@@ -303,7 +308,14 @@ export function reduceProgress(p: Progress, e: ProgressEvent): Progress {
     }
     case "notices_ack": {
       const drop = new Set(e.ids);
-      next = { ...next, inbox: inbox.filter((n) => !drop.has(n.id)) };
+      const acked = { ...p.ackedNotices };
+      for (const id of drop)
+        acked[id] = p.inbox.find((n) => n.id === id)?.at ?? e.at;
+      next = {
+        ...next,
+        inbox: inbox.filter((n) => !drop.has(n.id)),
+        ackedNotices: capAcked(acked),
+      };
       return withDay(next, e, runStars);
     }
     default:
@@ -460,6 +472,47 @@ function sortedUnion(a: string[], b: string[]): string[] {
   return [...new Set([...a, ...b])].sort();
 }
 
+/** En yeni `ACKED_CAP` onayı tutar (sıra: `at` azalan, sonra kimlik); kümeye göre deterministik. */
+function capAcked(acked: Record<string, number>): Record<string, number> {
+  const entries = Object.entries(acked);
+  if (entries.length <= ACKED_CAP) return acked;
+  entries.sort(([ia, ta], [ib, tb]) => tb - ta || (ia < ib ? -1 : ia > ib ? 1 : 0));
+  return Object.fromEntries(entries.slice(0, ACKED_CAP));
+}
+
+/** Son yazan kazanır (`at` büyük olan); zaman eşitse ya da ikisinde de yoksa OR. */
+function lwwFlag(
+  x: boolean,
+  xAt: number | undefined,
+  y: boolean,
+  yAt: number | undefined,
+): { value: boolean; at: number | undefined } {
+  const at = xAt === undefined ? yAt : yAt === undefined ? xAt : Math.max(xAt, yAt);
+  const ax = xAt ?? 0;
+  const ay = yAt ?? 0;
+  return { value: ax === ay ? x || y : ax > ay ? x : y, at };
+}
+
+function mergeTopic(x: TopicState, y: TopicState): TopicState {
+  const fav = lwwFlag(x.favorite, x.favoriteAt, y.favorite, y.favoriteAt);
+  const done = lwwFlag(x.complete, x.completeAt, y.complete, y.completeAt);
+  const out: TopicState = {
+    capsuleDone: x.capsuleDone || y.capsuleDone,
+    capsuleDoneAt:
+      x.capsuleDoneAt === undefined
+        ? y.capsuleDoneAt
+        : y.capsuleDoneAt === undefined
+          ? x.capsuleDoneAt
+          : Math.max(x.capsuleDoneAt, y.capsuleDoneAt),
+    favorite: fav.value,
+    complete: done.value,
+    lastAt: Math.max(x.lastAt, y.lastAt),
+  };
+  if (fav.at !== undefined) out.favoriteAt = fav.at;
+  if (done.at !== undefined) out.completeAt = done.at;
+  return out;
+}
+
 export function mergeProgress(a: Progress, b: Progress): Progress {
   const newer = maxBy(a, b, (p) => p.updatedAt);
   const tieBreakNewer =
@@ -490,20 +543,11 @@ export function mergeProgress(a: Progress, b: Progress): Progress {
     }
   }
 
-  const topics = mergeRecord(a.topics, b.topics, (x, y) => ({
-    capsuleDone: x.capsuleDone || y.capsuleDone,
-    capsuleDoneAt:
-      x.capsuleDoneAt === undefined
-        ? y.capsuleDoneAt
-        : y.capsuleDoneAt === undefined
-          ? x.capsuleDoneAt
-          : Math.max(x.capsuleDoneAt, y.capsuleDoneAt),
-    favorite: x.favorite || y.favorite,
-    complete: x.complete || y.complete,
-    lastAt: Math.max(x.lastAt, y.lastAt),
-  }));
+  const topics = mergeRecord(a.topics, b.topics, mergeTopic);
 
-  const days = mergeRecord<DayUsage>(a.days, b.days, (x, y) => mergeNumbers(x, y));
+  const days = mergeRecord<DayUsage>(a.days, b.days, (x, y) =>
+    fixMergedDay(mergeNumbers(x, y), x, y),
+  );
 
   const stickers = { ...a.rewards.stickers };
   for (const [id, at] of Object.entries(b.rewards.stickers)) {
@@ -541,11 +585,20 @@ export function mergeProgress(a: Progress, b: Progress): Progress {
     };
   }
 
+  // Onaylar birleşir (önce tam küme, sonra sınır); onaylanan bildirim geri gelmez.
+  const ackedAll: Record<string, number> = { ...a.ackedNotices };
+  for (const [id, at] of Object.entries(b.ackedNotices ?? {})) {
+    const cur = ackedAll[id];
+    ackedAll[id] = cur === undefined ? at : Math.max(cur, at);
+  }
   const inboxMap = new Map<string, Notice>();
-  for (const n of [...a.inbox, ...b.inbox]) inboxMap.set(n.id, n);
+  for (const n of [...a.inbox, ...b.inbox]) {
+    if (ackedAll[n.id] === undefined) inboxMap.set(n.id, n);
+  }
   const inbox = [...inboxMap.values()].sort(
     (x, y) => x.at - y.at || x.id.localeCompare(y.id),
   );
+  const owned = sortedUnion(a.rewards.cosmetics.owned, b.rewards.cosmetics.owned);
 
   return {
     v: 1,
@@ -560,10 +613,13 @@ export function mergeProgress(a: Progress, b: Progress): Progress {
     rewards: {
       stickers,
       cosmetics: {
-        owned: sortedUnion(a.rewards.cosmetics.owned, b.rewards.cosmetics.owned),
+        owned,
         equipped: tieBreakNewer.rewards.cosmetics.equipped,
       },
-      starsSpent: tieBreakNewer.rewards.starsSpent,
+      starsSpent: spentStars(
+        owned,
+        Math.max(a.rewards.starsSpent, b.rewards.starsSpent),
+      ),
       streak,
       questDays: sortedUnion(
         a.rewards.questDays ?? [],
@@ -573,5 +629,9 @@ export function mergeProgress(a: Progress, b: Progress): Progress {
     quests,
     inbox,
     seenEventIds: sortedUnion(a.seenEventIds, b.seenEventIds).slice(-SEEN_CAP),
+    ackedNotices: capAcked(ackedAll),
+    lifetime: {
+      sets: Math.max(lifetimeSets(a), lifetimeSets(b), lifetimeSets({ days })),
+    },
   };
 }

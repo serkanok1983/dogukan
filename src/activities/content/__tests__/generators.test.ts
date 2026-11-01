@@ -1,12 +1,16 @@
 import { describe, expect, it } from "vitest";
 import type { Exercise, Generator } from "@/activities/engine/types";
 import { GENERATORS, getGenerator } from "@/activities/content";
+import { SCENARIOS } from "@/activities/content/hb/guvenli";
 import { BLANK } from "@/activities/content/mat/oruntu";
 import {
   DECODABLE_WORDS,
   GROUP1,
   GROUP12,
   WORDS_BY_SOUND,
+  firstSounds,
+  soundsClash,
+  type PictureWord,
 } from "@/activities/content/tr/words";
 import { trUpper } from "@/activities/content/util";
 import { createRng, seedFrom } from "@/lib/rng";
@@ -14,6 +18,12 @@ import type { SkillId, SkillLevel } from "@/lib/skills";
 
 const DRAWS = 1000;
 const BARE_CONSONANT = /^\s*[bcçdfgğhjklmnprsştvyz]\s*[.?!]?\s*$/i;
+/** Cümlenin herhangi bir yerinde tek başına bir ünsüz (TTS harf adını okur: "ke"). */
+const BARE_CONSONANT_TOKEN =
+  /(^|[\s,.!?…;:"'“”()-])[bcçdfgğhjklmnprsştvyz](?=[\s,.!?…;:"'“”()-]|$)/iu;
+
+const ALL_WORDS: readonly PictureWord[] = Object.values(WORDS_BY_SOUND).flat();
+const byWord = (w: string) => ALL_WORDS.find((p) => p.word === w);
 const METALANGUAGE =
   /(?<!\p{L})(yüklem|özne|basamak|ünsüz|ünlü|sıfat|zamir)(?!\p{L})/iu;
 
@@ -67,10 +77,13 @@ function checkCommon(ex: Exercise, g: Generator, level: SkillLevel) {
   for (const s of spoken) {
     expect(s.trim().length).toBeGreaterThan(0);
     expect(s).not.toMatch(BARE_CONSONANT);
+    expect(s, s).not.toMatch(BARE_CONSONANT_TOKEN);
     expect(s).not.toMatch(METALANGUAGE);
   }
-  if (ex.feedback.correct !== undefined)
+  if (ex.feedback.correct !== undefined) {
     expect(ex.feedback.correct.trim().length).toBeGreaterThan(0);
+    expect(ex.feedback.correct).not.toMatch(BARE_CONSONANT_TOKEN);
+  }
   expect(words(ex.feedback.retry)).toBeLessThanOrEqual(8);
   expect(words(ex.feedback.reveal)).toBeLessThanOrEqual(8);
 
@@ -85,6 +98,7 @@ function checkCommon(ex: Exercise, g: Generator, level: SkillLevel) {
     expect(c.text !== undefined || c.emoji !== undefined).toBe(true);
     expect(c.say.trim().length).toBeGreaterThan(0);
     expect(c.say).not.toMatch(BARE_CONSONANT);
+    expect(c.say, c.say).not.toMatch(BARE_CONSONANT_TOKEN);
     expect(c.say).not.toMatch(METALANGUAGE);
   }
 
@@ -180,6 +194,11 @@ function checkSpecific(ex: Exercise, level: SkillLevel) {
       }
       if (v?.type !== "picture") throw new Error("ses-harf görseli resim olmalı");
       expect(v.alt.charAt(0)).toBe(answer);
+      // Belirsizlik koruması: resmin başka adının ilk harfi seçeneklerde yok.
+      const named = firstSounds(byWord(v.alt) as PictureWord);
+      for (const c of ex.choices ?? []) {
+        if (c.id !== answer) expect(named, `${v.alt} / ${c.id}`).not.toContain(c.id);
+      }
       break;
     }
     case "tr.ses-ayirt": {
@@ -192,6 +211,15 @@ function checkSpecific(ex: Exercise, level: SkillLevel) {
       expect(key(answer)).toBe(key(target));
       for (const c of ex.choices ?? []) {
         if (c.id !== answer) expect(key(c.id)).not.toBe(key(target));
+      }
+      if (!end) {
+        // Belirsizlik koruması: çeldirici hedefle hiçbir adıyla aynı sesle başlamaz.
+        const t = byWord(target) as PictureWord;
+        for (const c of ex.choices ?? []) {
+          if (c.id === answer) continue;
+          const d = byWord(c.id) as PictureWord;
+          expect(soundsClash(d, t), `${target} / ${c.id}`).toBe(false);
+        }
       }
       if (level === 1) expect(GROUP1).toContain(target.charAt(0));
       break;
@@ -250,6 +278,35 @@ describe("GENERATORS", () => {
   }
 });
 
+describe("hb.guvenli senaryoları", () => {
+  it("bir emoji bir senaryoda doğru, başkasında yanlış seçenek olmaz", () => {
+    const right = new Set(
+      SCENARIOS.flatMap((s) => (s.correct.emoji ? [s.correct.emoji] : [])),
+    );
+    for (const s of SCENARIOS) {
+      for (const w of s.wrong) {
+        if (w.emoji)
+          expect(right.has(w.emoji), `${s.key}: ${w.emoji} ${w.text}`).toBe(false);
+      }
+    }
+  });
+
+  it("trafik: önce sola, sonra sağa, sonra yine sola; kırmızı 🔴, yeşil 🟢", () => {
+    const red = SCENARIOS.find((s) => s.key === "kirmizi-isik");
+    const green = SCENARIOS.find((s) => s.key === "yesil-isik");
+    expect(red?.scene).toBe("🔴");
+    expect(green?.scene).toBe("🟢");
+    expect(green?.reveal).toMatch(/sola.*sağa.*sola/);
+    expect(green?.correct.text).toMatch(/[Ss]ola.*sağa.*sola/);
+  });
+
+  it("parkta kaybolunca: yerinde kalır ve yardım ister", () => {
+    const park = SCENARIOS.find((s) => s.key === "kayip-park");
+    expect(park?.correct.text).toMatch(/Yerimde kalırım/);
+    expect(park?.reveal).toMatch(/Olduğun yerde kal/);
+  });
+});
+
 describe("kelime bankası", () => {
   it("1–2. grubun her sesi için ≥ 6 resimli kelime, ilk harf doğru", () => {
     for (const sound of GROUP12) {
@@ -260,6 +317,47 @@ describe("kelime bankası", () => {
         expect(w.word).toBe(w.word.toLocaleLowerCase("tr"));
         expect(w.emoji.length).toBeGreaterThan(0);
       }
+    }
+  });
+
+  it("belirsizlik koruması: aka adları küçük harf; çakışma iki yönlü", () => {
+    for (const w of ALL_WORDS) {
+      for (const a of w.aka ?? []) {
+        expect(a).toBe(a.toLocaleLowerCase("tr"));
+        expect(a).not.toBe(w.word);
+      }
+    }
+    const nine = byWord("nine") as PictureWord;
+    const ari = byWord("arı") as PictureWord;
+    const kedi = byWord("kedi") as PictureWord;
+    expect(firstSounds(nine)).toEqual(expect.arrayContaining(["n", "a", "b"]));
+    expect(soundsClash(nine, ari)).toBe(true);
+    expect(soundsClash(ari, nine)).toBe(true);
+    expect(soundsClash(nine, kedi)).toBe(false);
+  });
+
+  it("bilinen iki-doğru-cevap resimleri ve yeni emojiler bankada yok", () => {
+    const words = ALL_WORDS.map((w) => w.word);
+    for (const gone of [
+      "oyuncak",
+      "orman",
+      "istakoz",
+      "nane",
+      "lahana",
+      "nehir",
+      "otel",
+      "ip",
+      "üşümek",
+      "ünlem",
+      "leopar",
+      "eşek",
+      "nilüfer",
+    ]) {
+      expect(words, gone).not.toContain(gone);
+    }
+    const emojis = ALL_WORDS.map((w) => w.emoji);
+    for (const gone of ["🫏", "🪷", "🪢", "🏹", "🧸", "🌲", "😢"]) {
+      expect(emojis, gone).not.toContain(gone);
     }
   });
 

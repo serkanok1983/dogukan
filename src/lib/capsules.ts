@@ -219,7 +219,7 @@ const ISIK_VE_GOLGE: CapsuleEpisode = {
       tap: {
         type: "choose",
         choices: [
-          { id: "kaybolur", emoji: "🫥", label: "Kaybolur", say: "Kaybolur." },
+          { id: "kaybolur", emoji: "🌑❌", label: "Kaybolur", say: "Kaybolur." },
           { id: "uzar", emoji: "📏", label: "Uzar", say: "Uzar." },
           { id: "kizarir", emoji: "🔴", label: "Kızarır", say: "Kızarır." },
         ],
@@ -246,9 +246,8 @@ const ISIK_VE_GOLGE: CapsuleEpisode = {
     {
       id: "isik-12",
       kind: "mission",
-      say: "Babanla dene: fenerle duvara tavşan yap!",
-      text: "Babanla dene: fenerle duvara tavşan gölgesi yap!",
-      visual: emoji("👨‍👦🔦"),
+      say: "Babanla dene: fenerle duvara tavşan gölgesi yap!",
+      visual: emoji("👨 🧒 🔦"),
       tap: { type: "done", prompt: "Babanı çağır, sonra Bitti'ye bas." },
     },
   ],
@@ -385,16 +384,16 @@ const KALBIM_VE_NEFESIM: CapsuleEpisode = {
     {
       id: "kalp-8",
       kind: "wonder",
-      say: "Bileğine iki parmak koy. Küt küt var mı?",
-      visual: emoji("🫲💓"),
+      say: "Beş kere zıpla. Elini göğsüne koy.",
+      visual: emoji("🤸💓"),
       tap: {
         type: "predict",
-        prompt: "Ne buldun?",
+        prompt: "Kalbin nasıl atıyor?",
         choices: [
-          { id: "var", emoji: "✅", label: "Var", say: "Var!" },
-          { id: "yok", emoji: "❌", label: "Yok", say: "Yok mu?" },
+          { id: "hizli", emoji: "🐇", label: "Hızlı", say: "Hızlı mı?" },
+          { id: "yavas", emoji: "🐢", label: "Yavaş", say: "Yavaş mı?" },
         ],
-        explain: "Var! Buna nabız denir.",
+        explain: "Hızlı! Bu atışa nabız denir.",
       },
     },
     {
@@ -440,9 +439,8 @@ const KALBIM_VE_NEFESIM: CapsuleEpisode = {
     {
       id: "kalp-12",
       kind: "mission",
-      say: "Babanla dene: zıpla, sonra kalbini dinle!",
-      text: "Babanla dene: 10 kere zıpla, sonra elini göğsüne koy.",
-      visual: emoji("👨‍👦❤️"),
+      say: "Babanla dene: zıpla, sonra elini göğsüne koy!",
+      visual: emoji("👨 🧒 ❤️"),
       tap: { type: "done", prompt: "Babanı çağır, sonra Bitti'ye bas." },
     },
   ],

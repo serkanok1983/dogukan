@@ -11,7 +11,7 @@ import { useWellbeing } from "@/hooks/useWellbeing";
 import { loginAs, logout } from "@/lib/auth";
 import { onEvent, trackEvent } from "@/lib/progress/events";
 import { _resetProgressForTests, getProgress } from "@/lib/progress/store";
-import { notifyNaturalPause } from "@/lib/sessionClock";
+import { canStartArcadeNow, notifyNaturalPause } from "@/lib/sessionClock";
 import { speak } from "@/lib/speech";
 import { NoticeToaster, STICKER_REVEAL_MS } from "../NoticeToaster";
 import { RewardSheet, SUGGEST_LINE } from "../RewardSheet";
@@ -28,6 +28,7 @@ vi.mock("@/lib/sessionClock", () => ({
   setClockContext: vi.fn(),
   requestCoplay: vi.fn(),
   isCoplayActive: () => false,
+  canStartArcadeNow: vi.fn(() => true),
 }));
 
 const WB = {
@@ -38,6 +39,16 @@ const WB = {
   overlay: null,
   coplay: false,
   evening: false,
+  graceDay: false,
+  arcadeOpen: true,
+  honeyRefill: true,
+};
+
+const JAR_EMPTY = {
+  ...WB,
+  jarEmpty: true,
+  arcadeOpen: false,
+  honey: { left: 0, capacity: 13 },
 };
 
 vi.mock("@/hooks/useWellbeing", () => ({ useWellbeing: vi.fn(() => WB) }));
@@ -97,6 +108,7 @@ beforeEach(() => {
   vi.mocked(useWellbeing).mockReturnValue(WB);
   vi.mocked(speak).mockClear();
   vi.mocked(notifyNaturalPause).mockClear();
+  vi.mocked(canStartArcadeNow).mockReturnValue(true);
 });
 
 afterEach(() => {
@@ -143,11 +155,7 @@ describe("RewardSheet", () => {
   });
 
   it("kavanoz boş: Bal topla / Harita, oturumda en fazla 2 kez; sonra yalnız Harita", () => {
-    vi.mocked(useWellbeing).mockReturnValue({
-      ...WB,
-      jarEmpty: true,
-      honey: { left: 0, capacity: 13 },
-    });
+    vi.mocked(useWellbeing).mockReturnValue(JAR_EMPTY);
     for (let i = 0; i < 2; i++) {
       const { unmount } = sheet();
       expect(screen.getByText("🍯 Bal topla (3 soru)")).toBeTruthy();
@@ -165,11 +173,7 @@ describe("RewardSheet", () => {
   });
 
   it("Bal topla: 3 soruluk gate oturumu açar, bitince oyunu yeniden başlatır", () => {
-    vi.mocked(useWellbeing).mockReturnValue({
-      ...WB,
-      jarEmpty: true,
-      honey: { left: 0, capacity: 13 },
-    });
+    vi.mocked(useWellbeing).mockReturnValue(JAR_EMPTY);
     const onRestart = vi.fn();
     sheet({ onRestart });
     fireEvent.click(screen.getByText("🍯 Bal topla (3 soru)"));
@@ -178,6 +182,76 @@ describe("RewardSheet", () => {
     expect(ex.dataset.slug).toBe("bal-topla");
     fireEvent.click(ex);
     expect(onRestart).toHaveBeenCalledTimes(1);
+  });
+
+  it("Bal topla bitti ama kavanozda hücre yok → yeniden başlatmaz, yalnız Harita", () => {
+    vi.mocked(useWellbeing).mockReturnValue(JAR_EMPTY);
+    vi.mocked(canStartArcadeNow).mockReturnValue(false);
+    const onRestart = vi.fn();
+    sheet({ onRestart });
+    fireEvent.click(screen.getByText("🍯 Bal topla (3 soru)"));
+    fireEvent.click(screen.getByTestId("exercise"));
+    expect(onRestart).not.toHaveBeenCalled();
+    expect(screen.queryByText("🍯 Bal topla (3 soru)")).toBeNull();
+    expect(screen.getByText("🗺️ Harita")).toBeTruthy();
+  });
+
+  it("kavanoz tavanı doluysa Bal topla hiç sunulmaz ve sayaç harcanmaz", () => {
+    vi.mocked(useWellbeing).mockReturnValue({ ...JAR_EMPTY, honeyRefill: false });
+    const first = sheet();
+    expect(screen.queryByText("🍯 Bal topla (3 soru)")).toBeNull();
+    expect(screen.queryByText("▶ Tekrar")).toBeNull();
+    first.unmount();
+    vi.mocked(useWellbeing).mockReturnValue(JAR_EMPTY);
+    for (let i = 0; i < 2; i++) {
+      const { unmount } = sheet();
+      expect(screen.getByText("🍯 Bal topla (3 soru)")).toBeTruthy();
+      unmount();
+    }
+  });
+
+  it("akşam: arcade için Tekrar ve Bal topla yok, yalnız Harita", () => {
+    vi.mocked(useWellbeing).mockReturnValue({
+      ...JAR_EMPTY,
+      evening: true,
+      phase: "warn5",
+    });
+    sheet();
+    expect(screen.queryByText("▶ Tekrar")).toBeNull();
+    expect(screen.queryByText("🍯 Bal topla (3 soru)")).toBeNull();
+    expect(screen.getByText("🗺️ Harita")).toBeTruthy();
+  });
+
+  it("sayfa açıkken akşam başlarsa Tekrar yeniden başlatmaz, Harita'ya döner", () => {
+    const onRestart = vi.fn();
+    const view = sheet({ onRestart });
+    vi.mocked(useWellbeing).mockReturnValue({
+      ...WB,
+      evening: true,
+      arcadeOpen: false,
+    });
+    view.rerender(
+      <RewardSheet
+        slug="flappy-bird"
+        result={result}
+        onRestart={onRestart}
+        onMap={vi.fn()}
+      />,
+    );
+    fireEvent.click(screen.getByText("▶ Tekrar"));
+    expect(onRestart).not.toHaveBeenCalled();
+    expect(screen.queryByText("▶ Tekrar")).toBeNull();
+    expect(screen.getByText("🗺️ Harita")).toBeTruthy();
+  });
+
+  it("birlikte oyunda kavanoz kapı değildir: Tekrar kalır", () => {
+    vi.mocked(useWellbeing).mockReturnValue({
+      ...WB,
+      coplay: true,
+      honey: { left: 0, capacity: 13 },
+    });
+    sheet();
+    expect(screen.getByText("▶ Tekrar")).toBeTruthy();
   });
 
   it("aynı oyunda art arda 3 koşudan sonra öneri oturumda bir kez", () => {

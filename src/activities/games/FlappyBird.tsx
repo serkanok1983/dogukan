@@ -336,7 +336,7 @@ export function FlappyBird() {
       {over && (
         <div className="game-over">
           <p>
-            🐤 Skor: {score} · En iyi: {Math.max(scoreGame.selfHigh, score)}
+            🐤 Skor: {score} · 🏆 Rekor: {Math.max(scoreGame.selfHigh, score)}
           </p>
           <button type="button" className="btn-primary" onClick={reset}>
             Tekrar oyna

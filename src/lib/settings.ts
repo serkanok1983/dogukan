@@ -68,27 +68,98 @@ export const BREAK_SECONDS_MAX = 45;
 const EVENT = "dogukan:settings";
 let cached: Settings | null = null;
 
-/** Bozuk veya aralık dışı değerleri güvenli değerlere çeker (mola halkası 30–45 sn, K13). */
-function sanitize(s: Settings): Settings {
-  const breakSeconds = Number.isFinite(s.breakSeconds)
-    ? Math.min(
-        BREAK_SECONDS_MAX,
-        Math.max(BREAK_SECONDS_MIN, Math.round(s.breakSeconds)),
-      )
-    : DEFAULT_SETTINGS.breakSeconds;
-  const breakEveryMinutes = (BREAK_EVERY_OPTIONS as readonly number[]).includes(
-    s.breakEveryMinutes,
+type NumericKey =
+  | "weekdayMinutes"
+  | "weekendMinutes"
+  | "arcadeMinutes"
+  | "arcadeMaxMinutes"
+  | "breakSeconds"
+  | "eveningModeMinutes"
+  | "episodesPerDay";
+
+/** Sayısal ayarların güvenli aralıkları (ebeveyn panelindeki adımlayıcılarla aynı). */
+export const SETTING_RANGES: Readonly<
+  Record<NumericKey, readonly [number, number]>
+> = {
+  weekdayMinutes: [10, 120],
+  weekendMinutes: [10, 180],
+  arcadeMinutes: [0, 60],
+  arcadeMaxMinutes: [2, 90],
+  breakSeconds: [BREAK_SECONDS_MIN, BREAK_SECONDS_MAX],
+  eveningModeMinutes: [0, 120],
+  episodesPerDay: [0, 5],
+};
+
+const BOOL_KEYS = [
+  "voiceOn",
+  "soundOn",
+  "hapticsOn",
+  "babaIleEnabled",
+  "rivalVisible",
+  "holidayMode",
+  "firstLaunchDone",
+  "firstBreakDone",
+] as const;
+
+const HHMM = /^([01]?\d|2[0-3]):[0-5]\d$/;
+const DAY = /^\d{4}-\d{2}-\d{2}$/;
+
+function clampNumber(value: unknown, key: NumericKey): number {
+  const [min, max] = SETTING_RANGES[key];
+  if (typeof value !== "number" || !Number.isFinite(value))
+    return DEFAULT_SETTINGS[key];
+  return Math.min(max, Math.max(min, Math.round(value)));
+}
+
+/**
+ * Bozuk veya aralık dışı değerleri güvenli değerlere çeker (NaN "sınır yok" demek
+ * olmamalı). Mola halkası 30–45 sn (K13); kavanoz tavanı tabanın altına inemez:
+ * yalnız tavan değiştiyse taban aşağı çekilir, aksi hâlde tavan yukarı itilir.
+ */
+function sanitize(s: Settings, patch?: Partial<Settings>): Settings {
+  const next = { ...s } as Settings;
+  for (const key of Object.keys(SETTING_RANGES) as NumericKey[]) {
+    next[key] = clampNumber(s[key], key);
+  }
+  if (next.arcadeMaxMinutes < next.arcadeMinutes) {
+    const maxOnly =
+      patch !== undefined &&
+      "arcadeMaxMinutes" in patch &&
+      !("arcadeMinutes" in patch);
+    if (maxOnly) next.arcadeMinutes = next.arcadeMaxMinutes;
+    else
+      next.arcadeMaxMinutes = Math.min(
+        SETTING_RANGES.arcadeMaxMinutes[1],
+        next.arcadeMinutes,
+      );
+    next.arcadeMinutes = Math.min(next.arcadeMinutes, next.arcadeMaxMinutes);
+  }
+  if (!(BREAK_EVERY_OPTIONS as readonly number[]).includes(s.breakEveryMinutes))
+    next.breakEveryMinutes = DEFAULT_SETTINGS.breakEveryMinutes;
+  if (typeof s.bedtime !== "string" || !HHMM.test(s.bedtime.trim()))
+    next.bedtime = DEFAULT_SETTINGS.bedtime;
+  if (typeof s.wakeFrom !== "string" || !HHMM.test(s.wakeFrom.trim()))
+    next.wakeFrom = DEFAULT_SETTINGS.wakeFrom;
+  for (const key of BOOL_KEYS) {
+    if (typeof s[key] !== "boolean") next[key] = DEFAULT_SETTINGS[key];
+  }
+  if (typeof s.companionName !== "string" || !s.companionName.trim())
+    next.companionName = DEFAULT_SETTINGS.companionName;
+  if (
+    s.graceUntil !== "" &&
+    (typeof s.graceUntil !== "string" || !DAY.test(s.graceUntil))
   )
-    ? s.breakEveryMinutes
-    : DEFAULT_SETTINGS.breakEveryMinutes;
-  if (breakSeconds === s.breakSeconds && breakEveryMinutes === s.breakEveryMinutes)
-    return s;
-  return { ...s, breakSeconds, breakEveryMinutes };
+    next.graceUntil = "";
+  if (typeof s.updatedAt !== "number" || !Number.isFinite(s.updatedAt))
+    next.updatedAt = 0;
+
+  const keys = Object.keys(next) as (keyof Settings)[];
+  return keys.every((k) => Object.is(next[k], s[k])) ? s : next;
 }
 
 function load(): Settings {
   const raw = readJSON<Partial<Settings> | null>(KEYS.settings, null);
-  return raw && typeof raw === "object"
+  return raw && typeof raw === "object" && !Array.isArray(raw)
     ? sanitize({ ...DEFAULT_SETTINGS, ...raw })
     : DEFAULT_SETTINGS;
 }
@@ -100,11 +171,14 @@ export function getSettings(): Settings {
 }
 
 export function updateSettings(patch: Partial<Settings>): Settings {
-  const next: Settings = sanitize({
-    ...getSettings(),
-    ...patch,
-    updatedAt: Date.now(),
-  });
+  const next: Settings = sanitize(
+    {
+      ...getSettings(),
+      ...patch,
+      updatedAt: Date.now(),
+    },
+    patch,
+  );
   cached = next;
   writeJSON(KEYS.settings, next);
   if (typeof window !== "undefined") {

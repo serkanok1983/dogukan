@@ -226,6 +226,22 @@ export function answerSay(ex: Exercise): string | null {
 }
 
 /**
+ * Yönergeden sonra sırayla (vurguyla) okunacak seçenekler (MASTER_PLAN §3.6-2).
+ * Yazılı harf/kelime seçenekleri okunmaz: okumak cevabı verirdi (ses-harf, kelime).
+ * `skip`: okunmayacak id'ler (ipucunda söndürülenler).
+ */
+export function readoutChoices(
+  ex: Exercise,
+  skip: readonly string[] = [],
+): Choice[] {
+  if (ex.kind !== "choice") return [];
+  const choices = (ex.choices ?? []).filter((c) => !skip.includes(c.id));
+  const readingSkill = ex.skill === "tr.ses-harf" || ex.skill === "tr.kelime";
+  if (readingSkill && choices.some((c) => c.text !== undefined)) return [];
+  return choices;
+}
+
+/**
  * İpucunda söndürülecek bir çeldirici: seçilmemiş olanlardan biri. En az bir
  * çeldirici görünür kalmalı (2 seçenekte söndürmek cevabı verirdi).
  */

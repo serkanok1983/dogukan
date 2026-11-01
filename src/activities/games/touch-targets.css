@@ -1,0 +1,62 @@
+/* Küçük oyun düğmelerini çocuk boyutuna büyütür (CONTRACT §0.7):
+   oyun dokunmatik düğmeleri ≥ 72 px, diğer düğmeler ≥ 56 px, yazı ≥ 18 px.
+   Eski sınıflar (src/styles/**) korunur; burada yalnız oyun kabına bağlı ezilir. */
+
+/* Tank Savaşı: ◀ 🔥 ▶ */
+.tank-game .tank-mobile-pad {
+  gap: 12px;
+}
+
+.tank-game .tank-btn {
+  min-width: var(--kid-touch, 72px);
+  min-height: var(--kid-touch, 72px);
+  max-width: 120px;
+  font-size: 2rem;
+}
+
+.tank-game .tank-btn.tank-fire {
+  max-width: 140px;
+}
+
+/* Zıplama Adası ve Labirent: yön düğmeleri */
+.jump-game .dpad button,
+.maze-game .dpad button {
+  width: var(--kid-touch, 72px);
+  height: var(--kid-touch, 72px);
+  font-size: 2rem;
+  border-width: 3px;
+  border-radius: 20px;
+  touch-action: manipulation;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.jump-game .dpad-mid,
+.maze-game .dpad-mid {
+  gap: 12px;
+}
+
+.jump-game .dpad-mid {
+  gap: 48px;
+}
+
+/* Dinozor Kazısı */
+.dino-dig .btn-primary {
+  min-height: var(--kid-tap, 56px);
+  font-size: max(var(--kid-font, 18px), 1.1rem);
+}
+
+.dino-dig .dino-pick {
+  min-height: var(--kid-tap, 56px);
+  padding: 8px 16px;
+  font-size: max(var(--kid-font, 18px), 1.1rem);
+  touch-action: manipulation;
+}
+
+.dino-dig .count-prompt {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 10px;
+}

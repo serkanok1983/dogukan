@@ -3,7 +3,9 @@
 import Link from "next/link";
 import { useEffect, useEffectEvent, useRef, useState } from "react";
 import { SayButton } from "@/components/SayButton";
-import type { CapsuleChoice, CapsuleEpisode } from "@/lib/capsules";
+import { useWellbeing } from "@/hooks/useWellbeing";
+import type { CapsuleCard, CapsuleChoice, CapsuleEpisode } from "@/lib/capsules";
+import { useGameActive } from "@/lib/gameSession";
 import { praise } from "@/lib/praise";
 import { trackEvent } from "@/lib/progress/events";
 import {
@@ -46,6 +48,11 @@ function prefersReducedMotion(): boolean {
  * exactly the episode's 12 cards, a 12-dot rail, voice starts on the gesture
  * that revealed a card, the tap appears after the voice ends, the next card is
  * rendered only after the tap, and the end screen has no next-episode control.
+ *
+ * After the line, the tap prompt and the choice labels are read in order with a
+ * highlight (any tap skips). While a wellbeing overlay / pause is up nothing
+ * starts speaking and no question is revealed; when it closes, the current card
+ * is spoken once more.
  */
 export function CapsuleFeed({ episode, color, onStart }: Props) {
   const total = episode.cards.length;
@@ -56,6 +63,10 @@ export function CapsuleFeed({ episode, color, onStart }: Props) {
   const [runtimes, setRuntimes] = useState<CardRuntime[]>(() =>
     episode.cards.map(freshRuntime),
   );
+  const [reading, setReading] = useState<{ index: number; id: string } | null>(null);
+  const blocking = useWellbeing().blocking;
+  const gameActive = useGameActive();
+  const active = gameActive && !blocking;
 
   // Mirrors for event handlers (written only in handlers, never during render).
   const runtimesRef = useRef<CardRuntime[]>(runtimes);
@@ -64,6 +75,9 @@ export function CapsuleFeed({ episode, color, onStart }: Props) {
   const speechToken = useRef(0);
   const revealTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const cardEls = useRef<(HTMLElement | null)[]>([]);
+  const activeRef = useRef(active);
+  const readingOn = useRef(false);
+  const resumePending = useRef(false);
   const scrollerRef = useRef<HTMLDivElement | null>(null);
 
   const commit = (index: number, patch: Partial<CardRuntime>) => {
@@ -79,21 +93,56 @@ export function CapsuleFeed({ episode, color, onStart }: Props) {
     revealTimer.current = null;
   };
 
+  /** Reads the tap prompt, then each choice label with a highlight. */
+  const readAsk = (index: number, card: CapsuleCard, token: number) => {
+    const lines: { text: string; id?: string }[] = [
+      ...(card.tap.prompt ? [{ text: card.tap.prompt }] : []),
+      ...(card.tap.choices ?? []).map((c) => ({ text: c.label, id: c.id })),
+    ];
+    readingOn.current = true;
+    const step = (i: number) => {
+      if (speechToken.current !== token) return;
+      const line = lines[i];
+      if (!line) {
+        readingOn.current = false;
+        setReading(null);
+        return;
+      }
+      if (line.id) setReading({ index, id: line.id });
+      speak(line.text, { onEnd: () => step(i + 1) });
+    };
+    step(0);
+  };
+
+  /** Any tap while the prompt/choices are being read skips the reading. */
+  const skipReading = () => {
+    if (!readingOn.current) return;
+    readingOn.current = false;
+    speechToken.current++;
+    cancelSpeech();
+    setReading(null);
+  };
+
   /** Speaks a card's line; the tap question appears when the voice ends. */
   const playCard = (index: number) => {
     const card = episode.cards[index];
     if (!card) return;
     const token = ++speechToken.current;
+    readingOn.current = false;
     clearRevealTimer();
+    if (!activeRef.current) {
+      resumePending.current = true;
+      return;
+    }
     const wasAnswered = runtimesRef.current[index]?.phase === "answered";
     if (!wasAnswered) commit(index, { phase: "speaking" });
 
     const reveal = () => {
-      if (speechToken.current !== token) return;
+      if (speechToken.current !== token || !activeRef.current) return;
       clearRevealTimer();
       if (runtimesRef.current[index]?.phase !== "speaking") return;
       commit(index, { phase: "ask" });
-      if (card.tap.prompt) speak(card.tap.prompt);
+      readAsk(index, card, token);
     };
     speak(card.say, { rate: card.kind === "word" ? 0.7 : undefined, onEnd: reveal });
     revealTimer.current = setTimeout(reveal, revealFallbackMs(card.say));
@@ -119,6 +168,7 @@ export function CapsuleFeed({ episode, color, onStart }: Props) {
     const play = isPlayCard(card);
     if (rt.phase !== "ask" && !(play && rt.phase === "answered")) return;
     speechToken.current++;
+    readingOn.current = false;
     clearRevealTimer();
     const { tap, visual } = card;
     const labTarget =
@@ -162,6 +212,7 @@ export function CapsuleFeed({ episode, color, onStart }: Props) {
     const card = episode.cards[index];
     if (!card) return;
     speechToken.current++;
+    readingOn.current = false;
     clearRevealTimer();
     sounds.tap();
     commit(index, { phase: "answered" });
@@ -210,6 +261,27 @@ export function CapsuleFeed({ episode, color, onStart }: Props) {
     setFinished(true);
     speak(endLine);
   };
+
+  // Overlay up: stop the chain (the overlay's own voice interrupts ours) and
+  // never reveal behind it. Overlay gone: speak the current card once more.
+  const onActiveChange = useEffectEvent((isActive: boolean) => {
+    activeRef.current = isActive;
+    if (!started || finished) return;
+    if (!isActive) {
+      speechToken.current++;
+      readingOn.current = false;
+      clearRevealTimer();
+      resumePending.current = true;
+      return;
+    }
+    if (!resumePending.current) return;
+    resumePending.current = false;
+    playCard(currentRef.current);
+  });
+
+  useEffect(() => {
+    onActiveChange(active);
+  }, [active]);
 
   // A swipe that settles on another card counts as the revealing gesture.
   const onCardVisible = useEffectEvent((index: number) => {
@@ -277,7 +349,7 @@ export function CapsuleFeed({ episode, color, onStart }: Props) {
   }
 
   return (
-    <div className="cap-feed" style={style}>
+    <div className="cap-feed" style={style} onPointerDownCapture={skipReading}>
       <Link href="/" className="cap-exit" aria-label="Haritaya dön">
         <span aria-hidden>🗺️</span>
       </Link>
@@ -303,6 +375,7 @@ export function CapsuleFeed({ episode, color, onStart }: Props) {
             index={i}
             total={total}
             runtime={runtimes[i] ?? freshRuntime()}
+            readingId={active && reading?.index === i ? reading.id : null}
             showStart={i === 0 && !started}
             cardRef={(el) => {
               cardEls.current[i] = el;

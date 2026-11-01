@@ -11,8 +11,8 @@ describe("DurGit bileşeni", () => {
   });
 
   it("başlar, 45 sn sonra sonuç ekranını gösterir ve yerinde yeniden başlar", () => {
+    // Kabuk olmadan oyun etkin sayılır ve kendiliğinden başlar (Başla kabuğun StartCard'ındadır).
     render(<DurGit />);
-    fireEvent.click(screen.getByRole("button", { name: /Başla/ }));
     expect(screen.getByRole("group", { name: "Göl" })).toBeTruthy();
     act(() => {
       vi.advanceTimersByTime(46_000);

@@ -203,7 +203,7 @@ export function mountClassicAsteroids(
 
   const newLevel = () => {
     music.setAsteroidRatio(1);
-    text = `Level ${level + 1}`;
+    text = `Seviye ${level + 1}`;
     textAlpha = 1.0;
     createAsteroidBelt();
   };
@@ -222,7 +222,7 @@ export function mountClassicAsteroids(
 
   const gameOver = () => {
     ship.dead = true;
-    text = "Game Over";
+    text = "Oyun Bitti";
     textAlpha = 1.0;
     if (!gameOverReported) {
       gameOverReported = true;
@@ -407,7 +407,7 @@ export function mountClassicAsteroids(
 
     ctx.textAlign = "center";
     ctx.font = canvasFont(`${TEXT_SIZE * 0.75}px dejavu sans mono, var(--font-nunito), monospace`);
-    ctx.fillText(`BEST ${scoreHigh}`, W / 2, SHIP_SIZE);
+    ctx.fillText(`Rekor ${scoreHigh}`, W / 2, SHIP_SIZE);
 
     if (!active) return;
 

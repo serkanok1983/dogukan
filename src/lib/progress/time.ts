@@ -49,7 +49,8 @@ export function weekKey(ms: number = Date.now()): string {
   const firstThursday = new Date(Date.UTC(isoYear, 0, 4));
   const firstWeekday = (firstThursday.getUTCDay() + 6) % 7;
   firstThursday.setUTCDate(firstThursday.getUTCDate() - firstWeekday + 3);
-  const week = 1 + Math.round((date.getTime() - firstThursday.getTime()) / (7 * DAY_MS));
+  const week =
+    1 + Math.round((date.getTime() - firstThursday.getTime()) / (7 * DAY_MS));
   return `${isoYear}-W${String(week).padStart(2, "0")}`;
 }
 
@@ -94,6 +95,7 @@ export function emptyDay(): DayUsage {
     opens: 0,
     extensions: 0,
     extensionMinutes: 0,
+    extensionGrants: {},
     limitReached: false,
     bedtimeBlocks: 0,
     togetherDone: false,
@@ -124,5 +126,7 @@ export function emptyProgress(player: PlayerId, now: number = Date.now()): Progr
     quests: { day: null, items: [] },
     inbox: [],
     seenEventIds: [],
+    ackedNotices: {},
+    lifetime: { sets: 0 },
   };
 }

@@ -10,8 +10,8 @@ type Props = {
   line: string;
   /** Erişilebilirlik başlığı (ebeveyn için; çocuğa okunmaz) */
   title: string;
-  /** "sleep": akşam Macera Adası uyuyor (Başla yok) */
-  variant?: "start" | "sleep";
+  /** "sleep": akşam Macera Adası uyuyor (Başla yok); "map": yalnız 🗺️ Harita (ör. bal bitti) */
+  variant?: "start" | "sleep" | "map";
   onStart?: () => void;
   onMap: () => void;
   children?: React.ReactNode;
@@ -32,6 +32,7 @@ export function StartCard({ emoji, line, title, variant = "start", onStart, onMa
   }, [line]);
 
   const sleeping = variant === "sleep";
+  const mapOnly = sleeping || variant === "map";
 
   return (
     <div
@@ -52,12 +53,12 @@ export function StartCard({ emoji, line, title, variant = "start", onStart, onMa
           <SayButton text={line} size={56} />
         </div>
         {children}
-        {!sleeping && onStart && (
+        {!mapOnly && onStart && (
           <button ref={startRef} type="button" className="gf-start-go" onClick={onStart}>
             Başla <span aria-hidden>▶</span>
           </button>
         )}
-        {sleeping && (
+        {mapOnly && (
           <button type="button" className="gf-start-go gf-start-go-map" onClick={onMap}>
             <span aria-hidden>🗺️</span> Harita
           </button>

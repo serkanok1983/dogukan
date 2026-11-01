@@ -106,7 +106,9 @@ export function BalloonPop() {
     return (
       <div className="game-panel result-panel">
         <div className="result-emoji">🎈</div>
-        <h2>Harika!</h2>
+        <h2>
+          Hepsi patladı! <SayButton text={`Hepsi patladı! ${score} balon.`} size={56} />
+        </h2>
         <p className="result-score">{score} doğru balon</p>
         <button type="button" className="btn-primary" onClick={restart}>
           Tekrar oyna

@@ -3,7 +3,7 @@
 import { useEffect, useReducer, useRef } from "react";
 import { SayButton } from "@/components/SayButton";
 import { useGameScore } from "@/hooks/useGameScore";
-import { useGameActive } from "@/lib/gameSession";
+import { useGameActive, useGameBoot } from "@/lib/gameSession";
 import { praise } from "@/lib/praise";
 import { sounds } from "@/lib/sounds";
 import { speak } from "@/lib/speech";
@@ -71,6 +71,9 @@ export function DurGitGame() {
     speak(RULE_GO);
   };
 
+  // Kabuğun StartCard'ındaki tek "Başla" dokunuşu oyunu başlatır (ikinci düğme yok).
+  useGameBoot(start);
+
   const tap = (c: Creature) => {
     if (!running) return;
     if (isTarget(c, phase)) sounds.pop();
@@ -88,9 +91,6 @@ export function DurGitGame() {
         <p className="dg-text">
           {RULE_GO} <SayButton text={RULE_GO} />
         </p>
-        <button type="button" className="btn-primary dg-big" onClick={start}>
-          Başla ▶
-        </button>
       </div>
     );
   }
@@ -127,13 +127,20 @@ export function DurGitGame() {
         </span>
       </div>
       <div className="dg-timebar" aria-hidden="true">
-        <div className="dg-timebar-fill" style={{ width: `${(1 - state.elapsed / GAME_MS) * 100}%` }} />
+        <div
+          className="dg-timebar-fill"
+          style={{ width: `${(1 - state.elapsed / GAME_MS) * 100}%` }}
+        />
       </div>
       <p className={`dg-text dg-banner${phase === 3 ? " is-red" : ""}`}>
         {phase === 3 ? "🔴🐟 " : ""}
         {ruleNow} <SayButton text={ruleNow} />
       </p>
-      <div className={`dg-pond${active ? "" : " is-paused"}`} role="group" aria-label="Göl">
+      <div
+        className={`dg-pond${active ? "" : " is-paused"}`}
+        role="group"
+        aria-label="Göl"
+      >
         {state.creatures.map((c) => (
           <button
             key={c.id}

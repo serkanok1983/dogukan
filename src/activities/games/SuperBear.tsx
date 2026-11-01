@@ -15,9 +15,12 @@ import { useCanvasFit } from "@/hooks/useCanvasFit";
 import { decay, lerpFactor, useGameLoop } from "@/hooks/useGameLoop";
 import { useActivityStats } from "@/hooks/useProgress";
 import { sounds } from "@/lib/sounds";
+import { praise } from "@/lib/praise";
+import { speak } from "@/lib/speech";
 import { useGameScore } from "@/hooks/useGameScore";
 import { ScoreHud } from "@/components/ScoreHud";
 import { GameTouchBar } from "@/components/GameTouchBar";
+import { SayButton } from "@/components/SayButton";
 import { GROUND_Y, VIEW_H } from "./superBearConstants";
 import {
   DEFAULT_EASE,
@@ -75,6 +78,7 @@ export function SuperBear() {
   const [score, setScore] = useState(0);
   const [level, setLevel] = useState(1);
   const [campaignDone, setCampaignDone] = useState(false);
+  const [victoryLine, setVictoryLine] = useState("");
   const [over, setOver] = useState(false);
   const scoreGame = useGameScore(GAME_SLUG);
   const ease = useActivityStats(GAME_SLUG)?.ease ?? DEFAULT_EASE;
@@ -255,7 +259,10 @@ export function SuperBear() {
       victoryAnimRef.current = Math.max(0, victoryAnimRef.current - dt);
       if (victoryAnimRef.current === 0) {
         campaignDoneRef.current = true;
+        const line = praise("run_end");
+        setVictoryLine(line);
         setCampaignDone(true);
+        speak(`${line} ${MAX_LEVELS} seviyenin hepsini bitirdin.`);
       }
     }
 
@@ -618,7 +625,9 @@ export function SuperBear() {
       ctx.fillStyle = `rgba(15,23,42,${0.35 + (1 - t) * 0.35})`;
       ctx.fillRect(0, 0, VIEW_W, VIEW_H);
       ctx.fillStyle = "#fde047";
-      ctx.font = canvasFont(`bold ${28 + (1 - t) * 12}px var(--font-nunito), sans-serif`);
+      ctx.font = canvasFont(
+        `bold ${28 + (1 - t) * 12}px var(--font-nunito), sans-serif`,
+      );
       ctx.textAlign = "center";
       ctx.fillText("🏆 100 SEVİYE!", VIEW_W / 2, VIEW_H / 2 - 30);
       ctx.fillStyle = "#fff";
@@ -666,7 +675,12 @@ export function SuperBear() {
         <div className="super-bear-victory" role="dialog" aria-live="polite">
           <div className="super-bear-victory-card">
             <p className="super-bear-victory-emoji">🐻🏆</p>
-            <h2>Tebrikler!</h2>
+            <h2>
+              {victoryLine}{" "}
+              <SayButton
+                text={`${victoryLine} ${MAX_LEVELS} seviyenin hepsini bitirdin. ${score} puan.`}
+              />
+            </h2>
             <p>
               Tüm {MAX_LEVELS} seviyeyi bitirdin. Skor: <strong>{score}</strong>
             </p>
